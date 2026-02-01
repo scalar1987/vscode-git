@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, HeadingLevel, WidthType, BorderStyle, AlignmentType } from 'docx'
+import { useState } from 'react'
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, HeadingLevel, WidthType, AlignmentType } from 'docx'
 import { saveAs } from 'file-saver'
 import styles from './ReportGenerator.module.css'
 
@@ -124,7 +124,7 @@ export function ReportGenerator() {
 
       // Calculate project progress (May 2024 - Dec 2027 = 43 months)
       const projectStart = new Date(2024, 4, 1) // May 2024
-      const projectEnd = new Date(2027, 11, 31) // Dec 2027
+      // Project end: Dec 2027 (43 months total)
       const reportDate = new Date(selectedYear, selectedMonth, 1)
       const totalMonths = 43
       const elapsedMonths = Math.max(0, Math.min(totalMonths,

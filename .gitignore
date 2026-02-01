@@ -1,1 +1,7 @@
 node_modules
+dist
+nul
+.env
+*.pyc
+__pycache__
+.pdca-status.json

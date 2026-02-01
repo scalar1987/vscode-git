@@ -1,155 +1,141 @@
-import React from 'react';
-import styles from './Dashboard.module.css';
-import { useGENIEData } from '../hooks/useGENIEData';
+import { Building2, GraduationCap, Briefcase, Leaf, DollarSign, type LucideIcon } from 'lucide-react';
+import { useGENIEData, type KPICard as KPICardData } from '../hooks/useGENIEData';
 import { useOutputProgress } from '../hooks/useOutputProgress';
+import {
+  HeroSection,
+  KPICard,
+  KPIGrid,
+  ComponentProgress,
+  BudgetOverview,
+  ActivityTimeline
+} from '../components/dashboard';
+
+// Project timeline: May 2024 - December 2027 (43 months)
+const PROJECT_START = new Date('2024-05-01');
+const PROJECT_END = new Date('2027-12-31');
+const TOTAL_MONTHS = 43;
+
+function calculateProjectProgress(): { progress: number; currentMonth: number } {
+  const now = new Date();
+  const totalDuration = PROJECT_END.getTime() - PROJECT_START.getTime();
+  const elapsed = now.getTime() - PROJECT_START.getTime();
+  const progress = Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
+
+  // Calculate current month (1-indexed)
+  const monthsElapsed = Math.floor(elapsed / (1000 * 60 * 60 * 24 * 30.44));
+  const currentMonth = Math.min(Math.max(monthsElapsed + 1, 1), TOTAL_MONTHS);
+
+  return { progress: Math.round(progress), currentMonth };
+}
+
+// KPI icon mapping
+const KPI_ICONS = {
+  centers: Building2,
+  students: GraduationCap,
+  entrepreneurs: Briefcase,
+  jobs: Leaf,
+  funding: DollarSign,
+};
+
+// Recent activities data
+const RECENT_ACTIVITIES = [
+  { date: 'Dec 15, 2025', activity: 'Impact Lab Green Curriculum Finalized', status: 'Completed' as const },
+  { date: 'Dec 10, 2025', activity: 'Bondoukou Center Launch Event', status: 'Completed' as const },
+  { date: 'Nov 28, 2025', activity: 'Phase II Renovation Sub-Order Signed', status: 'Completed' as const },
+  { date: 'Nov 05, 2025', activity: 'Cohort 1 Greenpreneur Graduation', status: 'Completed' as const },
+  { date: 'Jan 20, 2026', activity: 'LPIA Treichville Pilot Data Collection', status: 'Upcoming' as const },
+  { date: 'Feb 2026', activity: 'Pitch Competition & Seed Capital Disbursement', status: 'Upcoming' as const },
+];
+
+// Budget data
+const BUDGET = {
+  total: 8250000,
+  spent: 2836220,
+};
 
 export function Dashboard() {
-  const { summary, loading } = useGENIEData();
+  const { summary, loading: dataLoading } = useGENIEData();
   const { componentProgress, loading: progressLoading } = useOutputProgress();
+  const { progress, currentMonth } = calculateProjectProgress();
 
-  // Helper to color-code the status badges
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Completed': return '#10B981'; // Green
-      case 'On Track': return '#3B82F6'; // Blue
-      case 'Delayed': return '#F59E0B'; // Yellow/Orange
-      case 'Off Track': return '#EF4444'; // Red
-      case 'Critical': return '#EF4444'; // Red
-      default: return '#9CA3AF';
-    }
-  };
+  // Map KPI data from useGENIEData to our KPICard format
+  const kpiData = (summary?.cards as KPICardData[] | undefined)?.map((card: KPICardData, index: number) => ({
+    icon: KPI_ICONS[card.unit as keyof typeof KPI_ICONS] || Building2,
+    value: card.value,
+    target: card.target,
+    label: card.title,
+    color: (index === 0 ? 'green' : index === 1 ? 'blue' : index === 2 ? 'amber' : 'green') as 'green' | 'blue' | 'amber' | 'red',
+    delay: index * 0.1,
+  })) || [];
 
   return (
-    <div className={styles.dashboard}>
-      {/* KEY METRICS GRID (The 4 Cards) */}
-      <div className={styles.statsGrid}>
-        {loading ? (
-          // Skeleton loading state
-          [1, 2, 3, 4].map(i => <div key={i} className={styles.statCard}>Loading...</div>)
-        ) : (
-          summary?.cards.map((card, index) => (
-            <div key={index} className={styles.statCard}>
-              <div className={styles.statIcon}>{card.icon}</div>
-              <div className={styles.statContent}>
-                <span className={styles.statValue}>
-                  {card.value.toLocaleString()} 
-                  <span style={{ fontSize: '0.6em', color: '#9CA3AF', fontWeight: 'normal' }}>
-                    / {card.target.toLocaleString()}
-                  </span>
-                </span>
-                <span className={styles.statLabel}>{card.title} ({card.unit})</span>
-                
-                {/* Progress Bar */}
-                <div style={{ width: '100%', height: '6px', backgroundColor: '#F3F4F6', borderRadius: '4px', marginTop: '12px', marginBottom: '8px' }}>
-                  <div style={{ 
-                    width: `${Math.min((card.value / card.target) * 100, 100)}%`, 
-                    height: '100%', 
-                    borderRadius: '4px',
-                    backgroundColor: getStatusColor(card.status)
-                  }} />
-                </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <HeroSection
+        projectProgress={progress}
+        currentMonth={currentMonth}
+        totalMonths={TOTAL_MONTHS}
+        title="Empowering Cote d'Ivoire's Youth"
+        subtitle="Through Digital Skills & Green Innovation"
+      />
 
-                <span style={{ 
-                  display: 'inline-block', 
-                  fontSize: '11px', 
-                  fontWeight: '600', 
-                  color: getStatusColor(card.status),
-                  textTransform: 'uppercase' 
-                }}>
-                  {card.status}
-                </span>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* COMPONENT PROGRESS & BUDGET UTILIZATION (Same Row) */}
-      <div className={styles.statsGrid} style={{ gridTemplateColumns: '1fr 1fr' }}>
-
-        {/* LEFT: Component Progress */}
-        <div className={styles.statCard}>
-          <h2 className={styles.cardTitle} style={{ fontSize: '18px', marginBottom: '16px', fontWeight: '600' }}>Component Progress</h2>
-          <div className={styles.componentList}>
-            {progressLoading ? (
-              <div style={{ color: '#9CA3AF', padding: '20px', textAlign: 'center' }}>Loading progress...</div>
-            ) : (
-              componentProgress.map((component) => (
-                <div key={component.label} className={styles.componentItem}>
-                  <div className={styles.componentHeader}>
-                    <span className={styles.componentName}>{component.label}</span>
-                    <span className={styles.componentPercent}>{component.percentage}%</span>
+      {/* KPI Cards - Overlapping the hero */}
+      <div className="relative z-20 px-4 md:px-6 lg:px-8 -mt-12 md:-mt-16 mb-8">
+        <div className="max-w-7xl mx-auto">
+          {dataLoading ? (
+            <KPIGrid>
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-white/70 backdrop-blur-md rounded-xl p-6 animate-pulse">
+                  <div className="flex justify-between mb-4">
+                    <div className="w-12 h-12 bg-gray-200 rounded-xl" />
+                    <div className="w-16 h-6 bg-gray-200 rounded-full" />
                   </div>
-                  <div className={styles.progressBarBg}>
-                    <div
-                      className={styles.progressBarFill}
-                      style={{ width: `${component.percentage}%`, backgroundColor: component.color }}
-                    />
-                  </div>
+                  <div className="h-8 bg-gray-200 rounded w-24 mb-2" />
+                  <div className="h-4 bg-gray-200 rounded w-32 mb-3" />
+                  <div className="h-2 bg-gray-200 rounded" />
                 </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT: Budget Utilization */}
-        <div className={styles.statCard}>
-          <h2 className={styles.cardTitle} style={{ fontSize: '18px', marginBottom: '16px', fontWeight: '600' }}>Budget Utilization</h2>
-          <div className={styles.budgetContainer}>
-            <div className={styles.budgetChart}>
-              <div className={styles.chartCircle} style={{
-                background: `conic-gradient(#2E7D32 0% 34%, #E0E0E0 34% 100%)`,
-                width: '100px', height: '100px', borderRadius: '50%', margin: '0 auto',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-                <div style={{ background: 'white', width: '70px', height: '70px', borderRadius: '50%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '18px', fontWeight: 'bold' }}>34%</span>
-                  <span style={{ fontSize: '10px', color: '#757575' }}>Spent</span>
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.budgetDetails}>
-              <div className={styles.budgetItem}>
-                <span className={styles.budgetItemLabel}>Total Budget</span>
-                <span className={styles.budgetItemValue}>$8,250,000</span>
-              </div>
-              <div className={styles.budgetItem}>
-                <span className={styles.budgetItemLabel}>Cumulative Expenditure</span>
-                <span className={styles.budgetItemValue} style={{ color: '#2E7D32' }}>$2,836,220</span>
-              </div>
-              <div className={styles.budgetItem}>
-                <span className={styles.budgetItemLabel}>Remaining</span>
-                <span className={styles.budgetItemValue}>$5,413,780</span>
-              </div>
-            </div>
-          </div>
+              ))}
+            </KPIGrid>
+          ) : (
+            <KPIGrid>
+              {kpiData.map((kpi: { icon: LucideIcon; value: number; target: number; label: string; color: 'green' | 'blue' | 'amber' | 'red'; delay: number }, index: number) => (
+                <KPICard
+                  key={index}
+                  icon={kpi.icon}
+                  value={kpi.value}
+                  target={kpi.target}
+                  label={kpi.label}
+                  color={kpi.color}
+                  delay={kpi.delay}
+                />
+              ))}
+            </KPIGrid>
+          )}
         </div>
       </div>
 
-      {/* RECENT ACTIVITY (Full Width Below) */}
-      <div className={styles.statCard}>
-        <h2 className={styles.cardTitle} style={{ fontSize: '18px', marginBottom: '16px', fontWeight: '600' }}>Recent Activity</h2>
-        <div className={styles.activityList}>
-          {[
-            { date: 'Dec 15, 2025', activity: 'Impact Lab Green Curriculum Finalized', status: 'Completed' },
-            { date: 'Dec 10, 2025', activity: 'Bondoukou Center Launch Event', status: 'Completed' },
-            { date: 'Nov 28, 2025', activity: 'Phase II Renovation Sub-Order Signed', status: 'Completed' },
-            { date: 'Nov 05, 2025', activity: 'Cohort 1 Greenpreneur Graduation', status: 'Completed' },
-            { date: 'Jan 20, 2026', activity: 'LPIA Treichville Pilot Data Collection', status: 'Upcoming' },
-            { date: 'Feb 2026', activity: 'Pitch Competition & Seed Capital Disbursement', status: 'Upcoming' },
-          ].map((item, index) => (
-            <div key={index} className={styles.activityItem}>
-              <span className={styles.activityDate}>{item.date}</span>
-              <span className={styles.activityText}>{item.activity}</span>
-              <span className={styles.activityStatus} style={{
-                backgroundColor: item.status === 'Completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                color: item.status === 'Completed' ? '#10B981' : '#3B82F6'
-              }}>
-                {item.status}
-              </span>
-            </div>
-          ))}
+      {/* Stats Row */}
+      <div className="px-4 md:px-6 lg:px-8 pb-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Component Progress */}
+            <ComponentProgress
+              data={componentProgress}
+              loading={progressLoading}
+            />
+
+            {/* Budget Overview */}
+            <BudgetOverview
+              totalBudget={BUDGET.total}
+              spent={BUDGET.spent}
+            />
+          </div>
+
+          {/* Activity Timeline */}
+          <ActivityTimeline
+            activities={RECENT_ACTIVITIES}
+            maxItems={6}
+          />
         </div>
       </div>
     </div>

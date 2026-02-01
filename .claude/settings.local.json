@@ -16,7 +16,35 @@
       "Bash(npm uninstall:*)",
       "Bash(git config:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(del \"c:\\\\Claude code\\\\DigiGreen Youth Dashboard\\\\src\\\\components\\\\useGENIEData.js\")",
+      "Bash(timeout:*)",
+      "Bash(python -m uvicorn:*)",
+      "Bash(ping:*)",
+      "Bash(findstr:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Bash(where:*)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe\" -C \"c:\\\\Claude code\\\\DigiGreen Youth Dashboard\" status --short)",
+      "Bash(del \"c:\\\\Claude code\\\\DigiGreen Youth Dashboard\\\\git\")",
+      "Bash(git --version:*)",
+      "Skill(bkit:pdca)",
+      "Skill(bkit:development-pipeline)",
+      "Bash(docker ps:*)",
+      "Bash(docker start:*)",
+      "Bash(docker compose:*)",
+      "Bash(claude mcp add:*)",
+      "Bash(claude mcp:*)",
+      "Bash(git restore --staged git)",
+      "Bash(git restore:*)"
     ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7"
+  ],
+  "enabledPlugins": {
+    "bkit@bkit-marketplace": true
   }
 }
