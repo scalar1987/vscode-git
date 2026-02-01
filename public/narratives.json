@@ -1,0 +1,218 @@
+{
+  "version": "1.0.0",
+  "schema_version": "2026-01",
+  "last_updated": "2025-12-31",
+  "update_history": [
+    {
+      "version": "1.0.0",
+      "date": "2025-12-31",
+      "source": "2025 Annual Report (Full Narrative Text)",
+      "author": "M&E Team",
+      "changes": "Initial comprehensive narrative capture from 2025 annual report"
+    }
+  ],
+  "status_taxonomy": {
+    "Completed": "Activity or indicator target fully achieved",
+    "On Track": "Progress aligned with plan, expected to meet target",
+    "Delayed": "Behind schedule but recoverable with mitigation",
+    "Critical": "Significantly behind, requires urgent intervention",
+    "Not Started": "Activity not yet commenced (planned for future)",
+    "Exceeded": "Surpassed the target"
+  },
+  "narratives": [
+    {
+      "date": "2025-12-31",
+      "source": "2025 Annual Report (Full Narrative Text)",
+      "stories": {
+        "OVERALL": {
+          "status": "Delayed",
+          "narrative": "Project transition to execution faced ~12-month infrastructure delays affecting all downstream targets (training, enrollment). 2026 requires aggressive 'Catch-up Plan' with parallel construction/training and hybrid delivery models."
+        },
+        "1": {
+          "status": "Delayed",
+          "narrative": "45 of 22,396 beneficiaries reached. The outcome is severely delayed due to the cascading effect of infrastructure delays (10-12 months late) which prevented student enrollment (1.2.6) and full-scale entrepreneur training (2.2.2)."
+        },
+        "1.1.1": {
+          "status": "Delayed",
+          "narrative": "34 of 35 sites confirmed. Mairie d'Abobo pending due to lack of official letter signed by Mayor, though room is allocated. 11 General Schools, 9 Professional Schools, 6 Universities, and 8 Mairies confirmed."
+        },
+        "1.1.2": {
+          "status": "Delayed",
+          "narrative": "34 of 35 design plans completed. Mairie de Grand Bassam plan obsolete due to Dec 2025 site change; new assessment scheduled for Jan 2026."
+        },
+        "1.1.3": {
+          "status": "Delayed",
+          "narrative": "34 of 35 governance agreements signed. Mairie d'Abobo agreement pending Mayor's signature on official confirmation letter."
+        },
+        "1.1.4": {
+          "status": "Critical",
+          "narrative": "Target (cumulative): 35 | Actual: 7 | Variance: -80.0% | Next step: Complete remaining 28 centers by mid-2026. 7 Phase I centers operational (10-12 month delay). Phase II (28 centers) delayed to mid-2026 due to 76% scope expansion and procurement delays. Mitigation: Parallel multi-site execution and front-loaded assessments."
+        },
+        "1.1.5": {
+          "status": "Not Started",
+          "narrative": "Planned for 2027. Activity focuses on developing a comprehensive strategy for long-term sustainability and resource mobilization."
+        },
+        "1.2.1": {
+          "status": "Completed",
+          "narrative": "Basic ICT training modules (Word, Excel, PPT) fully developed in 2024. Ready for deployment."
+        },
+        "1.2.2": {
+          "status": "Completed",
+          "narrative": "100% of Basic ICT modules uploaded to cloud LMS. Accessible for self-paced learning across all operational centers."
+        },
+        "1.2.3": {
+          "status": "Completed",
+          "narrative": "Green Practices curriculum (6 modules) completed and uploaded to LMS by Impact Lab in Aug 2025, recovering from FJN partnership withdrawal delay."
+        },
+        "1.2.4": {
+          "status": "Delayed",
+          "narrative": "Target: 105 | Actual: 102 | Variance: -2.9% | Next step: Finalize remaining 3 trainers during January 2026 site visit. 102 of 105 trainers recruited. 3 trainers from Mairie de Treichville pending municipal designation. Site visit scheduled Jan 2026 to finalize."
+        },
+        "1.2.5": {
+          "status": "Delayed",
+          "narrative": "21 of 105 trainers certified (Phase I only). 81 others attended in-person training but missing online module completion. Catch-up sessions planned Feb 2026."
+        },
+        "1.2.6": {
+          "status": "Critical",
+          "narrative": "Combined university (0/7,830) and secondary/TVET (111/26,100) enrollment severely behind. Total 111 enrolled vs 33,930 project target. Expansion planned Q1-Q2 2026 with offline transitional delivery."
+        },
+        "1.2.6.1": {
+          "status": "Critical",
+          "narrative": "0 students enrolled vs 2,160 target. Enrollment framework finalized; University of Bondoukou merit-based selection model ready for Q1 2026 launch."
+        },
+        "1.2.6.2": {
+          "status": "Critical",
+          "narrative": "Target (project total): 26100 | Actual (to date): 111 | Variance: -99.6% | Next step: Scale enrollments in Q1–Q2 2026 across Phase II centers. 111 students enrolled (LPIA Treichville pilot) vs 26,100 target. Severe shortfall due to infrastructure delays. Mitigation: 'Offline transitory option' and 'LPIA Treichville Model' rollout in Q1 2026."
+        },
+        "1.2.7": {
+          "status": "Critical",
+          "narrative": "No students have passed assessments yet. Assessment framework ready on LMS. Data collection begins Jan 20, 2026 with first cohorts."
+        },
+        "1.2.7.1": {
+          "status": "Critical",
+          "narrative": "Target (project total): 21715 | Actual (2025): 0 | Variance: -100.0% | Next step: Begin pass-rate data capture with cohorts starting Jan 20, 2026. 0 students passed vs 21,715 target. Assessment framework ready on LMS. Pilot data collection begins Jan 20, 2026 with LPIA Treichville cohort."
+        },
+        "1.2.7.2": {
+          "status": "Not Started",
+          "narrative": "0% assessment coverage. Pre/post survey tools designed. Data collection to commence with Q1 2026 cohorts."
+        },
+        "1.3.1": {
+          "status": "Completed",
+          "narrative": "2 advanced programs developed: Application Master (UI/UX, iOS, Android) and Green Business Fundamentals. iOS module modified to remove hardware dependency."
+        },
+        "1.3.2": {
+          "status": "Completed",
+          "narrative": "100% of advanced curriculum uploaded to LMS. Includes interactive presentations, videos, and quizzes for both App Master and Green Business tracks."
+        },
+        "1.3.3": {
+          "status": "Delayed",
+          "narrative": "0 of 19 trainers certified. 8 completed online modules; in-person training pending Feb 2026. Recruitment of remaining 11 trainers phased with center availability."
+        },
+        "1.3.4": {
+          "status": "Delayed",
+          "narrative": "30 students enrolled in pilot, 22 graduated with 100% satisfaction. Cohort 2 (120 students) recruitment launched Jan 2026 to accelerate toward 900 target."
+        },
+        "1.3.4.1": {
+          "status": "Delayed",
+          "narrative": "30 students enrolled (Pilot) vs 900 target. 22 graduated with 100% satisfaction. Cohort 2 (120 students) recruitment launched for Jan 2026 to accelerate."
+        },
+        "1.3.4.2": {
+          "status": "Delayed",
+          "narrative": "22 students passed (73% pass rate). iOS practicals excluded from pilot due to hardware limits. Future cohorts to use modified assessment approach."
+        },
+        "1.3.4.3": {
+          "status": "On Track",
+          "narrative": "100% satisfaction recorded for pilot cohort (Target: 80%). Strong UI/UX mastery; Green Tech modules require enhanced instructional support."
+        },
+        "2": {
+          "status": "Delayed",
+          "narrative": "30 tech-based startups identified (vs 135 target). Result of limited Greenpreneur enrollment. 2026 acceleration plan targets 264 participants to boost pipeline."
+        },
+        "2.1": {
+          "status": "Not Started",
+          "narrative": "Target (reporting trigger): Post-award job verification begins after Q1 2026 pitch winners receive disbursements. Actual (2025): 0 verified jobs. Variance: N/A. Next step: conduct job verification with funded startups starting Q2 2026."
+        },
+        "2.1.1": {
+          "status": "Completed",
+          "narrative": "Incubation program definition finalized Dec 2024. Structure, goals, and selection criteria established."
+        },
+        "2.1.2": {
+          "status": "On Track",
+          "narrative": "2 calls conducted (181 applications). Low regional response (42 applications outside Abidjan). 2026 strategy includes early Jan launch and localized outreach."
+        },
+        "2.1.3": {
+          "status": "Completed",
+          "narrative": "10-module Greenpreneur curriculum completed by Impact Lab/Barka (Q3 2025). Includes Financial Modeling, Eco-Prototyping, and Impact Modeling."
+        },
+        "2.1.4": {
+          "status": "Delayed",
+          "narrative": "Mentor recruitment delayed to Jan 2026 due to extended training cohorts. RFP launched Jan 17, 2026 for Feb delivery."
+        },
+        "2.2.1": {
+          "status": "On Track",
+          "narrative": "23 promotional activities conducted (Target: 60). Includes 4 webinars and 4 center launch events. 2026 plan targets 15+ activities with early launch."
+        },
+        "2.2.2": {
+          "status": "On Track",
+          "narrative": "112 greenpreneurs trained with 90% satisfaction. Shortfall due to delayed regional center opening. 2026 targets 264 via hybrid model."
+        },
+        "2.2.2.1": {
+          "status": "Delayed",
+          "narrative": "112 greenpreneurs trained (50% of target). Shortfall due to delayed regional center opening. 2026 plan targets 264 participants via hybrid model."
+        },
+        "2.2.2.2": {
+          "status": "On Track",
+          "narrative": "90% satisfaction rate (Target: 80%). High quality perception despite infrastructure challenges."
+        },
+        "2.2.3": {
+          "status": "Delayed",
+          "narrative": "Mentorship program delayed to Q1 2026 due to training cohort extension. Mentor recruitment launched Jan 2026 for Feb delivery."
+        },
+        "2.2.4": {
+          "status": "On Track",
+          "narrative": "2 networking events held (online). Topics: Company Structuration, Fundraising. 2026 to introduce hybrid format for better engagement."
+        },
+        "2.2.5": {
+          "status": "Delayed",
+          "narrative": "Pitch competition postponed to Feb 2026. 25+ eligible finalists identified from 2025 cohorts. USD 100k seed capital disbursement scheduled Mar 2026."
+        },
+        "3": {
+          "status": "Delayed",
+          "narrative": "USD 0 mobilized (vs USD 1M target). Funders engaged but waiting for market-ready startups. Focus on Q1 2026 pitch competition winners to drive investment."
+        },
+        "3.1": {
+          "status": "On Track",
+          "narrative": "Target (by 2027): 5 publications/knowledge products disseminated. Actual (2025): 0 disseminated; 8 drafts completed and pending QA. Next step: finalize QA and schedule dissemination in 2026."
+        },
+        "3.1.1": {
+          "status": "Exceeded",
+          "narrative": "10 funders engaged (Target: 4) including SGPME CI and COMOE Capital. MoUs signed. Focus shifting to investment readiness for greenpreneurs."
+        },
+        "3.1.2": {
+          "status": "Delayed",
+          "narrative": "USD 0 disbursed. Fund establishment pending financial framework finalization. Disbursement of USD 100k scheduled post-Feb 2026 pitch competition."
+        },
+        "3.1.3": {
+          "status": "Not Started",
+          "narrative": "Green Business Forum scheduled for 2027. No activities planned for 2025."
+        },
+        "3.2.1": {
+          "status": "Delayed",
+          "narrative": "Policy reviews (Enabling Environment & Ecosystem Mapping) inception reports submitted Dec 2025. Final reports due Q2 2026."
+        },
+        "3.2.2": {
+          "status": "Delayed",
+          "narrative": "Green Leadership Academy postponed to Jan 2026. Cohort 1 (30 participants) recruitment underway for Q1 delivery."
+        },
+        "3.2.3": {
+          "status": "Delayed",
+          "narrative": "Study tour postponed to late March 2026 due to election period and pitch delays. 10 participants (6 govt, 4 GGGI) confirmed."
+        },
+        "3.2.4": {
+          "status": "Critical",
+          "narrative": "227 stakeholders reached vs 9,600 target. Dissemination limited by delayed publication finalization. 2026 acceleration required."
+        }
+      }
+    }
+  ]
+}

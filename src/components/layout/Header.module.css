@@ -64,28 +64,26 @@
 }
 
 .center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
 }
 
-.projectInfo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.projectBadge {
-  background: var(--primary-green);
-  color: white;
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 12px;
+.dashboardLabel {
+  font-size: 14px;
   font-weight: 600;
+  color: var(--primary-green);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.projectPeriod {
-  font-size: 13px;
-  color: var(--text-secondary);
+.gggiLogo {
+  height: 64px;
+  width: auto;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .right {

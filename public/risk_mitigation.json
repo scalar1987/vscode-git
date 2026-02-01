@@ -1,0 +1,521 @@
+{
+  "plans": [
+    {
+      "risk_id": "DG-PROC-001",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-001",
+            "description": "Amend contracts with realistic timelines and liquidated damages; conduct weekly milestone reviews",
+            "deadline": "2026-01-31",
+            "status": "In progress"
+          },
+          {
+            "action_id": "DG-MIT-002",
+            "description": "Parallelize ICT and works procurement; improve customs documentation and advance logistics planning",
+            "deadline": "2026-02-29",
+            "status": "In progress"
+          }
+        ],
+        "residual_likelihood": 3,
+        "residual_impact": 4,
+        "residual_score": 12,
+        "residual_rating": "High"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Two consecutive missed critical milestones (>30 days)",
+        "steps": [
+          "Reassign or split procurement packages across vendors",
+          "Fast-track approvals and formally rebaseline the implementation schedule"
+        ],
+        "communication_protocol": "Notify Country Representative and Donor within 10 business days"
+      }
+    },
+    {
+      "risk_id": "DG-FID-002",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-003",
+            "description": "Conduct comprehensive pre-works electrical and site assessments; integrate 50–75% contingency for infrastructure",
+            "deadline": "2026-02-15",
+            "status": "In progress"
+          },
+          {
+            "action_id": "DG-MIT-004",
+            "description": "Reprioritize budget lines and seek donor no-objection for reallocations",
+            "deadline": "2026-03-15",
+            "status": "Planned"
+          }
+        ],
+        "residual_likelihood": 3,
+        "residual_impact": 3,
+        "residual_score": 9,
+        "residual_rating": "Medium"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Required budget exceeds approved ceiling",
+        "steps": [
+          "Seek additional financing or reduce non-critical scope",
+          "Phase works across fiscal years"
+        ],
+        "communication_protocol": "Submit budget variance memo to donor"
+      }
+    },
+    {
+      "risk_id": "DG-STK-003",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-005",
+            "description": "Maintain high-level diplomatic engagement with municipalities; conduct January 2026 field visits",
+            "deadline": "2026-01-31",
+            "status": "In progress"
+          },
+          {
+            "action_id": "DG-MIT-006",
+            "description": "Secure early site confirmation and sign-offs prior to design expenditure",
+            "deadline": "2026-02-15",
+            "status": "Planned"
+          }
+        ],
+        "residual_likelihood": 3,
+        "residual_impact": 3,
+        "residual_score": 9,
+        "residual_rating": "Medium"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Municipal confirmation not received by agreed deadline",
+        "steps": [
+          "Shift implementation to alternative pre-vetted sites",
+          "Rebaseline delivery schedule and budget"
+        ],
+        "communication_protocol": "Brief donor and Project Steering Committee"
+      }
+    },
+    {
+      "risk_id": "DG-OPS-004",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-007",
+            "description": "Engage Orange CIV and universities to secure fiber extension and dedicated LS lines",
+            "deadline": "2026-03-31",
+            "status": "In progress"
+          },
+          {
+            "action_id": "DG-MIT-008",
+            "description": "Deploy offline-first training modules and device lending solutions",
+            "deadline": "2026-01-31",
+            "status": "Completed"
+          }
+        ],
+        "residual_likelihood": 3,
+        "residual_impact": 2,
+        "residual_score": 6,
+        "residual_rating": "Medium"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Sustained network uptime below 80%",
+        "steps": [
+          "Shift to in-person lab delivery and extend lab hours",
+          "Distribute offline training content kits"
+        ],
+        "communication_protocol": "Update training plan and inform affected cohorts"
+      }
+    },
+    {
+      "risk_id": "DG-HR-005",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-009",
+            "description": "Conduct February 2026 catch-up ToT sessions and monitor online module completion for remaining trainers",
+            "deadline": "2026-02-28",
+            "status": "In progress"
+          },
+          {
+            "action_id": "DG-MIT-010",
+            "description": "Finalize recruitment of remaining trainers and align deployment with center readiness",
+            "deadline": "2026-01-31",
+            "status": "In progress"
+          }
+        ],
+        "residual_likelihood": 3,
+        "residual_impact": 3,
+        "residual_score": 9,
+        "residual_rating": "Medium"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Trainer readiness below 80% two weeks before cohort start",
+        "steps": [
+          "Stagger cohort start dates",
+          "Deploy short-term ToT intensives"
+        ],
+        "communication_protocol": "Issue updated training calendar"
+      }
+    },
+    {
+      "risk_id": "DG-HR-006",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-022",
+            "description": "Implement phased advanced trainer recruitment and ToT aligned with center operationalization (Jan–Jul 2026)",
+            "deadline": "2026-07-31",
+            "status": "In progress"
+          }
+        ],
+        "residual_likelihood": 3,
+        "residual_impact": 3,
+        "residual_score": 9,
+        "residual_rating": "Medium"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Advanced trainer pool below 80% by end of Q2 2026",
+        "steps": [
+          "Reassign trainers to high-capacity centers",
+          "Engage short-term consultant trainers"
+        ],
+        "communication_protocol": "Provide escalation update to Steering Committee"
+      }
+    },
+    {
+      "risk_id": "DG-KPI-007",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-012",
+            "description": "Deploy maximum recovery strategy: full trainer utilization, all 9 Mairies by June 2026, accelerate Phase II",
+            "deadline": "2026-06-30",
+            "status": "In progress"
+          },
+          {
+            "action_id": "DG-MIT-013",
+            "description": "Re-baseline logframe targets with donor to reflect capacity-constrained ceiling",
+            "deadline": "2026-02-28",
+            "status": "Planned"
+          }
+        ],
+        "residual_likelihood": 4,
+        "residual_impact": 4,
+        "residual_score": 16,
+        "residual_rating": "Extreme"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Donor does not approve re-baselining",
+        "steps": [
+          "Prioritize quality outcomes over volume",
+          "Document variance and lessons learned"
+        ],
+        "communication_protocol": "Explain variance in formal donor reporting"
+      }
+    },
+    {
+      "risk_id": "DG-PROG-008",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-014",
+            "description": "Launch diversified promotional campaign from January 2026 to exceed 15 activities",
+            "deadline": "2026-03-31",
+            "status": "In progress"
+          },
+          {
+            "action_id": "DG-MIT-015",
+            "description": "Enforce automated attendance tracking and certify only participants meeting 80% threshold",
+            "deadline": "2026-01-31",
+            "status": "Completed"
+          }
+        ],
+        "residual_likelihood": 2,
+        "residual_impact": 2,
+        "residual_score": 4,
+        "residual_rating": "Low"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Applications fall below target mid-cycle",
+        "steps": [
+          "Extend application window",
+          "Add regional information sessions"
+        ],
+        "communication_protocol": "Revise communications plan and notify partners"
+      }
+    },
+    {
+      "risk_id": "DG-REG-009",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-016",
+            "description": "Implement early regional RFPs, localized outreach, simplified applications, and virtual info sessions",
+            "deadline": "2026-06-30",
+            "status": "In progress"
+          }
+        ],
+        "residual_likelihood": 3,
+        "residual_impact": 2,
+        "residual_score": 6,
+        "residual_rating": "Medium"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Regional participation below 30%",
+        "steps": [
+          "Deploy targeted regional campaigns",
+          "Introduce rolling admissions"
+        ],
+        "communication_protocol": "Report strategy adjustments to Steering Committee"
+      }
+    },
+    {
+      "risk_id": "DG-SCHED-010",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-017",
+            "description": "Run mentor recruitment in parallel with training and fix Q1 2026 mentorship and competition schedule",
+            "deadline": "2026-02-29",
+            "status": "In progress"
+          }
+        ],
+        "residual_likelihood": 2,
+        "residual_impact": 2,
+        "residual_score": 4,
+        "residual_rating": "Low"
+      },
+      "contingency_plan": {
+        "trigger_condition": "External calendar conflicts arise",
+        "steps": [
+          "Shift to virtual or staggered events",
+          "Secure alternative venues or dates"
+        ],
+        "communication_protocol": "Immediately notify participants and officials"
+      }
+    },
+    {
+      "risk_id": "DG-FUND-011",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-018",
+            "description": "Finalize fund governance in Q1 2026 and disburse USD 100,000 in March 2026",
+            "deadline": "2026-03-31",
+            "status": "In progress"
+          }
+        ],
+        "residual_likelihood": 3,
+        "residual_impact": 3,
+        "residual_score": 9,
+        "residual_rating": "Medium"
+      },
+      "contingency_plan": {
+        "trigger_condition": "No external fund host confirmed",
+        "steps": [
+          "Implement interim internal hosting or MoU-based tranches",
+          "Resequence disbursement timeline"
+        ],
+        "communication_protocol": "Submit formal change note to donor"
+      }
+    },
+    {
+      "risk_id": "DG-LEAD-012",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-020",
+            "description": "Plan activities 6–12 months in advance; avoid election periods; confirm Academy and study tour schedules",
+            "deadline": "2026-03-31",
+            "status": "In progress"
+          }
+        ],
+        "residual_likelihood": 2,
+        "residual_impact": 2,
+        "residual_score": 4,
+        "residual_rating": "Low"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Key partner becomes unavailable",
+        "steps": [
+          "Reschedule modules or substitute facilitators",
+          "Switch to hybrid delivery format"
+        ],
+        "communication_protocol": "Issue updated program calendar"
+      }
+    },
+    {
+      "risk_id": "DG-DATA-013",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-021",
+            "description": "Standardize offline templates, sync SOPs, conduct spot checks, and automate validation upon data sync",
+            "deadline": "2026-02-15",
+            "status": "In progress"
+          }
+        ],
+        "residual_likelihood": 2,
+        "residual_impact": 2,
+        "residual_score": 4,
+        "residual_rating": "Low"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Persistent data quality assurance failures",
+        "steps": [
+          "Temporarily pause certificate issuance until reconciliation",
+          "Deploy MEL surge support"
+        ],
+        "communication_protocol": "Alert Project Manager and update donor in next report"
+      }
+    },
+    {
+      "risk_id": "DG-CURR-014",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-023",
+            "description": "Introduce additional practical and context-based learning activities and industry expert workshops",
+            "deadline": "2026-03-31",
+            "status": "Planned"
+          }
+        ],
+        "residual_likelihood": 2,
+        "residual_impact": 3,
+        "residual_score": 6,
+        "residual_rating": "Medium"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Module mastery gaps persist",
+        "steps": [
+          "Provide remedial clinics",
+          "Adjust pacing and assessment design"
+        ],
+        "communication_protocol": "Include QA note in cohort performance report"
+      }
+    },
+    {
+      "risk_id": "DG-ICT-015",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-024",
+            "description": "Deliver iOS training conceptually via LMS, use Android for practicals, and document scope variance with donor",
+            "deadline": "2026-02-15",
+            "status": "In progress"
+          }
+        ],
+        "residual_likelihood": 3,
+        "residual_impact": 2,
+        "residual_score": 6,
+        "residual_rating": "Medium"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Donor requests practical iOS implementation",
+        "steps": [
+          "Pilot limited Mac workstations or remote Mac builds",
+          "Prepare budget reallocation proposal"
+        ],
+        "communication_protocol": "Submit formal no-objection request to donor"
+      }
+    },
+    {
+      "risk_id": "DG-ACCESS-016",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-025",
+            "description": "Introduce optional low-code track alongside developer track to broaden access",
+            "deadline": "2026-03-31",
+            "status": "Planned"
+          }
+        ],
+        "residual_likelihood": 3,
+        "residual_impact": 2,
+        "residual_score": 6,
+        "residual_rating": "Medium"
+      },
+      "contingency_plan": {
+        "trigger_condition": "High exclusion rates persist",
+        "steps": [
+          "Introduce preparatory bootcamps",
+          "Adjust selection weighting criteria"
+        ],
+        "communication_protocol": "Update admissions policy documentation"
+      }
+    },
+    {
+      "risk_id": "DG-INV-017",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-026",
+            "description": "Stage investor engagement: invite to February pitch, schedule Q2–Q3 due diligence, and provide monthly updates",
+            "deadline": "2026-09-30",
+            "status": "In progress"
+          }
+        ],
+        "residual_likelihood": 2,
+        "residual_impact": 3,
+        "residual_score": 6,
+        "residual_rating": "Medium"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Investor conversion remains weak",
+        "steps": [
+          "Leverage co-investment or guarantee mechanisms (e.g., SGPME CI)",
+          "Provide bridge grants or technical assistance"
+        ],
+        "communication_protocol": "Prepare investor pipeline brief for Steering Committee"
+      }
+    },
+    {
+      "risk_id": "DG-NET-018",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-027",
+            "description": "Adopt hybrid networking model combining quarterly in-person events with online series",
+            "deadline": "2026-06-30",
+            "status": "Planned"
+          }
+        ],
+        "residual_likelihood": 2,
+        "residual_impact": 2,
+        "residual_score": 4,
+        "residual_rating": "Low"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Engagement levels remain low",
+        "steps": [
+          "Introduce curated matchmaking sessions",
+          "Organize thematic investor roundtables"
+        ],
+        "communication_protocol": "Produce post-event lessons learned brief"
+      }
+    },
+    {
+      "risk_id": "DG-POL-020",
+      "mitigation_plan": {
+        "actions": [
+          {
+            "action_id": "DG-MIT-028",
+            "description": "Accelerate Q1 fieldwork and complete final policy and ecosystem reports by May 2026",
+            "deadline": "2026-05-31",
+            "status": "In progress"
+          }
+        ],
+        "residual_likelihood": 3,
+        "residual_impact": 2,
+        "residual_score": 6,
+        "residual_rating": "Medium"
+      },
+      "contingency_plan": {
+        "trigger_condition": "Fieldwork delays persist",
+        "steps": [
+          "Increase enumerator capacity and extend survey windows",
+          "Issue interim policy brief with preliminary findings"
+        ],
+        "communication_protocol": "Provide Steering Committee update with revised timeline"
+      }
+    }
+  ]
+}

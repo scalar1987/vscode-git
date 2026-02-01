@@ -14,7 +14,7 @@ export function Layout() {
     <div className={styles.layout}>
       <Header onMenuToggle={toggleSidebar} />
       <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
-      <main className={styles.main}>
+      <main className={`${styles.main} ${sidebarOpen ? styles.mainShifted : ''}`}>
         <Outlet />
       </main>
     </div>

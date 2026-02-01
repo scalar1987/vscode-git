@@ -11,22 +11,12 @@ const navItems = [
     section: 'Overview',
     items: [
       { path: '/', label: 'Dashboard', icon: '📊' },
-      { path: '/summary', label: 'Executive Summary', icon: '📋' },
-    ]
-  },
-  {
-    section: 'Components',
-    items: [
-      { path: '/digital-infrastructure', label: 'Digital Infrastructure', icon: '🌐' },
-      { path: '/digital-green-skills', label: 'Digital and Green Skills Training', icon: '🎓' },
-      { path: '/green-entrepreneurship', label: 'Green Entrepreneurship', icon: '💼' },
-      { path: '/ecosystem-building', label: 'Ecosystem Building', icon: '🌱' },
+      { path: '/summary', label: 'DigiGreen Centers', icon: '🗺️' },
     ]
   },
   {
     section: 'Monitoring',
     items: [
-      { path: '/indicators', label: 'KPI Indicators', icon: '📈' },
       { path: '/targets', label: 'Targets & Milestones', icon: '🎯' },
       { path: '/activities', label: 'Activity Tracker', icon: '✅' },
     ]

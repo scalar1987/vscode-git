@@ -1,0 +1,239 @@
+.ganttContainer {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.timelineHeader {
+  display: flex;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 10;
+}
+
+.labelColumn {
+  width: 280px;
+  min-width: 280px;
+  padding-right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timelineColumn {
+  flex: 1;
+  min-width: 600px;
+  position: relative;
+  height: 100%;
+}
+
+.yearMarker {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  background: var(--background);
+  border-radius: 4px;
+}
+
+.ganttBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.outputGroup {
+  margin-bottom: 16px;
+}
+
+.outputHeader {
+  display: flex;
+  padding: 12px 0;
+  background: var(--background);
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.outputHeader .labelColumn {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.outputLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary-green);
+  background: rgba(46, 125, 50, 0.1);
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.outputName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.activityRow {
+  display: flex;
+  padding: 10px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.activityRow:hover {
+  background: var(--background);
+}
+
+.activityId {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--background);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+.activityName {
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activityRow .labelColumn {
+  flex-direction: row;
+  align-items: center;
+}
+
+.activityRow .timelineColumn {
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.gridLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+  opacity: 0.5;
+}
+
+.plannedBar {
+  position: absolute;
+  height: 20px;
+  background: transparent;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.progressBar {
+  position: absolute;
+  height: 20px;
+  border-radius: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: width 0.3s ease;
+}
+
+.progressLabel {
+  position: absolute;
+  font-size: 11px;
+  font-weight: 600;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.todayMarker {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: #EF4444;
+  z-index: 5;
+}
+
+.todayMarker::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  background: #EF4444;
+  border-radius: 50%;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.legendDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.todayIndicator {
+  width: 12px;
+  height: 2px;
+  background: #EF4444;
+  position: relative;
+}
+
+.todayIndicator::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -2px;
+  width: 6px;
+  height: 6px;
+  background: #EF4444;
+  border-radius: 50%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .labelColumn {
+    width: 200px;
+    min-width: 200px;
+  }
+
+  .timelineColumn {
+    min-width: 400px;
+  }
+
+  .activityName {
+    font-size: 12px;
+  }
+}

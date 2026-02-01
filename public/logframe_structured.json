@@ -1,0 +1,716 @@
+[
+  {
+    "id": "1",
+    "parent_id": "Outcome 1",
+    "parent_desc": "Increased access for future entrepreneurs to digital infrastructure and green practice knowledge",
+    "label": "[SDG 4.4.1]Number of youth and adults with ICT skills in project targeted locations, by type of skill",
+    "baseline": "10,440",
+    "targets": {
+      "2024": 105,
+      "2025": 6182,
+      "2026": 11146,
+      "2027": 4963,
+      "total": 22396
+    },
+    "means_of_verification": "Data collected through monthly monitoring reports, attendance sheet, quiz and assignment results of training programs",
+    "source_of_data": "Teachers and trainers at DigiGreen centres, BW and FJN monitoring reports",
+    "frequency_of_data_collection": "Monthly progress updates on training programs"
+  },
+  {
+    "id": "1.1.1",
+    "parent_id": "Output 1.1",
+    "parent_desc": "Digi Green centers infrastructure established and operational",
+    "label": "Number of confirmed sites for digital infrastructure implementation",
+    "baseline": "0",
+    "targets": {
+      "2024": 35,
+      "2025": 0,
+      "2026": 0,
+      "2027": 0,
+      "total": 35
+    },
+    "means_of_verification": "On-site technical inspection report on the sites for digital infrastructure",
+    "source_of_data": "On-site technical inspection report by technical service provider",
+    "frequency_of_data_collection": "Once, after the on-site technical inspection conducted"
+  },
+  {
+    "id": "1.1.2",
+    "parent_id": "Output 1.1",
+    "parent_desc": "Digi Green centers infrastructure established and operational",
+    "label": "Completion of detailed design plans for DigiGreen Centers including equipment and technology specifications",
+    "baseline": "0",
+    "targets": {
+      "2024": 1,
+      "2025": 0,
+      "2026": 0,
+      "2027": 0,
+      "total": 1
+    },
+    "means_of_verification": "Review and approval of design plans for DigiGreen Centers",
+    "source_of_data": "Design plans for DigiGreen Centers by technical service provider",
+    "frequency_of_data_collection": "Once, after design plans developed"
+  },
+  {
+    "id": "1.1.3",
+    "parent_id": "Output 1.1",
+    "parent_desc": "Digi Green centers infrastructure established and operational",
+    "label": "Completion of formalized governance agreements with Schools, Universities, and Mairies",
+    "baseline": "0",
+    "targets": {
+      "2024": 35,
+      "2025": 0,
+      "2026": 0,
+      "2027": 0,
+      "total": 35
+    },
+    "means_of_verification": "Signed governance agreements with educational institutions and local government offices",
+    "source_of_data": "Governance agreements with Schools, Universities, and Mairies formalizing governance structures, roles, and responsibilities",
+    "frequency_of_data_collection": "Once, after governance agreements signed"
+  },
+  {
+    "id": "1.1.4",
+    "parent_id": "Output 1.1",
+    "parent_desc": "Digi Green centers infrastructure established and operational",
+    "label": "Number of DigiGreen Centers fully operational in the 35 selected locations",
+    "baseline": "3",
+    "targets": {
+      "2024": 7,
+      "2025": 28,
+      "2026": 0,
+      "2027": 0,
+      "total": 35
+    },
+    "means_of_verification": "Inspection reports confirming operational status",
+    "source_of_data": "DigiGreen Center Records, Technical service provider reports",
+    "frequency_of_data_collection": "Monthly status reports on DigiGreen Center implementation"
+  },
+  {
+    "id": "1.1.5",
+    "parent_id": "Output 1.1",
+    "parent_desc": "Digi Green centers infrastructure established and operational",
+    "label": "Completion of the DigiGreen Centers long-term strategy",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 0,
+      "2026": 0,
+      "2027": 1,
+      "total": 1
+    },
+    "means_of_verification": "Finalized document of the DigiGreen Centers long-term strategy including resource mobilization strategy",
+    "source_of_data": "The official document outlining the DigiGreen Centers long-term strategy",
+    "frequency_of_data_collection": "Once, after the strategy document developed"
+  },
+  {
+    "id": "1.2.1",
+    "parent_id": "Output 1.2",
+    "parent_desc": "Basic ICT skills enhanced to promote green practices in students across the 20 schools and 6 Universities",
+    "label": "Number of basic ICT training program including Microsoft word, excel and PPT developed",
+    "baseline": "0",
+    "targets": {
+      "2024": 1,
+      "2025": 0,
+      "2026": 0,
+      "2027": 0,
+      "total": 1
+    },
+    "means_of_verification": "Learning management system showing the number of modules uploaded",
+    "source_of_data": "Learning management system of choice (e.g. Google Classroom, or Moodle)",
+    "frequency_of_data_collection": "Monthly progress updates on training program development"
+  },
+  {
+    "id": "1.2.2",
+    "parent_id": "Output 1.2",
+    "parent_desc": "Basic ICT skills enhanced to promote green practices in students across the 20 schools and 6 Universities",
+    "label": "Number of basic ICT training program stored in the cloud-based solution",
+    "baseline": "0",
+    "targets": {
+      "2024": 1,
+      "2025": 0,
+      "2026": 0,
+      "2027": 0,
+      "total": 1
+    },
+    "means_of_verification": "Learning management system showing the number of modules uploaded",
+    "source_of_data": "Learning management system of choice (e.g. Google Classroom, or Moodle)",
+    "frequency_of_data_collection": "Monthly progress updates on training program development"
+  },
+  {
+    "id": "1.2.3",
+    "parent_id": "Output 1.2",
+    "parent_desc": "Basic ICT skills enhanced to promote green practices in students across the 20 schools and 6 Universities",
+    "label": "Number of Green practices program developed and stored in the cloud-based solution",
+    "baseline": "0",
+    "targets": {
+      "2024": 1,
+      "2025": 0,
+      "2026": 0,
+      "2027": 0,
+      "total": 1
+    },
+    "means_of_verification": "Learning management system showing the number of modules uploaded",
+    "source_of_data": "Learning management system of choice (e.g. Google Classroom, or Moodle)",
+    "frequency_of_data_collection": "Monthly progress updates on training program development"
+  },
+  {
+    "id": "1.2.4",
+    "parent_id": "Output 1.2",
+    "parent_desc": "Basic ICT skills enhanced to promote green practices in students across the 20 schools and 6 Universities",
+    "label": "Number of trainers recruited for the Training of Trainers program",
+    "baseline": "0",
+    "targets": {
+      "2024": 105,
+      "2025": 0,
+      "2026": 0,
+      "2027": 0,
+      "total": 105
+    },
+    "means_of_verification": "Enrollment records in the learning management system",
+    "source_of_data": "Learning management system of choice (e.g. Google Classroom, or Moodle)",
+    "frequency_of_data_collection": "Once, before the Training of Trainers program initiated"
+  },
+  {
+    "id": "1.2.5",
+    "parent_id": "Output 1.2",
+    "parent_desc": "Basic ICT skills enhanced to promote green practices in students across the 20 schools and 6 Universities",
+    "label": "Number of trainers who completed the basic ICT skills and green practices program",
+    "baseline": "0",
+    "targets": {
+      "2024": 105,
+      "2025": 0,
+      "2026": 0,
+      "2027": 0,
+      "total": 105
+    },
+    "means_of_verification": "Completion records in the learning management system",
+    "source_of_data": "Learning management system of choice (e.g. Google Classroom, or Moodle)",
+    "frequency_of_data_collection": "Once, after the Training of Trainers program ended"
+  },
+  {
+    "id": "1.2.6.1",
+    "parent_id": "Output 1.2",
+    "parent_desc": "Basic ICT skills enhanced to promote green practices in students across the 20 schools and 6 Universities",
+    "label": "Number of university students who enrolled in the basic ICT skills program and Green practices program",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 2160,
+      "2026": 3915,
+      "2027": 1755,
+      "total": 7830
+    },
+    "means_of_verification": "Training completion records and documentation and assessments and evaluations of students' performance",
+    "source_of_data": "Teacher's reports and documentation from the training sessions and assessments and evaluations conducted during and/or after the training program",
+    "frequency_of_data_collection": "Monthly progress updates on student training delivery"
+  },
+  {
+    "id": "1.2.6.2",
+    "parent_id": "Output 1.2",
+    "parent_desc": "Basic ICT skills enhanced to promote green practices in students across the 20 schools and 6 Universities",
+    "label": "Number of students who enrolled in the basic ICT skills program and Green practices program",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 7200,
+      "2026": 13050,
+      "2027": 5850,
+      "total": 26100
+    },
+    "means_of_verification": "Training completion records and documentation and assessments and evaluations of students' performance",
+    "source_of_data": "Teacher's reports and documentation from the training sessions and assessments and evaluations conducted during and/or after the training program",
+    "frequency_of_data_collection": "Monthly progress updates on student training delivery"
+  },
+  {
+    "id": "1.2.7.1",
+    "parent_id": "Output 1.2",
+    "parent_desc": "Basic ICT skills enhanced to promote green practices in students across the 20 schools and 6 Universities",
+    "label": "Number of students that passed the ICT midterm quiz and final assignment",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 5990,
+      "2026": 10858,
+      "2027": 4867,
+      "total": 21715
+    },
+    "means_of_verification": "a review/aggregation of exam scores",
+    "source_of_data": "Midterm quiz and final assignment scores",
+    "frequency_of_data_collection": "once, following the grading of the midterm quiz and/or final assignment"
+  },
+  {
+    "id": "1.2.7.2",
+    "parent_id": "Output 1.2",
+    "parent_desc": "Basic ICT skills enhanced to promote green practices in students across the 20 schools and 6 Universities",
+    "label": "Students’ assessments of the quality and relevancy of trainings through pre and post survey.",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 80,
+      "2026": 80,
+      "2027": 80,
+      "total": 80
+    },
+    "means_of_verification": "Survey data analysis showing changes in responses to questions about quality and relevancy of trainings",
+    "source_of_data": "Students' self assessment survey",
+    "frequency_of_data_collection": "Comparison of pre- and post-assessment scores"
+  },
+  {
+    "id": "1.3.1",
+    "parent_id": "Output 1.3",
+    "parent_desc": "Higher-level ICT knowledge to promote green practices provided to university students",
+    "label": "Number of higher-level ICT training program including App Master program and Green Business program developed",
+    "baseline": "0",
+    "targets": {
+      "2024": 2,
+      "2025": 0,
+      "2026": 0,
+      "2027": 0,
+      "total": 2
+    },
+    "means_of_verification": "Learning management system showing the number of modules uploaded",
+    "source_of_data": "Learning management system of choice (e.g. Google Classroom, or Moodle)",
+    "frequency_of_data_collection": "Monthly progress updates on training program development"
+  },
+  {
+    "id": "1.3.2",
+    "parent_id": "Output 1.3",
+    "parent_desc": "Higher-level ICT knowledge to promote green practices provided to university students",
+    "label": "Number of higher-level ICT training program and Green Business program stored in the cloud-based solution",
+    "baseline": "0",
+    "targets": {
+      "2024": 2,
+      "2025": 0,
+      "2026": 0,
+      "2027": 0,
+      "total": 2
+    },
+    "means_of_verification": "Learning management system showing the number of modules uploaded",
+    "source_of_data": "Learning management system of choice (e.g. Google Classroom, or Moodle)",
+    "frequency_of_data_collection": "Monthly progress updates on training program development"
+  },
+  {
+    "id": "1.3.3",
+    "parent_id": "Output 1.3",
+    "parent_desc": "Higher-level ICT knowledge to promote green practices provided to university students",
+    "label": "Number of trainers who completed the higher-level ICT training program",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 19,
+      "2026": 0,
+      "2027": 0,
+      "total": 19
+    },
+    "means_of_verification": "Completion records in the learning management system",
+    "source_of_data": "Learning management system of choice (e.g. Google Classroom, or Moodle)",
+    "frequency_of_data_collection": "Once, after the Training of Trainers program ended"
+  },
+  {
+    "id": "1.3.4.1",
+    "parent_id": "Output 1.3",
+    "parent_desc": "Higher-level ICT knowledge to promote green practices provided to university students",
+    "label": "Number of university students who enrolled in the ICT Academy program with Green Business Fundamentals",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 300,
+      "2026": 450,
+      "2027": 150,
+      "total": 900
+    },
+    "means_of_verification": "Learning management system showing reports from the training sessions and records of assessments and evaluations of trainers' performance",
+    "source_of_data": "Learning management system of choice (e.g. Google Classroom, or Moodle)",
+    "frequency_of_data_collection": "Monthly progress updates on the Training of Trainers program"
+  },
+  {
+    "id": "1.3.4.2",
+    "parent_id": "Output 1.3",
+    "parent_desc": "Higher-level ICT knowledge to promote green practices provided to university students",
+    "label": "Number of students that passed the midterm quiz and the final assignment",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 192,
+      "2026": 288,
+      "2027": 96,
+      "total": 576
+    },
+    "means_of_verification": "a review/aggregation of exam scores",
+    "source_of_data": "Midterm and final assignment scores",
+    "frequency_of_data_collection": "once, following the grading of the midterm quiz and/or final assignment"
+  },
+  {
+    "id": "1.3.4.3",
+    "parent_id": "Output 1.3",
+    "parent_desc": "Higher-level ICT knowledge to promote green practices provided to university students",
+    "label": "Students’ assessments of the quality and relevancy of trainings through pre and post testing.",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 80,
+      "2026": 80,
+      "2027": 80,
+      "total": 80
+    },
+    "means_of_verification": "Survey data analysis showing changes in responses to questions about quality and relevancy of trainings",
+    "source_of_data": "Students' self assessment survey",
+    "frequency_of_data_collection": "Comparison of pre- and post-assessment scores"
+  },
+  {
+    "id": "2",
+    "parent_id": "Outcome 2",
+    "parent_desc": "Enhanced access for practicing entrepreneurs to green jobs and market through a Greenpreneurs Program",
+    "label": "[SDG9.b.1] Number of technology based start-ups from the Greenpreneur program, by type of start-ups (Green, Digital)",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 0,
+      "2026": 45,
+      "2027": 45,
+      "total": 135
+    },
+    "means_of_verification": "A centralized database maintained by GGGI, containing detailed records of all participating start-ups, their categorization, and progress through the program.",
+    "source_of_data": "DigiGreen Center Records, FJN reports, GGGI reports",
+    "frequency_of_data_collection": "Once, after the greenpreneur programs finished"
+  },
+  {
+    "id": "2.1",
+    "parent_id": "Outcome 2",
+    "parent_desc": "Enhanced access for practicing entrepreneurs to green jobs and market through a Greenpreneurs Program",
+    "label": "The number of Green jobs created by the start-ups supported by the Greenpreneur program",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 0,
+      "2026": 41,
+      "2027": 41,
+      "total": 121.5
+    },
+    "means_of_verification": "A centralized database maintained by GGGI, containing detailed records of all participating start-ups, their categorization, and progress through the program.",
+    "source_of_data": "DigiGreen Center Records, FJN reports, GGGI reports",
+    "frequency_of_data_collection": "Once, after the greenpreneur programs finished"
+  },
+  {
+    "id": "2.1.1",
+    "parent_id": "Output 2.1",
+    "parent_desc": "Greenpreneurs incubation program developed",
+    "label": "Completion of the definition document for the Greenpreneur incubation program",
+    "baseline": "0",
+    "targets": {
+      "2024": 1,
+      "2025": 0,
+      "2026": 0,
+      "2027": 0,
+      "total": 1
+    },
+    "means_of_verification": "Documentation of the finalized definition of the Greenpreneur incubation program",
+    "source_of_data": "Stakeholder meeting minutes and documentation from the definition development process",
+    "frequency_of_data_collection": "Monthly progress updates on the definition development"
+  },
+  {
+    "id": "2.1.2",
+    "parent_id": "Output 2.1",
+    "parent_desc": "Greenpreneurs incubation program developed",
+    "label": "Number of call for applications for Greenpreneurs program",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 1,
+      "2026": 1,
+      "2027": 1,
+      "total": 3
+    },
+    "means_of_verification": "Documentation on the call for application",
+    "source_of_data": "Reports on the call for applications, including submission records",
+    "frequency_of_data_collection": "Once, after the application closed"
+  },
+  {
+    "id": "2.1.3",
+    "parent_id": "Output 2.1",
+    "parent_desc": "Greenpreneurs incubation program developed",
+    "label": "Number of Greenpreneur training program developed",
+    "baseline": "0",
+    "targets": {
+      "2024": 1,
+      "2025": 0,
+      "2026": 0,
+      "2027": 0,
+      "total": 1
+    },
+    "means_of_verification": "Learning management system showing the number of modules uploaded",
+    "source_of_data": "Learning management system of choice (e.g. Google Classroom, or Moodle)",
+    "frequency_of_data_collection": "Monthly progress updates on training module development"
+  },
+  {
+    "id": "2.1.4",
+    "parent_id": "Output 2.1",
+    "parent_desc": "Greenpreneurs incubation program developed",
+    "label": "Number of mentors recruitment process implemented",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 1,
+      "2026": 1,
+      "2027": 1,
+      "total": 3
+    },
+    "means_of_verification": "Documentation of mentors recruitment process",
+    "source_of_data": "Records of mentors list",
+    "frequency_of_data_collection": "Monthly progress updates on the status of mentorship program"
+  },
+  {
+    "id": "2.2.1",
+    "parent_id": "Output 2.2",
+    "parent_desc": "Greenpreneurs incubation program implemented",
+    "label": "Number of the promotional activities by 6 Universities and 9 Mairies",
+    "baseline": "0",
+    "targets": {
+      "2024": 15,
+      "2025": 15,
+      "2026": 15,
+      "2027": 15,
+      "total": 60
+    },
+    "means_of_verification": "Detailed reports from each university and municipality outlining the promotional activities conducted.",
+    "source_of_data": "University and Municipality Websites, Social Media Platforms, Local Media Outlets",
+    "frequency_of_data_collection": "Once, after the promotional activities finished"
+  },
+  {
+    "id": "2.2.2.1",
+    "parent_id": "Output 2.2",
+    "parent_desc": "Greenpreneurs incubation program implemented",
+    "label": "Number of greenpreneurs who participated in the Greenpreneurs incubation program",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 225,
+      "2026": 225,
+      "2027": 225,
+      "total": 675
+    },
+    "means_of_verification": "Attendance records from the incubation program sessions",
+    "source_of_data": "Registration databases or platforms",
+    "frequency_of_data_collection": "Regularly updated participant records after each program session"
+  },
+  {
+    "id": "2.2.2.2",
+    "parent_id": "Output 2.2",
+    "parent_desc": "Greenpreneurs incubation program implemented",
+    "label": "Greenpreneurs assessment of quality, relevancy and satisfaction with the program",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 80,
+      "2026": 80,
+      "2027": 80,
+      "total": 80
+    },
+    "means_of_verification": "Survey data analysis showing changes in responses to questions about quality, relevancy and satisfaction with the program",
+    "source_of_data": "Greenpreneurs' self assessment survey",
+    "frequency_of_data_collection": "Comparison of pre- and post-assessment scores"
+  },
+  {
+    "id": "2.2.3",
+    "parent_id": "Output 2.2",
+    "parent_desc": "Greenpreneurs incubation program implemented",
+    "label": "Number of mentorship program held",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 1,
+      "2026": 1,
+      "2027": 1,
+      "total": 3
+    },
+    "means_of_verification": "Reports on the design and implementation of mentorship session",
+    "source_of_data": "Mentor's notes and reporting document",
+    "frequency_of_data_collection": "Monthly updates on the progress of seminar development and delivery"
+  },
+  {
+    "id": "2.2.4",
+    "parent_id": "Output 2.2",
+    "parent_desc": "Greenpreneurs incubation program implemented",
+    "label": "Number of networking events held",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 2,
+      "2026": 2,
+      "2027": 2,
+      "total": 6
+    },
+    "means_of_verification": "Documentation of each networking event, including planning and logistics",
+    "source_of_data": "Reports summarizing the planning and execution of each networking event",
+    "frequency_of_data_collection": "Once, each time after the events closed"
+  },
+  {
+    "id": "2.2.5",
+    "parent_id": "Output 2.2",
+    "parent_desc": "Greenpreneurs incubation program implemented",
+    "label": "Number of pitch competition held",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 1,
+      "2026": 1,
+      "2027": 1,
+      "total": 3
+    },
+    "means_of_verification": "Reports summarizing the planning and execution of each pitch competition",
+    "source_of_data": "Business model applications, bank transfer confirmations",
+    "frequency_of_data_collection": "Once, each time after the competitions closed"
+  },
+  {
+    "id": "3",
+    "parent_id": "Outcome 3",
+    "parent_desc": "Strengthened digital green ecosystem through enablers of entrepreneurship",
+    "label": "Mobilized amount of US dollars for Green business models",
+    "baseline": "$300,000",
+    "targets": {
+      "2024": 0,
+      "2025": 0,
+      "2026": 500000,
+      "2027": 500000,
+      "total": 1000000
+    },
+    "means_of_verification": "LOI with early funders including venture capital, incubators and accelerators",
+    "source_of_data": "LOI with early funders including venture capital, incubators and accelerators",
+    "frequency_of_data_collection": "Once, after the LOIs signed"
+  },
+  {
+    "id": "3.1",
+    "parent_id": "Outcome 3",
+    "parent_desc": "Strengthened digital green ecosystem through enablers of entrepreneurship",
+    "label": "Number of Green growth publications and/or knowledge product disseminated to Greenpreneurs, University students, Mairie staffs, Teachers, Government officials",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 0,
+      "2026": 2,
+      "2027": 2,
+      "total": 5
+    },
+    "means_of_verification": "Green growth publications and/or knowledge product",
+    "source_of_data": "Green growth publications and/or knowledge product",
+    "frequency_of_data_collection": "Once, after the publication and/or knowledge product disseminated"
+  },
+  {
+    "id": "3.1.1",
+    "parent_id": "Output 3.1",
+    "parent_desc": "A conducive environment for Greenpreneur program sustainability created",
+    "label": "Number of early stage funders identified and engaged",
+    "baseline": "1",
+    "targets": {
+      "2024": 1,
+      "2025": 1,
+      "2026": 1,
+      "2027": 1,
+      "total": 4
+    },
+    "means_of_verification": "Documentation of discussions and engagements with identified early stage funders",
+    "source_of_data": "Reports on the outcomes of discussions with early stage funders",
+    "frequency_of_data_collection": "Monthly updates on the progress of identifying and engaging early stage funders"
+  },
+  {
+    "id": "3.1.2",
+    "parent_id": "Output 3.1",
+    "parent_desc": "A conducive environment for Greenpreneur program sustainability created",
+    "label": "Amount of seed capital disbursed to the winner of the pitch competition",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 100000,
+      "2026": 100000,
+      "2027": 100000,
+      "total": 300000
+    },
+    "means_of_verification": "Records of financial transactions and disbursements to the pitch competition winner",
+    "source_of_data": "Financial records indicating the amount and recipients of seed capital disbursements",
+    "frequency_of_data_collection": "Once, after seed capital disbursements to the pitch competition winner"
+  },
+  {
+    "id": "3.1.3",
+    "parent_id": "Output 3.1",
+    "parent_desc": "A conducive environment for Greenpreneur program sustainability created",
+    "label": "Number of participants for the forum",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 0,
+      "2026": 0,
+      "2027": 100,
+      "total": 100
+    },
+    "means_of_verification": "Signed registration or attendance sheets for the forum",
+    "source_of_data": "GGGI reports",
+    "frequency_of_data_collection": "Once, after the forum finished"
+  },
+  {
+    "id": "3.2.1",
+    "parent_id": "Output 3.2",
+    "parent_desc": "Capacities of Ivorian government and institutions enhanced in digital green market and industry",
+    "label": "Number of Ivorian government policies and frameworks report on digital green markets/industry developed",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 1,
+      "2026": 0,
+      "2027": 0,
+      "total": 1
+    },
+    "means_of_verification": "Documentation of the policy review process, including the number of policies and frameworks examined",
+    "source_of_data": "Policy review reports documenting findings and recommendations",
+    "frequency_of_data_collection": "Once, after the policy review completed"
+  },
+  {
+    "id": "3.2.2",
+    "parent_id": "Output 3.2",
+    "parent_desc": "Capacities of Ivorian government and institutions enhanced in digital green market and industry",
+    "label": "Number of government officials, academia and industry professionals who participated in the 10-week-long seminar",
+    "baseline": "0",
+    "targets": {
+      "2024": 30,
+      "2025": 30,
+      "2026": 30,
+      "2027": 30,
+      "total": 120
+    },
+    "means_of_verification": "Enrollment and attendance records and databases for each course session",
+    "source_of_data": "Enrollment databases and participant attendance records",
+    "frequency_of_data_collection": "Once, after each course completed"
+  },
+  {
+    "id": "3.2.3",
+    "parent_id": "Output 3.2",
+    "parent_desc": "Capacities of Ivorian government and institutions enhanced in digital green market and industry",
+    "label": "Number of people that participated in study tour",
+    "baseline": "0",
+    "targets": {
+      "2024": 0,
+      "2025": 10,
+      "2026": 0,
+      "2027": 10,
+      "total": 20
+    },
+    "means_of_verification": "Documentation of study tour planning, logistics, and execution",
+    "source_of_data": "Study tour participant lists and attendance records, reports detailing the planning and execution of the study tour",
+    "frequency_of_data_collection": "Once, after each study tour"
+  },
+  {
+    "id": "3.2.4",
+    "parent_id": "Output 3.2",
+    "parent_desc": "Capacities of Ivorian government and institutions enhanced in digital green market and industry",
+    "label": "Number of targeted stakeholders reached through the dissemination of publications and/or knowledge products",
+    "baseline": "0",
+    "targets": {
+      "2024": 105,
+      "2025": 2715,
+      "2026": 4620,
+      "2027": 2160,
+      "total": 9600
+    },
+    "means_of_verification": "Reports summarizing the reach and impact of the publications",
+    "source_of_data": "Distribution records or download statistics for publication",
+    "frequency_of_data_collection": "Regular feedback collection from stakeholders who received the publications"
+  }
+]

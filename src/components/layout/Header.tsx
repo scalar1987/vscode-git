@@ -16,28 +16,29 @@ export function Header({ onMenuToggle }: HeaderProps) {
           </svg>
         </button>
         <div className={styles.logo}>
-          <span className={styles.logoIcon}>🌱</span>
+          <img
+            src="/gggi logo cote divoire.png"
+            alt="GGGI Logo"
+            className={styles.gggiLogo}
+          />
           <div className={styles.logoText}>
-            <span className={styles.logoTitle}>DigiGreen Youth GENIE</span>
-            <span className={styles.logoSubtitle}>M&E Dashboard</span>
+            <span className={styles.logoTitle}>GENIE DigiGreen Youth Project</span>
+            <span className={styles.logoSubtitle}>May 2024 - Dec 2027</span>
           </div>
         </div>
       </div>
 
       <div className={styles.center}>
-        <div className={styles.projectInfo}>
-          <span className={styles.projectBadge}>KOICA Project</span>
-          <span className={styles.projectPeriod}>May 2024 - Dec 2027</span>
-        </div>
+        <span className={styles.dashboardLabel}>M&E Dashboard</span>
       </div>
 
       <div className={styles.right}>
         <div className={styles.progress}>
-          <span className={styles.progressLabel}>Overall Progress</span>
+          <span className={styles.progressLabel}>Time Elapsed</span>
           <div className={styles.progressBar}>
-            <div className={styles.progressFill} style={{ width: '42%' }} />
+            <div className={styles.progressFill} style={{ width: '47%' }} />
           </div>
-          <span className={styles.progressValue}>42%</span>
+          <span className={styles.progressValue}>47%</span>
         </div>
         <div className={styles.month}>
           <span className={styles.monthLabel}>Month</span>

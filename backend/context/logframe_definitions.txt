@@ -1,0 +1,72 @@
+=== GENIE DIGIGREEN YOUTH PROJECT - M&E RULEBOOK ===
+
+PROJECT OVERVIEW:
+- Name: GENIE DigiGreen Youth Employment Project
+- Duration: May 2024 - December 2027 (43 months)
+- Location: Cote d'Ivoire (35 DigiGreen Centers)
+- Goal: Youth employment through digital infrastructure and green skills
+
+LOGFRAME STRUCTURE:
+- The project has 4 OUTCOMES (strategic objectives)
+- Each Outcome has multiple OUTPUTS (deliverables)
+- Each Output has multiple INDICATORS (measurable KPIs)
+- Indicator IDs follow pattern: Outcome# or Output#.#.#
+
+INDICATOR ID PATTERNS:
+- "1", "2", "3", "4" = Outcome-level indicators
+- "1.1.1", "1.1.2", etc. = Output 1.1 indicators
+- "1.2.1", "1.2.2", etc. = Output 1.2 indicators
+- Pattern: [Outcome].[Output].[Indicator Number]
+
+DATA EXTRACTION RULES:
+1. Only extract data that EXPLICITLY matches a valid indicator ID
+2. Do NOT infer or guess values - require explicit numbers from the document
+3. If a document discusses training "enrollees" - they are NOT counted until certified
+4. Cumulative vs. Period values: Most targets are cumulative (add to previous)
+5. If target is 0 for a year, no achievement expected that year
+
+ACTIVITY STATUS DEFINITIONS:
+- "Not Started" = Work has not begun
+- "In Progress" = Actively being worked on
+- "Delayed" = Behind schedule
+- "On Track" = Progressing as planned
+- "Completed" = Finished
+
+COMMON TERMINOLOGY:
+- ToT = Training of Trainers
+- DigiGreen Center = Digital learning facility in schools/universities
+- BW = Business Women partner organization
+- FJN = Youth organization partner
+- Mairies = Local government offices
+
+VERIFICATION RULES:
+- Training completion requires quiz/assessment results
+- Center operational status requires inspection report
+- Governance agreements require signed documents
+
+=== BUDGET TRACKING RULES ===
+
+BUDGET STRUCTURE:
+- Total Project Budget: $8,250,000 USD
+- Duration: May 2024 - December 2027
+- Structure: Activity-Based Budgeting (ABB)
+- Outputs: 1.1, 1.2, 1.3, 2.1, 2.2, 3.1, 3.2
+
+BUDGET EXTRACTION RULES:
+1. Only extract explicit dollar amounts from financial reports
+2. Match expenditures to valid activity IDs (e.g., 1.1.4, 2.2.2)
+3. Year must be specified (2024, 2025, 2026, or 2027)
+4. Categories: Equipment, Training, Consultancy, Travel, Supplies, Personnel
+5. Do NOT extract planned/budgeted amounts - only actual expenditures
+
+COMMON BUDGET TERMINOLOGY:
+- Disbursement = Money paid out
+- Commitment = Money allocated but not yet spent
+- Burn rate = Spending rate vs. time elapsed
+- Carry-over = Unspent funds from previous period
+- Support costs = Overhead, admin, coordination
+
+BUDGET STATUS DEFINITIONS:
+- "On Budget" = Spent ≤ Planned for the period
+- "Over Budget" = Spent > Planned (flag for review)
+- "Under-utilized" = Spent < 50% of planned (may indicate delays)
