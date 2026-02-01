@@ -1,29 +1,50 @@
 import { useState, useEffect } from 'react';
 
+export interface KPICard {
+  icon: string;
+  title: string;
+  value: number;
+  target: number;
+  unit: string;
+  status: string;
+}
+
+export interface GENIESummary {
+  last_updated: string;
+  overall_narrative: string;
+  cards: KPICard[];
+}
+
+interface UseGENIEDataResult {
+  summary: GENIESummary | null;
+  loading: boolean;
+  error: Error | null;
+}
+
 /**
  * Custom hook to fetch and merge GENIE M&E Dashboard data
  * Combines: logframe (targets), actuals (values), narratives (status/story)
  */
-export const useGENIEData = () => {
-  const [summary, setSummary] = useState(null);
+export const useGENIEData = (): UseGENIEDataResult => {
+  const [summary, setSummary] = useState<GENIESummary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [logframe, actuals, narratives] = await Promise.all([
+        const [, actuals, narratives] = await Promise.all([
           fetch('/logframe_structured.json').then(r => r.json()),
           fetch('/performance_actuals.json').then(r => r.json()),
           fetch('/narratives.json').then(r => r.json())
         ]);
 
         // Extract values from the data arrays
-        const actualValues = actuals[0].values;
-        const stories = narratives[0].stories;
+        const actualValues = actuals[0].values as Record<string, number>;
+        const stories = narratives[0].stories as Record<string, { narrative?: string }>;
 
         // Build 4 KPI cards from key indicators (ordered as requested)
-        const cards = [
+        const cards: KPICard[] = [
           {
             icon: '🏢',
             title: 'DigiGreen Centers Operational',
@@ -66,7 +87,7 @@ export const useGENIEData = () => {
         setLoading(false);
       } catch (err) {
         console.error('Error fetching GENIE data:', err);
-        setError(err);
+        setError(err instanceof Error ? err : new Error('Unknown error'));
         setLoading(false);
       }
     };

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
+import { PageTransition } from './PageTransition'
 import styles from './Layout.module.css'
 
 export function Layout() {
@@ -15,7 +16,9 @@ export function Layout() {
       <Header onMenuToggle={toggleSidebar} />
       <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       <main className={`${styles.main} ${sidebarOpen ? styles.mainShifted : ''}`}>
-        <Outlet />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </main>
     </div>
   )
