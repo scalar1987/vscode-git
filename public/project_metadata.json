@@ -1,0 +1,131 @@
+{
+  "project_metadata": {
+    "project_id": "GENIE-DIGIGREEN-YOUTH-CIV",
+    "project_name": "GENIE DigiGreen Youth Project",
+    "project_acronym": "GENIE Youth",
+    "implementing_organization": {
+      "name": "Global Green Growth Institute",
+      "acronym": "GGGI",
+      "country_office": "Côte d'Ivoire"
+    },
+    "country": "Côte d'Ivoire",
+    "geographic_scope": {
+      "national": true,
+      "primary_focus_areas": [
+        "Greater Abidjan",
+        "Man",
+        "San Pedro",
+        "Daloa",
+        "Korhogo",
+        "Yamoussoukro",
+        "Bondoukou"
+      ]
+    },
+    "donor": {
+      "primary_donor": "Korea International Cooperation Agency",
+      "acronym": "KOICA"
+    },
+    "project_objective": "To enhance youth economic empowerment in Côte d'Ivoire through digital skills development, green practices, green entrepreneurship, and ecosystem strengthening.",
+    "project_components": [
+      "GENIE Centers infrastructure establishment and operationalization",
+      "Basic ICT skills and Green Practices training",
+      "Advanced ICT and Green Business training",
+      "Greenpreneur Incubation Program",
+      "Green Leadership Academy",
+      "Policy and ecosystem development for green entrepreneurship"
+    ],
+    "beneficiary_groups": [
+      "Lower secondary and upper secondary school students",
+      "TVET learners",
+      "University students",
+      "Youth entrepreneurs and greenpreneurs",
+      "Green start-ups and SMEs",
+      "Public sector officials and ecosystem actors"
+    ],
+    "target_population": {
+      "primary": "Youth and young adults (students and entrepreneurs)",
+      "secondary": "Trainers, mentors, municipal staff, government officials, ecosystem actors"
+    },
+    "gender_and_inclusion_focus": [
+      "Women and girls",
+      "Youth from regional cities",
+      "Persons with disabilities",
+      "Vulnerable and underserved youth"
+    ],
+    "implementation_period": {
+      "start_date": "2024-05-26",
+      "end_date": "2027-12-31",
+      "total_duration_months": 43
+    },
+    "implementation_status_reference_date": "2025-12-31",
+    "management_structure": {
+      "country_representative": "Country Representative, GGGI Côte d'Ivoire",
+      "project_manager": "Project Manager, GENIE DigiGreen Youth Project",
+      "monitoring_and_evaluation": "Monitoring and Evaluation Officer",
+      "key_partners": [
+        "Ministère de l'Éducation Nationale et de l'Alphabétisation (MENA)",
+        "Ministère de l'Enseignement Technique et de la Formation Professionnelle (METFPA)",
+        "Public universities and TVET institutions",
+        "Municipal authorities (Mairies)",
+        "Better World",
+        "Impact Lab",
+        "Barka Impact Foundation",
+        "DigiFemmes",
+        "SNDI",
+        "Daekyung M&C"
+      ]
+    },
+    "delivery_modalities": [
+      "In-person training",
+      "Hybrid training (in-person and online)",
+      "Online training via Learning Management System (LMS)",
+      "Offline training delivery (transitional mode)"
+    ],
+    "infrastructure_footprint": {
+      "total_genie_centers_planned": 35,
+      "institution_types": [
+        "General secondary schools",
+        "Professional and technical schools",
+        "Universities",
+        "Municipal GENIE Centers (Mairies)"
+      ]
+    },
+    "digital_platforms": {
+      "learning_management_system": "Moodle-based LMS",
+      "data_collection_tools": [
+        "LMS analytics dashboards",
+        "Online and offline attendance tracking templates",
+        "Pre- and post-training assessments",
+        "Surveys and feedback tools"
+      ]
+    },
+    "risk_management": {
+      "risk_framework": "ISO 31000-aligned project risk management",
+      "linked_risk_registers": [
+        "risk_register_GENIE_core_2025.json",
+        "risk_mitigation_contingency_GENIE_2025.json"
+      ],
+      "risk_review_frequency": "Quarterly"
+    },
+    "monitoring_and_reporting": {
+      "reporting_cycle": "Quarterly and annual",
+      "primary_audiences": [
+        "KOICA",
+        "GGGI Country and Regional Management",
+        "Project Steering Committee"
+      ]
+    },
+    "sustainability_and_exit_strategy": [
+      "Institutional ownership of GENIE Centers by host institutions",
+      "Capacity development of trainers and center managers",
+      "Strengthened green entrepreneurship financing mechanisms",
+      "Policy and ecosystem recommendations for long-term sustainability"
+    ],
+    "last_updated": "2026-01-31",
+    "prepared_by": {
+      "name": "Minhong Na",
+      "role": "Monitoring and Evaluation Officer",
+      "organization": "GGGI Côte d'Ivoire"
+    }
+  }
+}

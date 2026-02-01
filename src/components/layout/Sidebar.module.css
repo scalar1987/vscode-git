@@ -1,15 +1,13 @@
 .overlay {
-  display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: transparent;
   z-index: 199;
-  opacity: 0;
-  transition: opacity 0.3s;
+  pointer-events: none;
 }
 
 .overlayVisible {
-  opacity: 1;
+  pointer-events: auto;
 }
 
 .sidebar {
@@ -24,6 +22,11 @@
   flex-direction: column;
   z-index: 200;
   transition: transform 0.3s ease;
+  transform: translateX(-100%);
+}
+
+.sidebarOpen {
+  transform: translateX(0);
 }
 
 .nav {
@@ -123,16 +126,3 @@
   color: var(--text-secondary);
 }
 
-@media (max-width: 768px) {
-  .overlay {
-    display: block;
-  }
-
-  .sidebar {
-    transform: translateX(-100%);
-  }
-
-  .sidebarOpen {
-    transform: translateX(0);
-  }
-}

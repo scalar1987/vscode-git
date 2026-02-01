@@ -1,0 +1,162 @@
+.container {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.matrixWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.yAxisLabel {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.matrixContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.matrix {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.yLabels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 0.25rem;
+}
+
+.yLabel {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row {
+  display: flex;
+  gap: 2px;
+}
+
+.cell {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 2px solid transparent;
+}
+
+.cell:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.cell.selected {
+  border-color: #1f2937;
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.count {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.xLabels {
+  display: flex;
+  gap: 2px;
+  margin-top: 0.25rem;
+}
+
+.xLabelSpacer {
+  width: 1.25rem;
+}
+
+.xLabel {
+  width: 36px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.xAxisLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+
+.legendColor {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.clearFilter {
+  display: block;
+  margin: 0.75rem auto 0;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.clearFilter:hover {
+  background: #e5e7eb;
+  color: #374151;
+}

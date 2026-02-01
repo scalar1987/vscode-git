@@ -1,0 +1,91 @@
+{
+  "project_title": "KOICA-GGGI Cumulative Expenditure Report",
+  "currency": "USD",
+  "reporting_cycle": {
+    "year_1": "2024",
+    "year_2": "2025",
+    "year_3": "2026"
+  },
+  "expenditure_summary": {
+    "total_project_ceiling": 8250000.00,
+    "cumulative_spent_to_date": 2836220.79,
+    "current_available_liquidity_2026": 3850829.21
+  },
+  "output_expenditure_data": [
+    {
+      "output_id": "1.1",
+      "activities": [
+        {"id": "1.1.1", "spent_2024": 12960.00, "spent_2025": 33840.00, "status_2026": "Active", "total_spent": 46800.00},
+        {"id": "1.1.2", "spent_2024": 12960.00, "spent_2025": 33840.00, "status_2026": "Active", "total_spent": 46800.00},
+        {"id": "1.1.3", "spent_2024": 12960.00, "spent_2025": 30240.00, "status_2026": "Active", "total_spent": 43200.00},
+        {"id": "1.1.4", "spent_2024": 51237.59, "spent_2025": 726670.95, "status_2026": "Large Carry-over", "total_spent": 777908.54},
+        {"id": "1.1.5", "spent_2024": 12960.00, "spent_2025": 30240.00, "status_2026": "Active", "total_spent": 43200.00}
+      ]
+    },
+    {
+      "output_id": "1.2",
+      "activities": [
+        {"id": "1.2.1", "spent_2024": 83490.00, "spent_2025": 16804.55, "total_spent": 100294.55},
+        {"id": "1.2.2", "spent_2024": 20791.19, "spent_2025": 36534.63, "total_spent": 57325.82},
+        {"id": "1.2.3", "spent_2024": 9514.20, "spent_2025": 36534.63, "total_spent": 46048.83},
+        {"id": "1.2.4", "spent_2024": 8402.10, "spent_2025": 26669.60, "total_spent": 35071.70},
+        {"id": "1.2.5", "spent_2024": 37067.00, "spent_2025": 32560.51, "total_spent": 69627.51},
+        {"id": "1.2.6", "spent_2024": 9514.20, "spent_2025": 26669.57, "total_spent": 36183.77},
+        {"id": "1.2.7", "spent_2024": 18567.00, "spent_2025": 22695.46, "total_spent": 41262.46}
+      ]
+    },
+    {
+      "output_id": "1.3",
+      "activities": [
+        {"id": "1.3.1", "spent_2024": 62763.00, "spent_2025": 97750.95, "total_spent": 160513.95},
+        {"id": "1.3.2", "spent_2024": 6884.00, "spent_2025": 42176.17, "total_spent": 49060.17},
+        {"id": "1.3.3", "spent_2024": 6884.00, "spent_2025": 42176.17, "total_spent": 49060.17},
+        {"id": "1.3.4", "spent_2024": 6884.00, "spent_2025": 42313.11, "total_spent": 49197.11}
+      ]
+    },
+    {
+      "output_id": "2.1",
+      "activities": [
+        {"id": "2.1.1", "spent_2024": 13486.76, "spent_2025": 39599.67, "total_spent": 53086.43},
+        {"id": "2.1.2", "spent_2024": 13486.76, "spent_2025": 39599.67, "total_spent": 53086.43},
+        {"id": "2.1.3", "spent_2024": 13486.76, "spent_2025": 39599.67, "total_spent": 53086.43},
+        {"id": "2.1.4", "spent_2024": 13486.76, "spent_2025": 39599.67, "total_spent": 53086.43}
+      ]
+    },
+    {
+      "output_id": "2.2",
+      "activities": [
+        {"id": "2.2.1", "spent_2024": 6627.99, "spent_2025": 22863.42, "total_spent": 29491.41},
+        {"id": "2.2.2", "spent_2024": 6627.99, "spent_2025": 150668.78, "total_spent": 157296.77},
+        {"id": "2.2.3", "spent_2024": 6627.99, "spent_2025": 22888.94, "total_spent": 29516.93},
+        {"id": "2.2.4", "spent_2024": 6627.99, "spent_2025": 22888.94, "total_spent": 29516.93},
+        {"id": "2.2.5", "spent_2024": 6627.99, "spent_2025": 22888.94, "total_spent": 29516.93}
+      ]
+    },
+    {
+      "output_id": "3.1",
+      "activities": [
+        {"id": "3.1.1", "spent_2024": 6186.13, "spent_2025": 24333.16, "total_spent": 30519.29},
+        {"id": "3.1.2", "spent_2024": 6186.13, "spent_2025": 18784.30, "total_spent": 24970.43},
+        {"id": "3.1.3", "spent_2024": 6186.13, "spent_2025": 18784.30, "total_spent": 24970.43}
+      ]
+    },
+    {
+      "output_id": "3.2",
+      "activities": [
+        {"id": "3.2.1", "spent_2024": 6760.34, "spent_2025": 33476.12, "total_spent": 40236.46},
+        {"id": "3.2.2", "spent_2024": 6760.34, "spent_2025": 34476.12, "total_spent": 41236.46},
+        {"id": "3.2.3", "spent_2024": 6760.34, "spent_2025": 47456.15, "total_spent": 54216.49},
+        {"id": "3.2.4", "spent_2024": 6760.34, "spent_2025": 10717.35, "total_spent": 17477.69}
+      ]
+    }
+  ],
+  "support_costs_spent": [
+    {"category": "Korean National Staff", "spent_2024": 76682.64, "spent_2025": 101890.08, "total": 178572.72},
+    {"category": "HQ Overhead (7%)", "spent_2024": 40887.72, "spent_2025": 144631.22, "total": 185518.94},
+    {"category": "Coordination Reporting", "spent_2024": 5607.92, "spent_2025": 33795.35, "total": 39403.27},
+    {"category": "Visibility", "spent_2024": 0.00, "spent_2025": 16126.19, "total": 16126.19},
+    {"category": "Audit", "spent_2024": 13636.36, "spent_2025": 27272.73, "total": 40909.09},
+    {"category": "Support Staff Cost", "spent_2024": 3600.00, "spent_2025": 56481.71, "total": 60081.71}
+  ]
+}

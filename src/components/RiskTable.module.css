@@ -1,0 +1,370 @@
+.container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table thead {
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.table th {
+  padding: 0.75rem 0.5rem;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.table th.sortable:hover {
+  background: #f3f4f6;
+}
+
+.expandCol {
+  width: 32px;
+  text-align: center;
+}
+
+.dataRow {
+  cursor: pointer;
+  border-bottom: 1px solid #e5e7eb;
+  transition: background 0.15s ease;
+}
+
+.dataRow:hover {
+  background: #f9fafb;
+}
+
+.dataRow.expanded {
+  background: #f3f4f6;
+}
+
+.dataRow td {
+  padding: 0.75rem 0.5rem;
+  vertical-align: middle;
+}
+
+.idCell {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.titleCell {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoryCell {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.numCell {
+  text-align: center;
+  font-weight: 500;
+}
+
+.trendCell {
+  text-align: center;
+  font-size: 1rem;
+}
+
+/* Rating badges */
+.ratingBadge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.ratingExtreme {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.ratingHigh {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.ratingMedium {
+  background: #fef9c3;
+  color: #ca8a04;
+}
+
+.ratingLow {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+/* Status badges */
+.statusBadge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.statusEscalated {
+  background: #dc2626;
+  color: white;
+}
+
+.statusOpen {
+  background: #f97316;
+  color: white;
+}
+
+.statusMitigating {
+  background: #3b82f6;
+  color: white;
+}
+
+.statusClosed {
+  background: #22c55e;
+  color: white;
+}
+
+/* Direction arrows */
+.directionIncreasing {
+  color: #dc2626;
+  font-weight: bold;
+}
+
+.directionStable {
+  color: #6b7280;
+}
+
+.directionDecreasing {
+  color: #22c55e;
+  font-weight: bold;
+}
+
+/* Details row */
+.detailsRow {
+  background: #f9fafb;
+}
+
+.detailsRow td {
+  padding: 0;
+}
+
+.detailsContent {
+  padding: 1rem 1.5rem;
+  border-left: 4px solid #3b82f6;
+  margin: 0.5rem 1rem 1rem;
+  background: white;
+  border-radius: 0 8px 8px 0;
+}
+
+.section {
+  margin-bottom: 1.25rem;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.description {
+  font-size: 0.875rem;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+/* Actions grid */
+.actionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.actionCard {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.actionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.actionId {
+  font-family: monospace;
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+
+.actionStatus {
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+
+.actionInProgress {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.actionPlanned {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.actionCompleted {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.actionDesc {
+  font-size: 0.8rem;
+  color: #374151;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.actionDeadline {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+
+.residualRisk {
+  padding: 0.5rem 0.75rem;
+  background: #f3f4f6;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #4b5563;
+}
+
+/* Contingency */
+.contingencyContent {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.contingencyItem {
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  color: #78350f;
+}
+
+.contingencyItem:last-child {
+  margin-bottom: 0;
+}
+
+.stepsList {
+  margin: 0.25rem 0 0 1.25rem;
+  padding: 0;
+}
+
+.stepsList li {
+  margin-bottom: 0.25rem;
+}
+
+/* Activities grid */
+.activitiesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 0.75rem;
+}
+
+.activityCard {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.activityIndicator {
+  display: inline-block;
+  background: #22c55e;
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.activityName {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #166534;
+  margin-bottom: 0.5rem;
+}
+
+.activityChallenge,
+.activityCounterplan {
+  font-size: 0.75rem;
+  color: #166534;
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+/* Empty state */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.emptyIcon {
+  color: #9ca3af;
+  margin-bottom: 1rem;
+}
+
+.emptyState p {
+  color: #6b7280;
+  font-size: 0.875rem;
+}

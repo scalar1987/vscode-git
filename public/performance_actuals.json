@@ -1,0 +1,117 @@
+[
+  {
+    "date": "2025-12-31",
+    "source": "2025 Annual Report (Full Progress Table)",
+    "values": {
+      "1": 45,
+      "1.1.1": 34,
+      "1.1.2": 34,
+      "1.1.3": 34,
+      "1.1.4": 7,
+      "1.1.5": 0,
+      "1.2.1": 1,
+      "1.2.2": 1,
+      "1.2.3": 1,
+      "1.2.4": 102,
+      "1.2.5": 21,
+      "1.2.6.1": 0,
+      "1.2.6.2": 111,
+      "1.2.7.1": 0,
+      "1.2.7.2": 0,
+      "1.3.1": 2,
+      "1.3.2": 2,
+      "1.3.3": 0,
+      "1.3.4.1": 30,
+      "1.3.4.2": 22,
+      "1.3.4.3": 100,
+      "2": 30,
+      "2.1": 0,
+      "2.1.1": 1,
+      "2.1.2": 2,
+      "2.1.3": 1,
+      "2.1.4": 0,
+      "2.2.1": 23,
+      "2.2.2.1": 112,
+      "2.2.2.2": 90,
+      "2.2.3": 0,
+      "2.2.4": 2,
+      "2.2.5": 0,
+      "3": 0,
+      "3.1": 0,
+      "3.1.1": 10,
+      "3.1.2": 0,
+      "3.1.3": 0,
+      "3.2.1": 0,
+      "3.2.2": 0,
+      "3.2.3": 0,
+      "3.2.4": 227
+    },
+    "computed_composites": {
+      "outcome_1_beneficiaries": {
+        "indicator_id": "1",
+        "formula": "1.2.6.1 + 1.2.6.2 + 1.3.4.1",
+        "value": 141,
+        "target": 22396,
+        "progress_pct": 0.6,
+        "description": "[SDG 4.4.1] Number of youth and adults with ICT skills"
+      },
+      "outcome_2_startups": {
+        "indicator_id": "2",
+        "formula": "Direct measurement from Greenpreneur program outcomes",
+        "value": 30,
+        "target": 135,
+        "progress_pct": 22.2,
+        "description": "[SDG9.b.1] Number of technology based start-ups (Green, Digital)"
+      },
+      "outcome_2_green_jobs": {
+        "indicator_id": "2.1",
+        "formula": "Jobs verified from supported startups",
+        "value": 0,
+        "target": 121.5,
+        "progress_pct": 0,
+        "description": "Number of Green jobs created by startups supported by Greenpreneur program"
+      },
+      "outcome_3_funding": {
+        "indicator_id": "3",
+        "formula": "Total USD mobilized (baseline $300k)",
+        "value": 0,
+        "baseline": 300000,
+        "target": 1000000,
+        "progress_pct": 0,
+        "description": "Mobilized amount of US dollars for Green business models"
+      },
+      "outcome_3_publications": {
+        "indicator_id": "3.1",
+        "formula": "Publications and knowledge products disseminated",
+        "value": 0,
+        "target": 5,
+        "progress_pct": 0,
+        "description": "Number of Green growth publications/knowledge products disseminated"
+      },
+      "centers_operational": {
+        "indicator_id": "1.1.4",
+        "formula": "1.1.4",
+        "value": 7,
+        "target": 35,
+        "progress_pct": 20.0,
+        "description": "Number of DigiGreen Centers fully operational"
+      },
+      "trainers_certified": {
+        "indicator_id": "composite",
+        "formula": "1.2.5 + 1.3.3",
+        "value": 21,
+        "target": 124,
+        "progress_pct": 16.9,
+        "description": "Total trainers certified (basic + advanced)"
+      },
+      "greenpreneurs_trained": {
+        "indicator_id": "2.2.2.1",
+        "formula": "2.2.2.1",
+        "value": 112,
+        "target": 675,
+        "progress_pct": 16.6,
+        "description": "Number of greenpreneurs in incubation program"
+      }
+    }
+  }
+]

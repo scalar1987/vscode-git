@@ -1,0 +1,172 @@
+{
+  "activity_evidence": [
+    {
+      "indicator": "1.1.1",
+      "activity": "Confirm and map the sites to implement the digital infrastructure in 35 locations of Côte d’Ivoire.",
+      "challenge": "Mairie d'Abobo has not yet submitted the Mayor-signed confirmation letter; although a room is allocated, the absence of formal documentation delays final confirmation.",
+      "counterplan": "Maintain close follow-up with the Deputy General Secretary; conduct January 2026 visit; prioritize centers with complete documentation while engaging Abobo to achieve 100% site confirmation.",
+      "linked_risk_ids": ["DG-STK-003"]
+    },
+    {
+      "indicator": "1.1.2",
+      "activity": "Develop comprehensive designs for the GENIE Centers, including renovation plans, equipment specifications, internet connectivity, and operational structure.",
+      "challenge": "Mairie de Grand Bassam changed the designated site in December 2025, rendering the existing design plan obsolete.",
+      "counterplan": "Schedule a January 2026 field visit; conduct fresh technical assessments; develop and approve an updated design and transmit to the contractor for integration.",
+      "linked_risk_ids": ["DG-STK-003"]
+    },
+    {
+      "indicator": "1.1.3",
+      "activity": "Define and formalize governance agreements with universities and Mairies to host the GENIE Centers.",
+      "challenge": "Mairie d'Abobo’s Mayor has not signed the official confirmation letter; municipal signature is a critical dependency for proceeding with renovation, furniture, and equipment installation.",
+      "counterplan": "Sustain diplomatic engagement; January 2026 visit to meet municipal leadership and facilitate submission of the Mayor-signed letter for Phase II rollout integration.",
+      "linked_risk_ids": ["DG-STK-003"]
+    },
+    {
+      "indicator": "1.1.4",
+      "activity": "Roll out the implementation of the GENIE Centers in 35 locations.",
+      "challenge": "Cascading procurement delays (late FA/sub-orders, separate ICT contracts), furniture production and customs issues, and site-specific scope expansion caused 10–12 month delays for Phase I/II with sequential dependency bottlenecks.",
+      "counterplan": "Adaptive timeline management and phased activation; front-loaded assessments; accelerated Phase II mobilization; parallel multi-site execution; improved customs documentation; technical specs optimization.",
+      "linked_risk_ids": ["DG-PROC-001", "DG-FID-002"]
+    },
+    {
+      "indicator": "1.2.3",
+      "activity": "Develop and integrate Green Practices curriculum into the ToT program.",
+      "challenge": "FJN withdrawal (December 2024) delayed initiation by 3–4 months and compressed the development window.",
+      "counterplan": "Expedited onboarding of Impact Lab; parallel development streams; compressed Apr–Aug 2025 delivery with full LMS integration.",
+      "linked_risk_ids": ["DG-PROC-001", "DG-SCHED-010"]
+    },
+    {
+      "indicator": "1.2.4",
+      "activity": "Recruit the trainers from the selected host locations of the GENIE Centers to participate in the ToT program.",
+      "challenge": "3 trainers from Mairie de Tréichville remain unconfirmed, preventing 100% recruitment.",
+      "counterplan": "January 2026 site visit to finalize trainer identification and recruitment to complete the 105-trainer target in Q1 2026.",
+      "linked_risk_ids": ["DG-HR-005"]
+    },
+    {
+      "indicator": "1.2.5",
+      "activity": "Train the trainers (teachers) from the selected host locations of the GENIE Centers.",
+      "challenge": "16-trainer gap between Green vs. ICT pedagogy; 81 trainers have not completed online modules; 3 trainers unrecruited.",
+      "counterplan": "Conduct February 2026 catch-up ToT for 16 trainers; implement structured online completion monitoring for 81 trainers; prioritize Phase II trainer follow-up to finish online content before equipment installation.",
+      "linked_risk_ids": ["DG-HR-005", "DG-DATA-013"]
+    },
+    {
+      "indicator": "1.2.6",
+      "activity": "Identify the students from middle school, high school, and TVET centers to participate in the training program at GENIE Centers.",
+      "challenge": "Interdependent delays in infrastructure and ToT prevented 2025 enrollment; strict sequential prerequisites blocked training cycles.",
+      "counterplan": "Launch Q1 2026 enrollment (Bondoukou call; LPIA Treichville pilot); implement an offline transitional option; synchronize Phase II student identification with the final stages of trainer certification.",
+      "linked_risk_ids": ["DG-KPI-007", "DG-OPS-004"]
+    },
+    {
+      "indicator": "1.2.7",
+      "activity": "Deliver the training to the students and assess their performance.",
+      "challenge": "Sequential delays left 2025 without live cohort baselines for performance/quality metrics.",
+      "counterplan": "Prioritize Q1 2026 data collection from initial cohorts; use LMS analytics for real-time pass-rate monitoring; apply QA feedback to refine trainer handbooks before Phase II scale.",
+      "linked_risk_ids": ["DG-DATA-013", "DG-KPI-007"]
+    },
+    {
+      "indicator": "1.3.3",
+      "activity": "Organize the Training of Trainers program for advanced trainers (Application Master + Green Business).",
+      "challenge": "Recruitment and certification delays: only 8/19 completed online modules; 11 pending recruitment due to center readiness; in-person ToT scheduled for February 2026.",
+      "counterplan": "Phased recruitment and training (4 in Jan–Feb; 6 in Apr–Jun 2026); in-person sessions in Feb and Jun–Jul 2026 to reach 19 fully certified trainers.",
+      "linked_risk_ids": ["DG-HR-006"]
+    },
+    {
+      "indicator": "1.3.4",
+      "activity": "Train the university students through the ICT Academy program with Green Business Fundamentals.",
+      "challenge": "Limited trainer availability constrained enrollment; uneven mastery in Green Technologies/Business; iOS practicals blocked by hardware; coding prerequisite excludes non-dev profiles.",
+      "counterplan": "Phased enrollment expansion starting Jan 2026; strengthened sustainability modules with practical/context-based learning and expert workshops; iOS conceptual via LMS with Android practicals; introduce optional low-code track.",
+      "linked_risk_ids": ["DG-HR-006", "DG-CURR-014", "DG-ICT-015", "DG-ACCESS-016"]
+    },
+    {
+      "indicator": "2.1.2",
+      "activity": "Select Greenpreneurs through a call for applications.",
+      "challenge": "Low regional application volumes (42 from three cities vs 120 in Abidjan) due to limited awareness and compressed outreach.",
+      "counterplan": "Enhanced 2026 regional outreach: early January RFP; localized activities; simplified application; virtual info sessions; target balanced distribution.",
+      "linked_risk_ids": ["DG-REG-009"]
+    },
+    {
+      "indicator": "2.1.3",
+      "activity": "Develop and host the Greenpreneur training modules in the GENIE Centers.",
+      "challenge": "Compressed development timeline due to partner transition (FJN to Impact Lab), limiting pilot testing before deployment.",
+      "counterplan": "Parallelized curriculum development, rapid prototypes with feedback, and continuous improvement during implementation.",
+      "linked_risk_ids": ["DG-PROC-001", "DG-SCHED-010"]
+    },
+    {
+      "indicator": "2.1.4",
+      "activity": "Recruit mentors to pair Greenpreneurs with professionals to provide guidance.",
+      "challenge": "Mentor recruitment timeline compressed to Jan 2026 (4–6 weeks) due to cohort and pitch delays.",
+      "counterplan": "Accelerated mentor RFP (Jan 17, 2026), streamlined evaluation, virtual briefings; in future, run procurement in parallel with training.",
+      "linked_risk_ids": ["DG-SCHED-010"]
+    },
+    {
+      "indicator": "2.2.1",
+      "activity": "Promote and manage the Greenpreneur incubation program in partnership with the Ivorian government.",
+      "challenge": "Limited promotional activities (8/15) due to compressed timeline; reduced early-year awareness and regional outreach.",
+      "counterplan": "Expanded 2026 campaign launched January: monthly webinars, center outreaches, media, and partnerships to exceed 15 activities.",
+      "linked_risk_ids": ["DG-PROG-008"]
+    },
+    {
+      "indicator": "2.2.2",
+      "activity": "Organize in-person Greenpreneur focus groups/cohorts in GENIE Centers.",
+      "challenge": "Participant shortfall from delayed center availability; inconsistent enforcement of 80% attendance threshold undermined rigor.",
+      "counterplan": "Accelerate 2026 with 3 cohorts (target 264); hybrid delivery; automate attendance tracking and enforce certification criteria.",
+      "linked_risk_ids": ["DG-PROG-008"]
+    },
+    {
+      "indicator": "2.2.3",
+      "activity": "Deliver mentorship seminars for Greenpreneurs.",
+      "challenge": "Mentorship delayed to Q1 2026 due to training completion and election-period uncertainties.",
+      "counterplan": "Mentor RFP Jan 17; finalists Jan 30; mentorship Feb 1–21; align with late-Feb pitch competition.",
+      "linked_risk_ids": ["DG-SCHED-010"]
+    },
+    {
+      "indicator": "2.2.4",
+      "activity": "Organize networking events for Greenpreneurs.",
+      "challenge": "Online-only events limited face-to-face relationship building and spontaneous connections.",
+      "counterplan": "Adopt hybrid events in 2026: continue online sessions for inclusion; add quarterly in-person center events and leverage ceremonies/pitch days.",
+      "linked_risk_ids": ["DG-NET-018"]
+    },
+    {
+      "indicator": "2.2.5",
+      "activity": "Conduct a pitch competition to link startups to the Greenpreneur Fund or other early-stage funding.",
+      "challenge": "Competition delayed from Q4 2025 to Q1 2026 due to training and election-period disruptions.",
+      "counterplan": "Run late-Feb 2026 competition following the three-week mentorship; in future, align competition schedule with earlier training launches.",
+      "linked_risk_ids": ["DG-SCHED-010"]
+    },
+    {
+      "indicator": "3.1.1",
+      "activity": "Identify a network of early-stage funders and venture capital institutions.",
+      "challenge": "Near-term commitments limited; most funders await market-ready pipeline and pitch outcomes.",
+      "counterplan": "Stage engagement: invite to Feb 2026 pitch; Q2–Q3 due diligence; maintain monthly investor updates.",
+      "linked_risk_ids": ["DG-INV-017"]
+    },
+    {
+      "indicator": "3.1.2",
+      "activity": "Establish GGGI Greenpreneur Fund of USD 300,000 to provide seed capital to winners.",
+      "challenge": "Fund not yet established in 2025; pitch competition delayed—no 2025 disbursement.",
+      "counterplan": "Finalize fund structure in Q1 2026; disburse USD 100,000 to 5 winners in March 2026; maintain governance and reporting protocols.",
+      "linked_risk_ids": ["DG-FUND-011"]
+    },
+    {
+      "indicator": "3.2.1",
+      "activity": "Conduct a policy review of the framework and incentives to sustain the Greenpreneur program.",
+      "challenge": "Consultant procurement delays shifted studies to 2026 data collection; final reports slipped beyond 2025.",
+      "counterplan": "Accelerate Q1 2026 fieldwork and deliver validated final reports by May 2026.",
+      "linked_risk_ids": ["DG-POL-020"]
+    },
+    {
+      "indicator": "3.2.2",
+      "activity": "Organize a Green Leadership Academy for sustainability of the Greenpreneur program.",
+      "challenge": "Program launch delayed to 2026 to align with partner availability and academic calendars.",
+      "counterplan": "Run Cohort 1 Jan 29–Apr 3, 2026 with confirmed speakers and venues; subsequent cohorts scheduled through 2027.",
+      "linked_risk_ids": ["DG-LEAD-012"]
+    },
+    {
+      "indicator": "3.2.3",
+      "activity": "Organize a study tour in GGGI Greenpreneurship network countries.",
+      "challenge": "Study tour delayed due to pitch postponement and election-period availability of officials.",
+      "counterplan": "Schedule first tour for late March 2026 (10 participants) and finalize logistics; second tour in 2027.",
+      "linked_risk_ids": ["DG-LEAD-012"]
+    }
+  ]
+}
