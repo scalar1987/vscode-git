@@ -1,4 +1,5 @@
-import { Building2, GraduationCap, Briefcase, Leaf, DollarSign, type LucideIcon } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Building2, GraduationCap, Briefcase, Leaf, DollarSign, MapPin, Target, Clock, type LucideIcon } from 'lucide-react';
 import { useGENIEData, type KPICard as KPICardData } from '../hooks/useGENIEData';
 import { useOutputProgress } from '../hooks/useOutputProgress';
 import {
@@ -7,8 +8,27 @@ import {
   KPIGrid,
   ComponentProgress,
   BudgetOverview,
-  ActivityTimeline
+  CentersMapSection,
+  TargetsSummarySection,
+  ActivitySection
 } from '../components/dashboard';
+
+// Center data type (full type for map)
+interface Center {
+  id: string;
+  name: string;
+  type: 'University' | 'School' | 'Mairie';
+  coordinates: [number, number];
+  region: string;
+  status: 'Operational' | 'Non-Operational';
+  phase: string;
+  students: number | string;
+  computers: number;
+  target_basic_ict: number;
+  ongoing_programs: string[];
+  linkedActivities: string[];
+  note: string;
+}
 
 // Project timeline: May 2024 - December 2027 (43 months)
 const PROJECT_START = new Date('2024-05-01');
@@ -37,16 +57,6 @@ const KPI_ICONS = {
   funding: DollarSign,
 };
 
-// Recent activities data
-const RECENT_ACTIVITIES = [
-  { date: 'Dec 15, 2025', activity: 'Impact Lab Green Curriculum Finalized', status: 'Completed' as const },
-  { date: 'Dec 10, 2025', activity: 'Bondoukou Center Launch Event', status: 'Completed' as const },
-  { date: 'Nov 28, 2025', activity: 'Phase II Renovation Sub-Order Signed', status: 'Completed' as const },
-  { date: 'Nov 05, 2025', activity: 'Cohort 1 Greenpreneur Graduation', status: 'Completed' as const },
-  { date: 'Jan 20, 2026', activity: 'LPIA Treichville Pilot Data Collection', status: 'Upcoming' as const },
-  { date: 'Feb 2026', activity: 'Pitch Competition & Seed Capital Disbursement', status: 'Upcoming' as const },
-];
-
 // Budget data
 const BUDGET = {
   total: 8250000,
@@ -57,6 +67,22 @@ export function Dashboard() {
   const { summary, loading: dataLoading } = useGENIEData();
   const { componentProgress, loading: progressLoading } = useOutputProgress();
   const { progress, currentMonth } = calculateProjectProgress();
+  const [centers, setCenters] = useState<Center[]>([]);
+  const [centersLoading, setCentersLoading] = useState(true);
+
+  // Fetch centers data
+  useEffect(() => {
+    fetch('/centers.json')
+      .then(res => res.json())
+      .then((data: Center[]) => {
+        setCenters(data);
+        setCentersLoading(false);
+      })
+      .catch(err => {
+        console.error('Error fetching centers:', err);
+        setCentersLoading(false);
+      });
+  }, []);
 
   // Map KPI data from useGENIEData to our KPICard format
   const kpiData = (summary?.cards as KPICardData[] | undefined)?.map((card: KPICardData, index: number) => ({
@@ -70,54 +96,61 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <HeroSection
-        projectProgress={progress}
-        currentMonth={currentMonth}
-        totalMonths={TOTAL_MONTHS}
-        title="Empowering Cote d'Ivoire's Youth"
-        subtitle="Through Digital Skills & Green Innovation"
-      />
+      {/* Overview Section */}
+      <section id="overview">
+        {/* Hero Section */}
+        <HeroSection
+          projectProgress={progress}
+          currentMonth={currentMonth}
+          totalMonths={TOTAL_MONTHS}
+          title="Empowering Cote d'Ivoire's Youth"
+          subtitle="Through Digital Skills & Green Innovation"
+        />
 
-      {/* KPI Cards - Overlapping the hero */}
-      <div className="relative z-20 px-4 md:px-6 lg:px-8 -mt-12 md:-mt-16 mb-8">
-        <div className="max-w-7xl mx-auto">
-          {dataLoading ? (
-            <KPIGrid>
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-white/70 backdrop-blur-md rounded-xl p-6 animate-pulse">
-                  <div className="flex justify-between mb-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded-xl" />
-                    <div className="w-16 h-6 bg-gray-200 rounded-full" />
+        {/* KPI Cards - Overlapping the hero */}
+        <div className="relative z-20 px-4 md:px-6 lg:px-8 -mt-12 md:-mt-16 mb-8">
+          <div className="max-w-7xl mx-auto">
+            {dataLoading ? (
+              <KPIGrid>
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="bg-white/70 backdrop-blur-md rounded-xl p-6 animate-pulse">
+                    <div className="flex justify-between mb-4">
+                      <div className="w-12 h-12 bg-gray-200 rounded-xl" />
+                      <div className="w-16 h-6 bg-gray-200 rounded-full" />
+                    </div>
+                    <div className="h-8 bg-gray-200 rounded w-24 mb-2" />
+                    <div className="h-4 bg-gray-200 rounded w-32 mb-3" />
+                    <div className="h-2 bg-gray-200 rounded" />
                   </div>
-                  <div className="h-8 bg-gray-200 rounded w-24 mb-2" />
-                  <div className="h-4 bg-gray-200 rounded w-32 mb-3" />
-                  <div className="h-2 bg-gray-200 rounded" />
-                </div>
-              ))}
-            </KPIGrid>
-          ) : (
-            <KPIGrid>
-              {kpiData.map((kpi: { icon: LucideIcon; value: number; target: number; label: string; color: 'green' | 'blue' | 'amber' | 'red'; delay: number }, index: number) => (
-                <KPICard
-                  key={index}
-                  icon={kpi.icon}
-                  value={kpi.value}
-                  target={kpi.target}
-                  label={kpi.label}
-                  color={kpi.color}
-                  delay={kpi.delay}
-                />
-              ))}
-            </KPIGrid>
-          )}
+                ))}
+              </KPIGrid>
+            ) : (
+              <KPIGrid>
+                {kpiData.map((kpi: { icon: LucideIcon; value: number; target: number; label: string; color: 'green' | 'blue' | 'amber' | 'red'; delay: number }, index: number) => (
+                  <KPICard
+                    key={index}
+                    icon={kpi.icon}
+                    value={kpi.value}
+                    target={kpi.target}
+                    label={kpi.label}
+                    color={kpi.color}
+                    delay={kpi.delay}
+                  />
+                ))}
+              </KPIGrid>
+            )}
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Stats Row */}
-      <div className="px-4 md:px-6 lg:px-8 pb-8">
+      {/* Performance Section */}
+      <section id="performance" className="px-4 md:px-6 lg:px-8 pb-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <Target className="w-6 h-6 text-dg-green-600" />
+            Performance Overview
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Component Progress */}
             <ComponentProgress
               data={componentProgress}
@@ -130,14 +163,43 @@ export function Dashboard() {
               spent={BUDGET.spent}
             />
           </div>
-
-          {/* Activity Timeline */}
-          <ActivityTimeline
-            activities={RECENT_ACTIVITIES}
-            maxItems={6}
-          />
         </div>
-      </div>
+      </section>
+
+      {/* Centers Section */}
+      <section id="centers" className="px-4 md:px-6 lg:px-8 pb-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <MapPin className="w-6 h-6 text-dg-green-600" />
+            DigiGreen Centers Network
+          </h2>
+
+          <CentersMapSection centers={centers} loading={centersLoading} />
+        </div>
+      </section>
+
+      {/* Targets Section */}
+      <section id="targets" className="px-4 md:px-6 lg:px-8 pb-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <Target className="w-6 h-6 text-dg-green-600" />
+            Key Targets & Milestones
+          </h2>
+
+          <TargetsSummarySection />
+        </div>
+      </section>
+
+      {/* Activity Section */}
+      <section id="activity" className="px-4 md:px-6 lg:px-8 pb-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <Clock className="w-6 h-6 text-dg-green-600" />
+            Activity Tracker
+          </h2>
+          <ActivitySection />
+        </div>
+      </section>
     </div>
   );
 }
