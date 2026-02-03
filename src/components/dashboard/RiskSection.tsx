@@ -14,6 +14,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
+  Search,
+  Filter,
 } from 'lucide-react';
 import { useRiskData, type RiskWithPlans, getRiskColor } from '../../hooks/useRiskData';
 
@@ -81,9 +83,11 @@ function StatCard({
 function MiniRiskMatrix({
   cells,
   onCellClick,
+  selectedCell,
 }: {
   cells: number[][];
   onCellClick?: (likelihood: number, impact: number) => void;
+  selectedCell?: { likelihood: number; impact: number } | null;
 }) {
   return (
     <div className="grid grid-cols-5 gap-0.5 w-full aspect-square max-w-[180px]">
@@ -92,6 +96,7 @@ function MiniRiskMatrix({
           const likelihood = 5 - rowIndex;
           const impact = colIndex + 1;
           const color = getRiskColor(likelihood, impact);
+          const isSelected = selectedCell?.likelihood === likelihood && selectedCell?.impact === impact;
 
           return (
             <motion.div
@@ -100,13 +105,15 @@ function MiniRiskMatrix({
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: (rowIndex * 5 + colIndex) * 0.01 }}
               onClick={() => onCellClick?.(likelihood, impact)}
-              className="relative flex items-center justify-center rounded-sm cursor-pointer hover:ring-2 hover:ring-gray-400 transition-all"
-              style={{ backgroundColor: `${color}40` }}
+              className={`relative flex items-center justify-center rounded-sm cursor-pointer transition-all ${
+                isSelected ? 'ring-2 ring-dg-green-500 ring-offset-1' : 'hover:ring-2 hover:ring-gray-400'
+              }`}
+              style={{ backgroundColor: isSelected ? color : `${color}40` }}
             >
               {count > 0 && (
                 <span
-                  className="text-[10px] font-bold"
-                  style={{ color }}
+                  className={`text-[10px] font-bold ${isSelected ? 'text-white' : ''}`}
+                  style={{ color: isSelected ? '#fff' : color }}
                 >
                   {count}
                 </span>
@@ -332,17 +339,82 @@ export function RiskSection() {
   const { risks, summary, matrix, loading, error } = useRiskData();
   const [selectedRisk, setSelectedRisk] = useState<RiskWithPlans | null>(null);
   const [ratingFilter, setRatingFilter] = useState<RiskRating | 'all'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<RiskStatus | ''>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [matrixFilter, setMatrixFilter] = useState<{ likelihood: number; impact: number } | null>(null);
 
-  // Filter risks by rating
+  // Extract unique categories
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    risks.forEach(r => cats.add(r.category));
+    return Array.from(cats).sort();
+  }, [risks]);
+
+  // Filter risks by all criteria
   const filteredRisks = useMemo(() => {
-    if (ratingFilter === 'all') return risks;
-    return risks.filter((r) => r.rating === ratingFilter);
-  }, [risks, ratingFilter]);
+    let result = [...risks];
+
+    // Apply rating filter
+    if (ratingFilter !== 'all') {
+      result = result.filter(r => r.rating === ratingFilter);
+    }
+
+    // Apply category filter
+    if (categoryFilter) {
+      result = result.filter(r => r.category === categoryFilter);
+    }
+
+    // Apply status filter
+    if (statusFilter) {
+      result = result.filter(r => r.status === statusFilter);
+    }
+
+    // Apply matrix filter
+    if (matrixFilter) {
+      result = result.filter(r =>
+        r.likelihood === matrixFilter.likelihood && r.impact === matrixFilter.impact
+      );
+    }
+
+    // Apply search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(r =>
+        r.title.toLowerCase().includes(query) ||
+        r.description.toLowerCase().includes(query) ||
+        r.risk_id.toLowerCase().includes(query)
+      );
+    }
+
+    return result;
+  }, [risks, ratingFilter, categoryFilter, statusFilter, matrixFilter, searchQuery]);
 
   // Sort by score descending
   const sortedRisks = useMemo(() => {
     return [...filteredRisks].sort((a, b) => b.risk_score - a.risk_score);
   }, [filteredRisks]);
+
+  // Check if any filters are active
+  const hasActiveFilters = ratingFilter !== 'all' || categoryFilter || statusFilter || searchQuery || matrixFilter;
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setRatingFilter('all');
+    setCategoryFilter('');
+    setStatusFilter('');
+    setSearchQuery('');
+    setMatrixFilter(null);
+  };
+
+  // Handle matrix cell click
+  const handleMatrixCellClick = (likelihood: number, impact: number) => {
+    if (matrixFilter?.likelihood === likelihood && matrixFilter?.impact === impact) {
+      setMatrixFilter(null); // Toggle off
+    } else {
+      setMatrixFilter({ likelihood, impact });
+    }
+  };
 
   if (loading) {
     return (
@@ -427,10 +499,29 @@ export function RiskSection() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Risk Matrix & Status */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Risk Matrix</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center justify-between">
+            <span>Risk Matrix</span>
+            {matrixFilter && (
+              <button
+                onClick={() => setMatrixFilter(null)}
+                className="text-[10px] text-dg-green-600 hover:text-dg-green-700"
+              >
+                Clear
+              </button>
+            )}
+          </h3>
           <div className="flex justify-center mb-4">
-            <MiniRiskMatrix cells={matrix.cells} />
+            <MiniRiskMatrix
+              cells={matrix.cells}
+              selectedCell={matrixFilter}
+              onCellClick={handleMatrixCellClick}
+            />
           </div>
+          {matrixFilter && (
+            <p className="text-[10px] text-center text-gray-500 -mt-2 mb-2">
+              Filtering: L={matrixFilter.likelihood}, I={matrixFilter.impact}
+            </p>
+          )}
 
           {/* Status Breakdown */}
           <div className="border-t border-gray-100 pt-3 mt-3">
@@ -481,26 +572,82 @@ export function RiskSection() {
 
         {/* Risk List */}
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* Header with Filter */}
-          <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-500" />
-              <span className="text-sm font-semibold text-gray-700">Risk Register</span>
-              <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                {sortedRisks.length} risks
+          {/* Header */}
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-500" />
+                <span className="text-sm font-semibold text-gray-700">Risk Register</span>
+              </div>
+              <span className="text-xs text-gray-500">
+                Showing <span className="font-semibold text-gray-700">{sortedRisks.length}</span> of {risks.length} risks
               </span>
             </div>
-            <select
-              value={ratingFilter}
-              onChange={(e) => setRatingFilter(e.target.value as RiskRating | 'all')}
-              className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
-            >
-              <option value="all">All Ratings</option>
-              <option value="Extreme">Extreme</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
+
+            {/* Filter Bar */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Filter className="w-3.5 h-3.5 text-gray-400" />
+
+              {/* Category Filter */}
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500 max-w-[140px]"
+              >
+                <option value="">All Categories</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+
+              {/* Rating Filter */}
+              <select
+                value={ratingFilter}
+                onChange={(e) => setRatingFilter(e.target.value as RiskRating | 'all')}
+                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+              >
+                <option value="all">All Ratings</option>
+                <option value="Extreme">Extreme</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+
+              {/* Status Filter */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as RiskStatus | '')}
+                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+              >
+                <option value="">All Statuses</option>
+                <option value="Escalated">Escalated</option>
+                <option value="Open">Open</option>
+                <option value="Mitigating">Mitigating</option>
+                <option value="Closed">Closed</option>
+              </select>
+
+              {/* Search Input */}
+              <div className="relative flex-1 min-w-[120px] max-w-[200px]">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search risks..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full text-xs border border-gray-200 rounded-lg pl-7 pr-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+                />
+              </div>
+
+              {/* Clear All Button */}
+              {hasActiveFilters && (
+                <button
+                  onClick={clearAllFilters}
+                  className="text-xs text-red-600 hover:text-red-700 font-medium px-2 py-1 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Column Headers */}
