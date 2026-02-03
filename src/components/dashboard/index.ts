@@ -3,3 +3,6 @@ export { KPICard, KPIGrid } from './KPICard';
 export { ComponentProgress } from './ComponentProgress';
 export { BudgetOverview } from './BudgetOverview';
 export { ActivityTimeline } from './ActivityTimeline';
+export { CentersMapSection } from './CentersMapSection';
+export { TargetsSummarySection } from './TargetsSummarySection';
+export { ActivitySection } from './ActivitySection';

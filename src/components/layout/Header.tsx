@@ -1,20 +1,73 @@
+import { useMemo, useState, useEffect } from 'react'
 import styles from './Header.module.css'
 
-interface HeaderProps {
-  onMenuToggle: () => void
+// Project timeline: May 2024 - December 2027 (43 months)
+const PROJECT_START = new Date('2024-05-01');
+const PROJECT_END = new Date('2027-12-31');
+const TOTAL_MONTHS = 43;
+
+function calculateProjectProgress(): { progress: number; currentMonth: number } {
+  const now = new Date();
+  const totalDuration = PROJECT_END.getTime() - PROJECT_START.getTime();
+  const elapsed = now.getTime() - PROJECT_START.getTime();
+  const progress = Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
+
+  const monthsElapsed = Math.floor(elapsed / (1000 * 60 * 60 * 24 * 30.44));
+  const currentMonth = Math.min(Math.max(monthsElapsed + 1, 1), TOTAL_MONTHS);
+
+  return { progress: Math.round(progress), currentMonth };
 }
 
-export function Header({ onMenuToggle }: HeaderProps) {
+// Section navigation items
+const SECTIONS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'performance', label: 'Performance' },
+  { id: 'centers', label: 'Centers' },
+  { id: 'targets', label: 'Targets' },
+  { id: 'activity', label: 'Activity' },
+];
+
+export function Header() {
+  const { progress, currentMonth } = useMemo(() => calculateProjectProgress(), []);
+  const [activeSection, setActiveSection] = useState('overview');
+
+  // Smooth scroll to section
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const headerHeight = 64; // var(--header-height)
+      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: elementPosition - headerHeight - 16,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Track active section on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const headerHeight = 80;
+
+      for (const section of [...SECTIONS].reverse()) {
+        const element = document.getElementById(section.id);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          if (rect.top <= headerHeight + 100) {
+            setActiveSection(section.id);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <header className={styles.header}>
       <div className={styles.left}>
-        <button className={styles.menuButton} onClick={onMenuToggle} aria-label="Toggle menu">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </button>
         <div className={styles.logo}>
           <img
             src="/gggi logo cote divoire.png"
@@ -22,27 +75,48 @@ export function Header({ onMenuToggle }: HeaderProps) {
             className={styles.gggiLogo}
           />
           <div className={styles.logoText}>
-            <span className={styles.logoTitle}>GENIE DigiGreen Youth Project</span>
-            <span className={styles.logoSubtitle}>May 2024 - Dec 2027</span>
+            <span className={styles.logoTitle}>GENIE DigiGreen Youth</span>
+            <span className={styles.logoSubtitle}>M&E Dashboard</span>
           </div>
         </div>
       </div>
 
-      <div className={styles.center}>
-        <span className={styles.dashboardLabel}>M&E Dashboard</span>
-      </div>
+      <nav className={styles.nav}>
+        {SECTIONS.map((section) => (
+          <button
+            key={section.id}
+            className={`${styles.navPill} ${activeSection === section.id ? styles.navPillActive : ''}`}
+            onClick={() => scrollToSection(section.id)}
+          >
+            {section.label}
+          </button>
+        ))}
+      </nav>
 
       <div className={styles.right}>
         <div className={styles.progress}>
-          <span className={styles.progressLabel}>Time Elapsed</span>
-          <div className={styles.progressBar}>
-            <div className={styles.progressFill} style={{ width: '47%' }} />
+          <div className={styles.progressRing}>
+            <svg viewBox="0 0 36 36" className={styles.progressSvg}>
+              <path
+                className={styles.progressBg}
+                d="M18 2.0845
+                  a 15.9155 15.9155 0 0 1 0 31.831
+                  a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+              <path
+                className={styles.progressFill}
+                strokeDasharray={`${progress}, 100`}
+                d="M18 2.0845
+                  a 15.9155 15.9155 0 0 1 0 31.831
+                  a 15.9155 15.9155 0 0 1 0 -31.831"
+              />
+            </svg>
+            <span className={styles.progressText}>{progress}%</span>
           </div>
-          <span className={styles.progressValue}>47%</span>
         </div>
         <div className={styles.month}>
-          <span className={styles.monthLabel}>Month</span>
-          <span className={styles.monthValue}>20/43</span>
+          <span className={styles.monthLabel}>MONTH</span>
+          <span className={styles.monthValue}>{currentMonth}<span className={styles.monthTotal}>/{TOTAL_MONTHS}</span></span>
         </div>
       </div>
     </header>

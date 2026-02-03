@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --primary-green: #2E7D32;
   --primary-green-light: #4CAF50;
@@ -14,6 +18,11 @@
   --error: #F44336;
   --sidebar-width: 260px;
   --header-height: 64px;
+}
+
+/* Hero gradient background */
+.bg-gradient-hero {
+  background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #43A047 100%);
 }
 
 * {
