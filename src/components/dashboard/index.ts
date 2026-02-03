@@ -8,3 +8,5 @@ export { TargetsSummarySection } from './TargetsSummarySection';
 export { ActivitySection } from './ActivitySection';
 export { BudgetSection } from './BudgetSection';
 export { RiskSection } from './RiskSection';
+export { SmartUploaderSection } from './SmartUploaderSection';
+export { ReportGeneratorSection } from './ReportGeneratorSection';

@@ -1,7 +1,2 @@
 export { Dashboard } from './Dashboard'
 export { PlaceholderPage } from './PlaceholderPage'
-export { CentersMap } from './CentersMap'
-export { ActivityTracker } from './ActivityTracker'
-export { TargetsMilestones } from './TargetsMilestones'
-export { BudgetTracking } from './BudgetTracking'
-export { RiskRegister } from './RiskRegister'
