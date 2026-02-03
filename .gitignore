@@ -5,3 +5,4 @@ nul
 *.pyc
 __pycache__
 .pdca-status.json
+.env.supabase

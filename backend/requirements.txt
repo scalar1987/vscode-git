@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-dotenv
+openai
+pypdf
+python-docx
+pandas
+openpyxl
+psycopg2-binary

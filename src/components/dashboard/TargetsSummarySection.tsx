@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Clock,
+  Filter,
 } from 'lucide-react';
 
 // Types
@@ -51,6 +52,7 @@ interface OutcomeIndicator {
   unit: string;
   status: TargetStatus;
   color: string;
+  component: 1 | 2 | 3;
   // Full indicator details for modal
   label: string;
   yearlyTargets: {
@@ -73,6 +75,7 @@ const OUTCOME_INDICATORS_CONFIG = [
     icon: <Building2 className="w-6 h-6" />,
     unit: 'count',
     color: 'dg-green',
+    component: 1,
   },
   {
     id: '1',
@@ -80,6 +83,7 @@ const OUTCOME_INDICATORS_CONFIG = [
     icon: <GraduationCap className="w-6 h-6" />,
     unit: 'count',
     color: 'dg-blue',
+    component: 1,
   },
   {
     id: '2',
@@ -87,6 +91,7 @@ const OUTCOME_INDICATORS_CONFIG = [
     icon: <Rocket className="w-6 h-6" />,
     unit: 'count',
     color: 'purple',
+    component: 2,
   },
   {
     id: '2.1',
@@ -94,6 +99,7 @@ const OUTCOME_INDICATORS_CONFIG = [
     icon: <Briefcase className="w-6 h-6" />,
     unit: 'count',
     color: 'dg-amber',
+    component: 2,
   },
   {
     id: '3',
@@ -101,6 +107,7 @@ const OUTCOME_INDICATORS_CONFIG = [
     icon: <DollarSign className="w-6 h-6" />,
     unit: 'USD',
     color: 'emerald',
+    component: 3,
   },
   {
     id: '3.1',
@@ -108,8 +115,16 @@ const OUTCOME_INDICATORS_CONFIG = [
     icon: <BookOpen className="w-6 h-6" />,
     unit: 'count',
     color: 'rose',
+    component: 3,
   },
 ];
+
+// Component names for filter dropdown
+const COMPONENT_NAMES: Record<number, string> = {
+  1: 'Component 1: Digital Infrastructure',
+  2: 'Component 2: Green Enterprise',
+  3: 'Component 3: Policy & Investment',
+};
 
 
 // Utility functions
@@ -485,6 +500,7 @@ export function TargetsSummarySection() {
   const [actuals, setActuals] = useState<PerformanceActual | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedIndicator, setSelectedIndicator] = useState<OutcomeIndicator | null>(null);
+  const [componentFilter, setComponentFilter] = useState<1 | 2 | 3 | 'all'>('all');
 
   // Fetch data
   useEffect(() => {
@@ -520,6 +536,7 @@ export function TargetsSummarySection() {
           unit: config.unit,
           status: 'Not Started' as TargetStatus,
           color: config.color,
+          component: config.component as 1 | 2 | 3,
           label: config.name,
           yearlyTargets: { 2024: 0, 2025: 0, 2026: 0, 2027: 0 },
           meansOfVerification: 'N/A',
@@ -542,6 +559,7 @@ export function TargetsSummarySection() {
         unit: config.unit,
         status: calculateStatus(actual, target),
         color: config.color,
+        component: config.component as 1 | 2 | 3,
         // Full details from logframe
         label: indicator.label,
         yearlyTargets: {
@@ -556,6 +574,12 @@ export function TargetsSummarySection() {
       };
     });
   }, [indicators, actuals]);
+
+  // Filter indicators by component
+  const filteredIndicators = useMemo(() => {
+    if (componentFilter === 'all') return outcomeIndicators;
+    return outcomeIndicators.filter(ind => ind.component === componentFilter);
+  }, [outcomeIndicators, componentFilter]);
 
   // Calculate overall progress from outcome indicators
   const overallProgress = useMemo(() => {
@@ -594,23 +618,61 @@ export function TargetsSummarySection() {
 
   return (
     <div className="space-y-6">
-      {/* Section Header */}
-      <div className="flex items-center justify-between">
+      {/* Section Header with Filter */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-sm text-gray-500">6 Key Outcome Indicators</p>
+          <p className="text-sm text-gray-500">
+            {componentFilter === 'all' ? '6 Key Outcome Indicators' : `${filteredIndicators.length} Indicators`}
+          </p>
           <p className="text-xs text-gray-400 mt-0.5">Click any card for full details</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">Overall Progress:</span>
-          <span className="text-sm font-bold text-dg-green-600">
-            {overallProgress}%
-          </span>
+        <div className="flex items-center gap-4">
+          {/* Component Filter */}
+          <div className="flex items-center gap-2">
+            <Filter className="w-3.5 h-3.5 text-gray-400" />
+            <select
+              value={componentFilter}
+              onChange={(e) => setComponentFilter(e.target.value === 'all' ? 'all' : Number(e.target.value) as 1 | 2 | 3)}
+              className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+            >
+              <option value="all">All Components</option>
+              <option value="1">{COMPONENT_NAMES[1]}</option>
+              <option value="2">{COMPONENT_NAMES[2]}</option>
+              <option value="3">{COMPONENT_NAMES[3]}</option>
+            </select>
+          </div>
+          {/* Overall Progress */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400">Overall Progress:</span>
+            <span className="text-sm font-bold text-dg-green-600">
+              {overallProgress}%
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Outcome Indicator Cards - 6 indicators in responsive grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {outcomeIndicators.map((indicator, index) => (
+      {/* Filtered Result Count */}
+      {componentFilter !== 'all' && (
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-gray-500">
+            Showing <span className="font-semibold text-gray-700">{filteredIndicators.length}</span> of {outcomeIndicators.length} indicators
+          </span>
+          <button
+            onClick={() => setComponentFilter('all')}
+            className="text-dg-green-600 hover:text-dg-green-700 font-medium"
+          >
+            Show All
+          </button>
+        </div>
+      )}
+
+      {/* Outcome Indicator Cards - responsive grid */}
+      <div className={`grid gap-4 ${
+        filteredIndicators.length <= 3
+          ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+          : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6'
+      }`}>
+        {filteredIndicators.map((indicator, index) => (
           <OutcomeCard
             key={indicator.id}
             indicator={indicator}
