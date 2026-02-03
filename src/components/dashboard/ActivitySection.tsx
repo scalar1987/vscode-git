@@ -437,8 +437,7 @@ export function ActivitySection() {
         setData(data);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error('Error loading activities:', err);
+      .catch(() => {
         setLoading(false);
       });
   }, []);

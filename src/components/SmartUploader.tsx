@@ -116,7 +116,6 @@ export function SmartUploader() {
         // If value changed, tell the AI to learn
         if (curr.value !== orig.value) {
           correctionsCount++
-          console.log(`Sending correction for ${curr.id}: ${orig.value} -> ${curr.value}`)
 
           await fetch("/api/learn-mistake", {
             method: "POST",

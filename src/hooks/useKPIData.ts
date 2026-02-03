@@ -53,7 +53,6 @@ export const useKPIData = () => {
         });
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching KPI data:', err);
         setError(err as Error);
         setLoading(false);
       }

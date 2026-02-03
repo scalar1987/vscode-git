@@ -209,8 +209,7 @@ export function ReportGenerator() {
         activities
       })
       setShowPreview(true)
-    } catch (err) {
-      console.error('Error generating report:', err)
+    } catch {
       alert('Failed to generate report. Please try again.')
     } finally {
       setLoading(false)

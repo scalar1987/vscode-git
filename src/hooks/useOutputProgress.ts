@@ -89,8 +89,7 @@ export function useOutputProgress(): UseOutputProgressResult {
         setActuals(actualsData[0]);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error('Error loading output progress data:', err);
+      .catch(() => {
         setError('Failed to load progress data');
         setLoading(false);
       });

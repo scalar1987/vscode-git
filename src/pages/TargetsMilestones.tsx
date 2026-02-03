@@ -133,8 +133,7 @@ export function TargetsMilestones() {
         setActuals(actualsData[0]); // Take the first (most recent) entry
         setLoading(false);
       })
-      .catch((err) => {
-        console.error('Error loading data:', err);
+      .catch(() => {
         setError('Failed to load target data');
         setLoading(false);
       });
