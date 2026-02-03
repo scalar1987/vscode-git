@@ -38,7 +38,8 @@
       "Bash(claude mcp:*)",
       "Bash(git restore --staged git)",
       "Bash(git restore:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npx vite:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

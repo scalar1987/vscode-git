@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Building2, GraduationCap, Briefcase, Leaf, DollarSign, MapPin, Target, Clock, type LucideIcon } from 'lucide-react';
+import { Building2, GraduationCap, Briefcase, Leaf, DollarSign, MapPin, Target, Clock, Wallet, AlertTriangle, type LucideIcon } from 'lucide-react';
 import { useGENIEData, type KPICard as KPICardData } from '../hooks/useGENIEData';
 import { useOutputProgress } from '../hooks/useOutputProgress';
 import {
@@ -10,7 +10,9 @@ import {
   BudgetOverview,
   CentersMapSection,
   TargetsSummarySection,
-  ActivitySection
+  ActivitySection,
+  BudgetSection,
+  RiskSection
 } from '../components/dashboard';
 
 // Center data type (full type for map)
@@ -62,6 +64,7 @@ const BUDGET = {
   total: 8250000,
   spent: 2836220,
 };
+
 
 export function Dashboard() {
   const { summary, loading: dataLoading } = useGENIEData();
@@ -151,13 +154,10 @@ export function Dashboard() {
             Performance Overview
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Component Progress */}
             <ComponentProgress
               data={componentProgress}
               loading={progressLoading}
             />
-
-            {/* Budget Overview */}
             <BudgetOverview
               totalBudget={BUDGET.total}
               spent={BUDGET.spent}
@@ -198,6 +198,28 @@ export function Dashboard() {
             Activity Tracker
           </h2>
           <ActivitySection />
+        </div>
+      </section>
+
+      {/* Budget Section */}
+      <section id="budget" className="px-4 md:px-6 lg:px-8 pb-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <Wallet className="w-6 h-6 text-dg-green-600" />
+            Budget Tracking
+          </h2>
+          <BudgetSection />
+        </div>
+      </section>
+
+      {/* Risk Section */}
+      <section id="risks" className="px-4 md:px-6 lg:px-8 pb-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <AlertTriangle className="w-6 h-6 text-amber-500" />
+            Risk Register
+          </h2>
+          <RiskSection />
         </div>
       </section>
     </div>
