@@ -4,14 +4,20 @@ import psycopg2
 from psycopg2.extras import execute_values
 from dotenv import load_dotenv
 from datetime import datetime
+import calendar
+from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
 
 print("🚀 Starting database seeding process...")
 
 # --- CONFIGURATION ---
-load_dotenv(os.path.join(os.path.dirname(__file__), '..', 'backend', '.env'))
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '..', 'backend', '.env'))
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "..", "public")
+if not DATABASE_URL:
+    print("❌ Error: DATABASE_URL not found in environment variables.")
+    exit(1)
+
+PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "public")
 
 FILES = {
     "activities": os.path.join(PUBLIC_DIR, "activities.json"),
@@ -26,15 +32,58 @@ FILES = {
 
 def get_db_connection():
     """Establishes a connection to the PostgreSQL database."""
-    if not DATABASE_URL:
-        raise ValueError("DATABASE_URL environment variable is not set.")
     try:
-        conn = psycopg2.connect(DATABASE_URL)
+        # Sanitize DATABASE_URL: psycopg2 doesn't recognize the 'pgbouncer' parameter
+        url = DATABASE_URL.strip().strip('"').strip("'").strip()
+        parsed = urlparse(url)
+        
+        print(f"  🔍 Debug: Connecting to Host: {parsed.hostname}, User: {parsed.username}")
+        
+        query = parse_qs(parsed.query)
+        
+        # Remove pgbouncer and ensure sslmode=require
+        query.pop('pgbouncer', None)
+        if 'sslmode' not in query:
+            query['sslmode'] = ['require']
+            
+        new_query = urlencode(query, doseq=True)
+        sanitized_url = urlunparse(parsed._replace(query=new_query))
+
+        conn = psycopg2.connect(sanitized_url, connect_timeout=10)
         print("✅ Database connection successful.")
         return conn
     except psycopg2.OperationalError as e:
         print(f"❌ Could not connect to the database: {e}")
         raise
+
+def sanitize_date_shift_back(value):
+    """Return a date string with invalid day shifted back to last valid day of month."""
+    if value is None or not isinstance(value, str):
+        return value
+    if len(value) < 10:
+        return value
+
+    # Expect ISO-like date prefix: YYYY-MM-DD
+    prefix = value[:10]
+    if len(prefix) != 10 or prefix[4] != "-" or prefix[7] != "-":
+        return value
+
+    try:
+        year = int(prefix[0:4])
+        month = int(prefix[5:7])
+        day = int(prefix[8:10])
+    except ValueError:
+        return value
+
+    # If valid, return original value
+    try:
+        datetime(year, month, day)
+        return value
+    except ValueError:
+        last_day = calendar.monthrange(year, month)[1]
+        fixed_prefix = f"{year:04d}-{month:02d}-{last_day:02d}"
+        # Preserve any time portion after the date
+        return fixed_prefix + value[10:]
 
 def seed_activities(cur, data):
     """Seeds the activities table."""
@@ -47,8 +96,12 @@ def seed_activities(cur, data):
     values = [
         (
             a.get("id"), a.get("component"), a.get("output"), a.get("outputName"),
-            a.get("name"), a.get("description"), a.get("plannedStart"), a.get("plannedEnd"),
-            a.get("actualStart"), a.get("actualEnd"), a.get("progress"), a.get("status"),
+            a.get("name"), a.get("description"),
+            sanitize_date_shift_back(a.get("plannedStart")),
+            sanitize_date_shift_back(a.get("plannedEnd")),
+            sanitize_date_shift_back(a.get("actualStart")),
+            sanitize_date_shift_back(a.get("actualEnd")),
+            a.get("progress"), a.get("status"),
             a.get("responsible"), a.get("notes"), a.get("linkedIndicators"), a.get("linkedCenters"),
             now # last_updated
         ) for a in activities_data
@@ -152,7 +205,13 @@ def seed_risks_and_mitigations(cur, risks_data, mitigations_data):
         risk_id = plan["risk_id"]
         if "mitigation_plan" in plan:
             for action in plan["mitigation_plan"]["actions"]:
-                mitigation_actions.append((action["action_id"], risk_id, action["description"], action.get("deadline"), action["status"]))
+                mitigation_actions.append((
+                    action["action_id"],
+                    risk_id,
+                    action["description"],
+                    sanitize_date_shift_back(action.get("deadline")),
+                    action["status"]
+                ))
             
             res = plan["mitigation_plan"]
             residual_risk_updates.append((res.get("residual_likelihood"), res.get("residual_impact"), res.get("residual_score"), res.get("residual_rating"), risk_id))
@@ -187,8 +246,12 @@ def seed_project_metadata(cur, data):
             last_updated = EXCLUDED.last_updated;
         """,
         (
-            metadata.get("project_id"), metadata.get("project_name"), metadata.get("implementation_period", {}).get("start_date"),
-            metadata.get("implementation_period", {}).get("end_date"), json.dumps(metadata), metadata.get("last_updated")
+            metadata.get("project_id"),
+            metadata.get("project_name"),
+            sanitize_date_shift_back(metadata.get("implementation_period", {}).get("start_date")),
+            sanitize_date_shift_back(metadata.get("implementation_period", {}).get("end_date")),
+            json.dumps(metadata),
+            metadata.get("last_updated")
         )
     )
     print("  ✅ Seeded project metadata.")

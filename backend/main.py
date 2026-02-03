@@ -12,6 +12,7 @@ import io
 import psycopg2
 from psycopg2.extras import execute_values, RealDictCursor
 from typing import List, Dict, Any, Optional
+from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
 from datetime import datetime
 
 # --- CONFIGURATION ---
@@ -24,7 +25,7 @@ if api_key:
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.strip()
+    DATABASE_URL = DATABASE_URL.strip().strip('"').strip("'").strip()
 
 # Static context files can still be read from the filesystem
 CTX_DEFINITIONS = "context/logframe_definitions.txt"
@@ -37,14 +38,15 @@ origins = [
     "http://localhost:5174",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
+    "https://digigreen-dashboard.vercel.app",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Accept"],
 )
 
 client = OpenAI(api_key=api_key)
@@ -56,7 +58,20 @@ def get_db_connection():
     if not DATABASE_URL:
         raise ValueError("DATABASE_URL environment variable is not set.")
     try:
-        conn = psycopg2.connect(DATABASE_URL)
+        # Sanitize DATABASE_URL: psycopg2 doesn't recognize the 'pgbouncer' parameter
+        url = DATABASE_URL.strip().strip('"').strip("'").strip()
+        parsed = urlparse(url)
+        query = parse_qs(parsed.query)
+
+        # Remove pgbouncer and ensure sslmode=require
+        query.pop('pgbouncer', None)
+        if 'sslmode' not in query:
+            query['sslmode'] = ['require']
+
+        new_query = urlencode(query, doseq=True)
+        sanitized_url = urlunparse(parsed._replace(query=new_query))
+
+        conn = psycopg2.connect(sanitized_url)
         return conn
     except psycopg2.OperationalError as e:
         print(f"❌ Could not connect to the database: {e}")
@@ -394,7 +409,7 @@ async def commit_data(data: ValidatedUpdate):
         print(f"Save Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        if data.indicator_updates:
+        if conn:
             conn.close()
 
 @app.get("/")
