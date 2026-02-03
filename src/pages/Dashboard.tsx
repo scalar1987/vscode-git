@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Building2, GraduationCap, Briefcase, Leaf, DollarSign, MapPin, Target, Clock, Wallet, AlertTriangle, type LucideIcon } from 'lucide-react';
+import { Building2, GraduationCap, Briefcase, Leaf, DollarSign, MapPin, Target, Clock, Wallet, AlertTriangle, FileText, type LucideIcon } from 'lucide-react';
 import { useGENIEData, type KPICard as KPICardData } from '../hooks/useGENIEData';
 import { useOutputProgress } from '../hooks/useOutputProgress';
 import {
@@ -12,7 +12,9 @@ import {
   TargetsSummarySection,
   ActivitySection,
   BudgetSection,
-  RiskSection
+  RiskSection,
+  SmartUploaderSection,
+  ReportGeneratorSection
 } from '../components/dashboard';
 
 // Center data type (full type for map)
@@ -219,6 +221,20 @@ export function Dashboard() {
             Risk Register
           </h2>
           <RiskSection />
+        </div>
+      </section>
+
+      {/* Data Tools Section */}
+      <section id="tools" className="px-4 md:px-6 lg:px-8 pb-8">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <FileText className="w-6 h-6 text-dg-green-600" />
+            Data Tools
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SmartUploaderSection />
+            <ReportGeneratorSection />
+          </div>
         </div>
       </section>
     </div>
