@@ -6,3 +6,5 @@ export { ActivityTimeline } from './ActivityTimeline';
 export { CentersMapSection } from './CentersMapSection';
 export { TargetsSummarySection } from './TargetsSummarySection';
 export { ActivitySection } from './ActivitySection';
+export { BudgetSection } from './BudgetSection';
+export { RiskSection } from './RiskSection';
