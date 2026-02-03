@@ -68,7 +68,7 @@ export function SmartUploader() {
     formData.append("file", file)
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/analyze-report", {
+      const res = await fetch("/api/analyze-report", {
         method: "POST",
         body: formData,
       })
@@ -118,7 +118,7 @@ export function SmartUploader() {
           correctionsCount++
           console.log(`Sending correction for ${curr.id}: ${orig.value} -> ${curr.value}`)
 
-          await fetch("http://127.0.0.1:8000/learn-mistake", {
+          await fetch("/api/learn-mistake", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -135,7 +135,7 @@ export function SmartUploader() {
       await Promise.allSettled(learningPromises)
 
       // STEP B: Commit the actual data
-      const res = await fetch("http://127.0.0.1:8000/commit-data", {
+      const res = await fetch("/api/commit-data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(preview),
