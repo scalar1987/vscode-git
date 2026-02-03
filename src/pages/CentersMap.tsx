@@ -66,12 +66,10 @@ export function CentersMap() {
         return res.json();
       })
       .then((data) => {
-        console.log('Loaded centers:', data.length);
         setCenters(data);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error('Error loading centers:', err);
+      .catch(() => {
         setLoading(false);
       });
   }, []);

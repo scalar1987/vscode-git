@@ -30,8 +30,7 @@ export function ActivityTracker() {
         setData(data);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error('Error loading activities:', err);
+      .catch(() => {
         setLoading(false);
       });
   }, []);

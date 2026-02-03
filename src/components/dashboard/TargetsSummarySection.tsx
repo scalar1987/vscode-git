@@ -513,8 +513,7 @@ export function TargetsSummarySection() {
         setActuals(actualsData[0]);
         setLoading(false);
       })
-      .catch((err) => {
-        console.error('Error loading data:', err);
+      .catch(() => {
         setLoading(false);
       });
   }, []);

@@ -81,8 +81,7 @@ export function Dashboard() {
         setCenters(data);
         setCentersLoading(false);
       })
-      .catch(err => {
-        console.error('Error fetching centers:', err);
+      .catch(() => {
         setCentersLoading(false);
       });
   }, []);

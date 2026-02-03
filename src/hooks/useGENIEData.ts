@@ -86,7 +86,6 @@ export const useGENIEData = (): UseGENIEDataResult => {
         });
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching GENIE data:', err);
         setError(err instanceof Error ? err : new Error('Unknown error'));
         setLoading(false);
       }
