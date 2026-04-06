@@ -115,7 +115,7 @@ export function ReportGenerator() {
       const [indicators, actualsData, narrativesData, activitiesData] = await Promise.all([
         fetch('/logframe_structured.json').then(r => r.json()) as Promise<Indicator[]>,
         fetch('/performance_actuals.json').then(r => r.json()) as Promise<PerformanceActual[]>,
-        fetch('/narratives.json').then(r => r.json()) as Promise<NarrativeEntry[]>,
+        fetch('/narratives.json').then(r => r.json()) as Promise<{ narratives: NarrativeEntry[] } | NarrativeEntry[]>,
         fetch('/activities.json').then(r => r.json()) as Promise<{ activities: Activity[] }>
       ])
 
