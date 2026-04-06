@@ -66,7 +66,8 @@ export function ReportGeneratorSection() {
       ]);
 
       const actuals = actualsData[0];
-      const latestNarratives = narrativesData[0];
+      const narrativesList = Array.isArray(narrativesData) ? narrativesData : narrativesData.narratives;
+      const latestNarratives = narrativesList[0];
 
       const projectStart = new Date(2024, 4, 1);
       const reportDate = new Date(selectedYear, selectedMonth, 1);
@@ -148,8 +149,9 @@ export function ReportGeneratorSection() {
         narratives,
         activities
       });
-    } catch {
-      alert('Failed to generate report. Please try again.');
+    } catch (err) {
+      console.error('Report generation error:', err);
+      alert(`Failed to generate report: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setLoading(false);
     }
