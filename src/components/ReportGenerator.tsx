@@ -120,7 +120,8 @@ export function ReportGenerator() {
       ])
 
       const actuals = actualsData[0]
-      const latestNarratives = narrativesData[0]
+      const narrativesList = Array.isArray(narrativesData) ? narrativesData : narrativesData.narratives
+      const latestNarratives = narrativesList[0]
 
       // Calculate project progress (May 2024 - Dec 2027 = 43 months)
       const projectStart = new Date(2024, 4, 1) // May 2024
