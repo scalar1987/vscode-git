@@ -174,7 +174,7 @@ export function Dashboard() {
       )}
 
       {/* Centers Section */}
-      <section id="centers" className="px-4 md:px-6 lg:px-8 pb-8">
+      <section id="centers" className="px-4 md:px-6 lg:px-8 pb-8 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
             <MapPin className="w-6 h-6 text-dg-green-600" />
