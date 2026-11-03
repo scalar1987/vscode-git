@@ -67,6 +67,8 @@ const BUDGET = {
   spent: 2836220,
 };
 
+// Flag to show only Centers Network section
+const SHOW_ONLY_CENTERS = true;
 
 export function Dashboard() {
   const { summary, loading: dataLoading } = useGENIEData();
@@ -100,8 +102,10 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Overview Section */}
-      <section id="overview">
+      {!SHOW_ONLY_CENTERS && (
+        <>
+          {/* Overview Section */}
+          <section id="overview">
         {/* Hero Section */}
         <HeroSection
           projectProgress={progress}
@@ -166,6 +170,8 @@ export function Dashboard() {
           </div>
         </div>
       </section>
+        </>
+      )}
 
       {/* Centers Section */}
       <section id="centers" className="px-4 md:px-6 lg:px-8 pb-8">
@@ -179,8 +185,10 @@ export function Dashboard() {
         </div>
       </section>
 
-      {/* Targets Section */}
-      <section id="targets" className="px-4 md:px-6 lg:px-8 pb-8">
+      {!SHOW_ONLY_CENTERS && (
+        <>
+          {/* Targets Section */}
+          <section id="targets" className="px-4 md:px-6 lg:px-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
             <Target className="w-6 h-6 text-dg-green-600" />
@@ -237,6 +245,8 @@ export function Dashboard() {
           </div>
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 }
