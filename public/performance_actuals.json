@@ -3,7 +3,7 @@
     "date": "2025-12-31",
     "source": "2025 Annual Report (Full Progress Table)",
     "values": {
-      "1": 45,
+      "1": 43,
       "1.1.1": 34,
       "1.1.2": 34,
       "1.1.3": 34,
@@ -14,8 +14,7 @@
       "1.2.3": 1,
       "1.2.4": 102,
       "1.2.5": 21,
-      "1.2.6.1": 0,
-      "1.2.6.2": 111,
+      "1.2.6": 111,
       "1.2.7.1": 0,
       "1.2.7.2": 0,
       "1.3.1": 2,
@@ -37,7 +36,7 @@
       "2.2.4": 2,
       "2.2.5": 0,
       "3": 0,
-      "3.1": 0,
+      "3.1": 8,
       "3.1.1": 10,
       "3.1.2": 0,
       "3.1.3": 0,
@@ -49,10 +48,10 @@
     "computed_composites": {
       "outcome_1_beneficiaries": {
         "indicator_id": "1",
-        "formula": "1.2.6.1 + 1.2.6.2 + 1.3.4.1",
-        "value": 141,
+        "formula": "1.2.5 + 1.2.7.1 + 1.3.4.2",
+        "value": 43,
         "target": 22396,
-        "progress_pct": 0.6,
+        "progress_pct": 0.2,
         "description": "[SDG 4.4.1] Number of youth and adults with ICT skills"
       },
       "outcome_2_startups": {
@@ -67,7 +66,7 @@
         "indicator_id": "2.1",
         "formula": "Jobs verified from supported startups",
         "value": 0,
-        "target": 121.5,
+        "target": 122,
         "progress_pct": 0,
         "description": "Number of Green jobs created by startups supported by Greenpreneur program"
       },
@@ -83,9 +82,9 @@
       "outcome_3_publications": {
         "indicator_id": "3.1",
         "formula": "Publications and knowledge products disseminated",
-        "value": 0,
-        "target": 5,
-        "progress_pct": 0,
+        "value": 8,
+        "target": 12,
+        "progress_pct": 66.7,
         "description": "Number of Green growth publications/knowledge products disseminated"
       },
       "centers_operational": {
@@ -104,13 +103,141 @@
         "progress_pct": 16.9,
         "description": "Total trainers certified (basic + advanced)"
       },
-      "greenpreneurs_trained": {
+      "greenpreneurs_participated": {
         "indicator_id": "2.2.2.1",
         "formula": "2.2.2.1",
         "value": 112,
         "target": 675,
         "progress_pct": 16.6,
-        "description": "Number of greenpreneurs in incubation program"
+        "description": "Number of greenpreneurs who participated in the incubation program (logframe 2.2.2.1)"
+      },
+      "greenpreneurs_incubated": {
+        "indicator_id": "not_in_logframe",
+        "formula": "Reported by Barka Fund (not tracked as logframe indicator)",
+        "value": null,
+        "target": null,
+        "progress_pct": null,
+        "description": "Number of greenpreneurs incubated (source: Barka Fund, pending)"
+      }
+    }
+  },
+  {
+    "date": "2026-06-30",
+    "source": "2026 Biannual Report (June 2026, Progress Table narrative figures)",
+    "values": {
+      "1": 163,
+      "1.1.1": 34,
+      "1.1.2": 35,
+      "1.1.3": 34,
+      "1.1.4": 7,
+      "1.1.5": 0,
+      "1.2.1": 1,
+      "1.2.2": 1,
+      "1.2.3": 1,
+      "1.2.4": 105,
+      "1.2.5": 21,
+      "1.2.6": 1155,
+      "1.2.7.1": 0,
+      "1.2.7.2": 0,
+      "1.3.1": 2,
+      "1.3.2": 2,
+      "1.3.3": 10,
+      "1.3.4.1": 303,
+      "1.3.4.2": 140,
+      "2": 85,
+      "2.1": 0,
+      "2.1.1": 1,
+      "2.1.2": 1,
+      "2.1.3": 1,
+      "2.1.4": 26,
+      "2.2.1": 33,
+      "2.2.2.1": 211,
+      "2.2.3": 1,
+      "2.2.4": 6,
+      "2.2.5": 1,
+      "3": 0,
+      "3.1": 8,
+      "3.1.1": 10,
+      "3.1.2": 100000,
+      "3.1.3": 0,
+      "3.2.1": 0,
+      "3.2.2": 45,
+      "3.2.3": 11,
+      "3.2.4": 240
+    },
+    "computed_composites": {
+      "outcome_1_beneficiaries": {
+        "indicator_id": "1",
+        "formula": "1.2.5 + 1.2.7.1 + 1.3.4.2",
+        "value": 161,
+        "target": 22396,
+        "progress_pct": 0.7,
+        "description": "[SDG 4.4.1] Number of youth and adults with ICT skills (2024 value of 2 is an error value pending KOICA approval; cumulative indicator value is 163)"
+      },
+      "outcome_2_startups": {
+        "indicator_id": "2",
+        "formula": "Direct measurement from Greenpreneur program outcomes",
+        "value": 85,
+        "target": 135,
+        "progress_pct": 63.0,
+        "description": "[SDG9.b.1] Number of technology based start-ups (Green, Digital)"
+      },
+      "outcome_2_green_jobs": {
+        "indicator_id": "2.1",
+        "formula": "Jobs verified from supported startups",
+        "value": 0,
+        "target": 122,
+        "progress_pct": 0,
+        "description": "Number of Green jobs created by startups supported by Greenpreneur program"
+      },
+      "outcome_3_funding": {
+        "indicator_id": "3",
+        "formula": "Total USD mobilized (baseline $300k)",
+        "value": 0,
+        "baseline": 300000,
+        "target": 1000000,
+        "progress_pct": 0,
+        "description": "Mobilized amount of US dollars for Green business models"
+      },
+      "outcome_3_publications": {
+        "indicator_id": "3.1",
+        "formula": "Publications and knowledge products disseminated",
+        "value": 8,
+        "target": 12,
+        "progress_pct": 66.7,
+        "description": "Number of Green growth publications/knowledge products disseminated"
+      },
+      "centers_operational": {
+        "indicator_id": "1.1.4",
+        "formula": "1.1.4",
+        "value": 7,
+        "target": 35,
+        "progress_pct": 20.0,
+        "description": "Number of GENIE Centers fully operational"
+      },
+      "trainers_certified": {
+        "indicator_id": "composite",
+        "formula": "1.2.5 + 1.3.3",
+        "value": 31,
+        "target": 124,
+        "progress_pct": 25.0,
+        "description": "Total trainers certified (basic + advanced)"
+      },
+      "greenpreneurs_participated": {
+        "indicator_id": "2.2.2.1",
+        "formula": "2.2.2.1",
+        "value": 211,
+        "target": 675,
+        "progress_pct": 31.3,
+        "description": "Number of greenpreneurs who participated in the incubation program (logframe 2.2.2.1)"
+      },
+      "greenpreneurs_incubated": {
+        "indicator_id": "not_in_logframe",
+        "formula": "Reported by Barka Fund (not tracked as logframe indicator)",
+        "value": null,
+        "target": null,
+        "progress_pct": null,
+        "description": "Number of greenpreneurs incubated (source: Barka Fund, pending)"
       }
     }
   }

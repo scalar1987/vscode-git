@@ -1,0 +1,963 @@
+{
+  "schema_version": 1,
+  "description": "Granular training records linked to logframe Outcome 1. Completion rule: a ToT trainee is completed only when BOTH in_person and lms are completed. Students with center_id null are self-registered (\"센터 미지정\") and count in totals once they complete the course.",
+  "tot_basic": [
+    {
+      "id": "basic-univ_sanpedro-1",
+      "name": "Dr KONATE Mory Latif",
+      "center_id": "univ_sanpedro",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-univ_sanpedro-2",
+      "name": "Dr BAN Venance",
+      "center_id": "univ_sanpedro",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-univ_sanpedro-3",
+      "name": "Dr OUATTARA Mory",
+      "center_id": "univ_sanpedro",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-univ_bondoukou-1",
+      "name": "COULIBALY Lenikpoho Karim",
+      "center_id": "univ_bondoukou",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-univ_bondoukou-2",
+      "name": "KOFFI Jean-Baptiste Djiwonou",
+      "center_id": "univ_bondoukou",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-univ_bondoukou-3",
+      "name": "KOUAME N'Dri Delmas",
+      "center_id": "univ_bondoukou",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-univ_inphb-1",
+      "name": "KOUASSI Appiah Kouadio Esaïe",
+      "center_id": "univ_inphb",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-univ_inphb-2",
+      "name": "TOUVOLI Serge",
+      "center_id": "univ_inphb",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-univ_inphb-3",
+      "name": "EBOU Anicet",
+      "center_id": "univ_inphb",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-portbouet_college-1",
+      "name": "HOUNGUE Koffi Akissi Melaine Rosine",
+      "center_id": "portbouet_college",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-portbouet_college-2",
+      "name": "KACOU Aliman Venance",
+      "center_id": "portbouet_college",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-portbouet_college-3",
+      "name": "DOSSO Mohamed Cherif Moïse",
+      "center_id": "portbouet_college",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-treichville_lpelia-1",
+      "name": "KONE Diakaria",
+      "center_id": "treichville_lpelia",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-treichville_lpelia-2",
+      "name": "MOKIE N'Guetta Firmin",
+      "center_id": "treichville_lpelia",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-treichville_lpelia-3",
+      "name": "BALLO Tinnon",
+      "center_id": "treichville_lpelia",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-yopougon_mohamed-1",
+      "name": "GOUANOU Tokouao Antoine",
+      "center_id": "yopougon_mohamed",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-yopougon_mohamed-2",
+      "name": "KOUAKOU Konan Maurice",
+      "center_id": "yopougon_mohamed",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-yopougon_mohamed-3",
+      "name": "KOUASSI Diaud Franck Armand",
+      "center_id": "yopougon_mohamed",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-yopougon_agri-1",
+      "name": "SEKA Robert Francis",
+      "center_id": "yopougon_agri",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-yopougon_agri-2",
+      "name": "KOUASSI Brou Darius",
+      "center_id": "yopougon_agri",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-yopougon_agri-3",
+      "name": "LOLO Thierry Michael",
+      "center_id": "yopougon_agri",
+      "placeholder": false,
+      "in_person_completed": true,
+      "lms_completed": true,
+      "completed": true
+    },
+    {
+      "id": "basic-univ_korhogo-1",
+      "name": "SILUE Namogo",
+      "center_id": "univ_korhogo",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-univ_korhogo-2",
+      "name": "COULIBALY Kassoum",
+      "center_id": "univ_korhogo",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-univ_korhogo-3",
+      "name": "MIAN Alain",
+      "center_id": "univ_korhogo",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-univ_man-1",
+      "name": "DIARRASSOUBA Chifonrat dit Ali",
+      "center_id": "univ_man",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-univ_man-2",
+      "name": "YEO Zana Bakary",
+      "center_id": "univ_man",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-univ_man-3",
+      "name": "COULIBALY Sandotin Lassina",
+      "center_id": "univ_man",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-gbeleban_lycee-1",
+      "name": "MOUROUFIE Kouadio Henri Jean-Anselme",
+      "center_id": "gbeleban_lycee",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-gbeleban_lycee-2",
+      "name": "FADIGA Amara",
+      "center_id": "gbeleban_lycee",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-gbeleban_lycee-3",
+      "name": "DIARRA Hamzah",
+      "center_id": "gbeleban_lycee",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-man_tech_prof-1",
+      "name": "KOFFI Kouakou Kévin Luc Anicet",
+      "center_id": "man_tech_prof",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-man_tech_prof-2",
+      "name": "KONÉ Brahima",
+      "center_id": "man_tech_prof",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-man_tech_prof-3",
+      "name": "AHOURÉ Ahimin Raphaël",
+      "center_id": "man_tech_prof",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-treichville_comm_1-1",
+      "name": "MONNET Nazaire",
+      "center_id": "treichville_comm_1",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-treichville_comm_1-2",
+      "name": "DEME Youssif",
+      "center_id": "treichville_comm_1",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-treichville_comm_1-3",
+      "name": "AHIAN Abran Sharon Estelle",
+      "center_id": "treichville_comm_1",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-daloa_lpi-1",
+      "name": "SIAGBE Bissa Ambroise",
+      "center_id": "daloa_lpi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-daloa_lpi-2",
+      "name": "TIOTÉ Goue Jules",
+      "center_id": "daloa_lpi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-daloa_lpi-3",
+      "name": "N'DOUA Blandine",
+      "center_id": "daloa_lpi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-daloa_lpi-4",
+      "name": "BAMBA Moussa",
+      "center_id": "daloa_lpi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-gagnoa_lpi-1",
+      "name": "KOBENAN Yao Gervais",
+      "center_id": "gagnoa_lpi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-gagnoa_lpi-2",
+      "name": "MEITE Mamadou",
+      "center_id": "gagnoa_lpi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-gagnoa_lpi-3",
+      "name": "ADINGRA Aloutou Charles Désiré",
+      "center_id": "gagnoa_lpi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-abobo_lycee-1",
+      "name": "KONE Souleymane",
+      "center_id": "abobo_lycee",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-abobo_lycee-2",
+      "name": "ATSIN Jean Michael Sébastien",
+      "center_id": "abobo_lycee",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-abobo_lycee-3",
+      "name": "KORE Yves Hermann Innocent",
+      "center_id": "abobo_lycee",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-songon_college-1",
+      "name": "SEDION Sionna",
+      "center_id": "songon_college",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-songon_college-2",
+      "name": "SANGARE Anlihou",
+      "center_id": "songon_college",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-songon_college-3",
+      "name": "AMIAN Gnamian Kevin",
+      "center_id": "songon_college",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-bietry_college-1",
+      "name": "KONE Doh Fouhere Abel",
+      "center_id": "bietry_college",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-bietry_college-2",
+      "name": "DOSSO Youe Mermoz",
+      "center_id": "bietry_college",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-bietry_college-3",
+      "name": "KOUAKOU Romeo",
+      "center_id": "bietry_college",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-cocody_piaget-1",
+      "name": "KAMAGATE Mohamed",
+      "center_id": "cocody_piaget",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-cocody_piaget-2",
+      "name": "SINDOU Yusufu",
+      "center_id": "cocody_piaget",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-cocody_piaget-3",
+      "name": "CAMARA Djibourlaye",
+      "center_id": "cocody_piaget",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-cocody_mpouto-1",
+      "name": "COULIBALY Navigue",
+      "center_id": "cocody_mpouto",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-cocody_mpouto-2",
+      "name": "ANGUI du Bois",
+      "center_id": "cocody_mpouto",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-cocody_mpouto-3",
+      "name": "YOBOUET Hathobra Cyrile",
+      "center_id": "cocody_mpouto",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-cocody_lycee_tech-1",
+      "name": "ASSEBLE Jean Decourt",
+      "center_id": "cocody_lycee_tech",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-cocody_lycee_tech-2",
+      "name": "ODO épse N'Guessan Bitti Adja",
+      "center_id": "cocody_lycee_tech",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-cocody_lycee_tech-3",
+      "name": "KOUTOUA Kacou Henri",
+      "center_id": "cocody_lycee_tech",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-bingerville_college-1",
+      "name": "BAKAYOKO Vakaba",
+      "center_id": "bingerville_college",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-bingerville_college-2",
+      "name": "ZOGBANDE Serge",
+      "center_id": "bingerville_college",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-bingerville_college-3",
+      "name": "ACHOU née Nangui Roseline",
+      "center_id": "bingerville_college",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-koumassi_sicogi-1",
+      "name": "DIAWARA Souleymane",
+      "center_id": "koumassi_sicogi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-koumassi_sicogi-2",
+      "name": "OZIGRE Reine Natacha Lohore",
+      "center_id": "koumassi_sicogi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-koumassi_sicogi-3",
+      "name": "OULAI née Douon Matthania",
+      "center_id": "koumassi_sicogi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-koumassi_meca-1",
+      "name": "KOFFI Koffi Eugene",
+      "center_id": "koumassi_meca",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-koumassi_meca-2",
+      "name": "SOMA Bognan Jean François",
+      "center_id": "koumassi_meca",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-koumassi_meca-3",
+      "name": "ALLOU Assoumou Christian",
+      "center_id": "koumassi_meca",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-koumassi_batiment-1",
+      "name": "ASSUI N'Goran Siady Fabrice",
+      "center_id": "koumassi_batiment",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-koumassi_batiment-2",
+      "name": "COULIBALY Mamina",
+      "center_id": "koumassi_batiment",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-koumassi_batiment-3",
+      "name": "COULIBALY Daouda",
+      "center_id": "koumassi_batiment",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-treichville_port-1",
+      "name": "COULIBALY Yrifongoba",
+      "center_id": "treichville_port",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-treichville_port-2",
+      "name": "DIABY Valadji",
+      "center_id": "treichville_port",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-treichville_port-3",
+      "name": "DJANDJI Brou Constantin",
+      "center_id": "treichville_port",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-treichville_mode-1",
+      "name": "TRAORE Seydou",
+      "center_id": "treichville_mode",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-treichville_mode-2",
+      "name": "SADIA Firmin",
+      "center_id": "treichville_mode",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-treichville_mode-3",
+      "name": "SAMASSI Fanta",
+      "center_id": "treichville_mode",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-marcory_blvd-1",
+      "name": "MANHAN Pacome Landry",
+      "center_id": "marcory_blvd",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-marcory_blvd-2",
+      "name": "SEKONGO Liz Francine",
+      "center_id": "marcory_blvd",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-marcory_blvd-3",
+      "name": "KOFFI Kouassi Henoc",
+      "center_id": "marcory_blvd",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-yopougon_tech-1",
+      "name": "DIARRA Seydou",
+      "center_id": "yopougon_tech",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-yopougon_tech-2",
+      "name": "KOUAME née Sereba B. Sergine Ela",
+      "center_id": "yopougon_tech",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-yopougon_tech-3",
+      "name": "ASSIENAN Koffi Elysée",
+      "center_id": "yopougon_tech",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-yopougon_com-1",
+      "name": "ASSEPO Bessekon Abdou",
+      "center_id": "yopougon_com",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-yopougon_com-2",
+      "name": "BAHAN Oungonyakeu Jeannot",
+      "center_id": "yopougon_com",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-yopougon_com-3",
+      "name": "AFFOU Stéphane Romaric",
+      "center_id": "yopougon_com",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-adjame_williams-1",
+      "name": "DON Loba Urbain",
+      "center_id": "adjame_williams",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-adjame_williams-2",
+      "name": "TOURE Zoumana",
+      "center_id": "adjame_williams",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-adjame_williams-3",
+      "name": "KOUAKOU Jacques Christian",
+      "center_id": "adjame_williams",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_bingerville-1",
+      "name": "GOWA Lida Jean",
+      "center_id": "mairie_bingerville",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_bingerville-2",
+      "name": "AGNIMEL Jonathan",
+      "center_id": "mairie_bingerville",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_bingerville-3",
+      "name": "CRAO Ama Fallone",
+      "center_id": "mairie_bingerville",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_adjame-1",
+      "name": "AKRÉ Amioloh Corneille",
+      "center_id": "mairie_adjame",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_adjame-2",
+      "name": "ABROGOUA Aurelia Erika",
+      "center_id": "mairie_adjame",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_adjame-3",
+      "name": "DIARRA Aicha",
+      "center_id": "mairie_adjame",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_cocody-1",
+      "name": "AKOU Norbert",
+      "center_id": "mairie_cocody",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_cocody-2",
+      "name": "EHOUMAN Hervé Ludovic",
+      "center_id": "mairie_cocody",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_cocody-3",
+      "name": "KACOU Nanguy Mathurin",
+      "center_id": "mairie_cocody",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_koumassi-1",
+      "name": "ZOGBOLOU Baba Thierry",
+      "center_id": "mairie_koumassi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_koumassi-2",
+      "name": "TOURÉ Issiaka Mandjou",
+      "center_id": "mairie_koumassi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_koumassi-3",
+      "name": "GNANGBA Marie Anne Emmanuela Youa",
+      "center_id": "mairie_koumassi",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_bassam-1",
+      "name": "KOUASSI Ahoussi Estelle Roseline",
+      "center_id": "mairie_bassam",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_bassam-2",
+      "name": "SAMAKE Idrissa",
+      "center_id": "mairie_bassam",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    },
+    {
+      "id": "basic-mairie_bassam-3",
+      "name": "PALE Kouame Dorgeles",
+      "center_id": "mairie_bassam",
+      "placeholder": false,
+      "in_person_completed": null,
+      "lms_completed": null,
+      "completed": false
+    }
+  ],
+  "tot_advanced": [],
+  "tot_advanced_note": "19 DigiFemme trainees; center assignment pending confirmation from DigiFemme.",
+  "student_records": []
+}

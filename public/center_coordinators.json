@@ -1,0 +1,812 @@
+[
+  {
+    "center_id": "college_portbouet",
+    "center_name": "Collège Moderne de Port-Bouët Aéroport",
+    "region": "Abidjan",
+    "phase": "Phase 1",
+    "coordinators": [
+      {
+        "name": "HOUUNGUE Koffi Asissí Melaine Rosine",
+        "phone": "07 09 96 73 45",
+        "email": "hodariele2011@gmail.com"
+      },
+      {
+        "name": "KACOU Aliman Venanco",
+        "phone": "07 58 74 06 80",
+        "email": "aliman2005@gmail.com"
+      },
+      {
+        "name": "DOSSO Mohamed Cherif Moise",
+        "phone": "07 47 51 37 71",
+        "email": "dmcm090@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "lpeia_treichville",
+    "center_name": "Lycée Professionnel d'Électronique et d'Informatique Appliquée",
+    "region": "Abidjan (Treichville)",
+    "phase": "Phase 1",
+    "coordinators": [
+      {
+        "name": "KONE Diakaria",
+        "phone": "07 07 19 23 47",
+        "email": "diakone69@yahoo.fr"
+      },
+      {
+        "name": "MOKIE M'Guetta Firmin",
+        "phone": "07 07 76 40 55",
+        "email": "mokiefirmin@gmail.com"
+      },
+      {
+        "name": "BALLO Timon",
+        "phone": "07 07 39 07 04",
+        "email": "ba.timon@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "centre_multisectoriel_yopougon",
+    "center_name": "Centre Multisectoriel de Formation Professionnelle Mohammed VI",
+    "region": "Abidjan (Yopougon)",
+    "phase": "Phase 1",
+    "coordinators": [
+      {
+        "name": "GOUANOU Tokouao Antoine",
+        "phone": "07 07 31 19 27",
+        "email": "gouanouantoine@yahoo.fr"
+      },
+      {
+        "name": "KOUAKOU Konan Maurice",
+        "phone": "07 09 12 84 86",
+        "email": "prestige_servs@yahoo.fr"
+      },
+      {
+        "name": "KOUASSI Diaud Franck Armand",
+        "phone": "07 49 17 10 74",
+        "email": "diaud85@yahoo.fr"
+      }
+    ]
+  },
+  {
+    "center_id": "lpsa_yopougon",
+    "center_name": "Lycée Professionnel Sectoriel des Métiers de l'Agro-industrie et de la Maintenance Industrielle",
+    "region": "Abidjan (Yopougon)",
+    "phase": "Phase 1",
+    "coordinators": [
+      {
+        "name": "SEKA Robert Francis",
+        "phone": "07 48 13 79 55",
+        "email": "aguieple@gmail.com"
+      },
+      {
+        "name": "KOUASSI Brou Darius",
+        "phone": "07 09 04 87 14",
+        "email": "dencyrr@gmail.com"
+      },
+      {
+        "name": "LOLO Thierry Michael",
+        "phone": "01 02 21 96 31",
+        "email": "lolomichael@yahoo.fr"
+      }
+    ]
+  },
+  {
+    "center_id": "inp_yamoussoukro",
+    "center_name": "Institut National Polytechnique Félix Houphouët-Boigny",
+    "region": "Yamoussoukro",
+    "phase": "Phase 1",
+    "coordinators": [
+      {
+        "name": "KOUASSI Appiah Kouadio Esaïe",
+        "phone": "07 49 88 37 14",
+        "email": "appiah.kouassi@inphb.ci"
+      },
+      {
+        "name": "TOUVOLI Serge",
+        "phone": "07 48 92 34 04",
+        "email": "serge.touvoli@inphb.ci"
+      },
+      {
+        "name": "EBOU Anicet",
+        "phone": "07 48 86 72 75",
+        "email": "ediman.ebou@inphb.ci"
+      }
+    ]
+  },
+  {
+    "center_id": "univ_bondoukou",
+    "center_name": "Université de Bondoukou",
+    "region": "Bondoukou",
+    "phase": "Phase 1",
+    "coordinators": [
+      {
+        "name": "COULIBALY Lenikgono Karim",
+        "phone": "07 09 97 01 52",
+        "email": "lenikgono.coulibaly@ubkou.edu.ci"
+      },
+      {
+        "name": "KOFFI Jean-Baptiste Djiwonon",
+        "phone": "07 08 11 60 84",
+        "email": "koffi.jb.ubkou.edu.ci"
+      },
+      {
+        "name": "KOUAME N'Dr Delmas",
+        "phone": "07 49 21 27 21",
+        "email": "delmas.kouame@ubkou.edu.ci"
+      }
+    ]
+  },
+  {
+    "center_id": "univ_san_pedro",
+    "center_name": "Université de San Pedro",
+    "region": "San Pedro",
+    "phase": "Phase 1",
+    "coordinators": [
+      {
+        "name": "Dr KONATE Mory Latif",
+        "phone": "07 57 37 88 52",
+        "email": "konate.mory@usp.edu.ci"
+      },
+      {
+        "name": "Dr BAN Venance",
+        "phone": "07 47 90 99 20",
+        "email": "ban.nemail@usp.edu.ci"
+      },
+      {
+        "name": "Dr OUATTARA Mory",
+        "phone": "07 59 83 01 12",
+        "email": "ouattara.mory@usp.edu.ci"
+      }
+    ]
+  },
+  {
+    "center_id": "college_portbouet_cite",
+    "center_name": "Collège Moderne de Port-Bouët Cité du Dux",
+    "region": "Abidjan (Port-Bouët)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "COULIBALY Yirfongoba",
+        "phone": "07 49 48 84 56",
+        "email": "yircoulibaly@gmail.com"
+      },
+      {
+        "name": "DIABY Valadji",
+        "phone": "07 49 79 96 26",
+        "email": "valadiaby@gmail.com"
+      },
+      {
+        "name": "DJANDJI Brou Constantin",
+        "phone": "07 07 69 25 40",
+        "email": "djandji@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "lycee_mode_portbouet",
+    "center_name": "Lycée de la Mode et du Social de Port-Bouët",
+    "region": "Abidjan (Port-Bouët)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "TRAORE Seydou",
+        "phone": "07 58 27 00 84 / 05 05 05 22 61",
+        "email": "sahide1er@gmail.com"
+      },
+      {
+        "name": "SADIA Firmin",
+        "phone": "07 07 40 05 25",
+        "email": "sadiafirmin@gmail.com"
+      },
+      {
+        "name": "SAMASSI Fanta",
+        "phone": "01 03 18 62 18",
+        "email": "samassfanta9@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "college_moderne_bietry",
+    "center_name": "Collège Moderne de Biétry",
+    "region": "Abidjan (Marcory/Biétry)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "KONE Doh Fouhere Abel",
+        "phone": "07 57 69 10 96",
+        "email": "konedoh@gmail.com"
+      },
+      {
+        "name": "DOSSO Youe Mermoz",
+        "phone": "07 48 10 42 07",
+        "email": "mermozdosso1@gmail.com"
+      },
+      {
+        "name": "KOUAKOU Romeo",
+        "phone": "07 47 14 65 11",
+        "email": "romeokoaakou48@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "college_marcory_gabon",
+    "center_name": "Collège Moderne de Marcory – Boulevard du Gabon",
+    "region": "Abidjan (Marcory)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "MANHAN Pacome Landry",
+        "phone": "07 77 17 83 58",
+        "email": "manhanpaceme@gmail.com"
+      },
+      {
+        "name": "SEKONGO Liz Francine",
+        "phone": "07 87 10 71 76",
+        "email": "lizfrancinesekongio78@gmail.com"
+      },
+      {
+        "name": "KOFFI Kouassi Henoc",
+        "phone": "07 07 43 32 07",
+        "email": "henock788@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "ceti_marcory",
+    "center_name": "Centre d'Enseignement Technique Industriel (CETI) de Marcory",
+    "region": "Abidjan (Marcory)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "DIARRA Seydou",
+        "phone": "07 47 53 83 87",
+        "email": "couratie@gmail.com"
+      },
+      {
+        "name": "KOUAME née Seneba B. Sergine Ela",
+        "phone": "07 09 06 92 34 / 01 01 16 33 74",
+        "email": "elothimella@gmail.com"
+      },
+      {
+        "name": "ASSIENAN Koffi Elysée",
+        "phone": "01 70 45 10 14 / 05 05 79 13 70",
+        "email": "assienan35@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "college_koumassi_sicogi",
+    "center_name": "Collège Moderne de Koumassi SICOGI",
+    "region": "Abidjan (Koumassi)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "DIAWARA Souleymane",
+        "phone": "07 09 46 47 50",
+        "email": "diawarasoul0eymane1992@gmail.com"
+      },
+      {
+        "name": "OZIGRE Reine Natacha Lohore",
+        "phone": "07 58 39 91 64",
+        "email": "lohore.natacha@gmail.com"
+      },
+      {
+        "name": "OULAI née Douon Matthania",
+        "phone": "07 09 30 97 32",
+        "email": "douonm80@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "lpro_koumassi_batiment",
+    "center_name": "Lycée Professionnel des Métiers du Bâtiment de Koumassi",
+    "region": "Abidjan (Koumassi)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "ASSUI N'Goran Siady Fabrice",
+        "phone": "07 58 05 03 93",
+        "email": "assuisiady@gmail.com"
+      },
+      {
+        "name": "COULIBALY Mamina",
+        "phone": "05 05 76 01 89",
+        "email": "cfelicite1212@gmail.com"
+      },
+      {
+        "name": "COULIBALY Daouda",
+        "phone": "07 07 08 48 28",
+        "email": "couldaoud2014@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "lpro_mecaniques_koumassi",
+    "center_name": "Lycée Professionnel des Métiers de la Mécanique et de l'Électricité de Koumassi",
+    "region": "Abidjan (Koumassi)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "KOFFI Koffi Eugène",
+        "phone": "07 08 85 65 16",
+        "email": "koffi2eugene@gmail.com"
+      },
+      {
+        "name": "SOMA Bognan Jean François",
+        "phone": "07 08 90 34 46",
+        "email": "boqnanf@gmail.com"
+      },
+      {
+        "name": "ALLOU Assourou Christian",
+        "phone": "07 08 61 15 05",
+        "email": "christianallou@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "mairie_koumassi",
+    "center_name": "Mairie de Koumassi",
+    "region": "Abidjan (Koumassi)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "ZOGBOLOU Baba Thierry",
+        "phone": "07 08 44 06 66",
+        "email": "babathierry08@gmail.com"
+      },
+      {
+        "name": "TOURÉ Issiaka Mandjou",
+        "phone": "07 08 11 59 60",
+        "email": "touremandjon06@gmail.com"
+      },
+      {
+        "name": "GNANGBA Marie Anne Emmanuella Yoaa",
+        "phone": "07 48 28 84 33",
+        "email": "emmanuelllaske556@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "lycee_commercial_treichville",
+    "center_name": "Lycée Professionnel Commercial 1 de Treichville",
+    "region": "Abidjan (Treichville)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "MONNET Nazaire (à confirmer)",
+        "phone": "07 77 43 80 81",
+        "email": "monnetnaz@gmail.com"
+      },
+      {
+        "name": "DEME Youseif (à confirmer)",
+        "phone": "07 09 48 51 60",
+        "email": "demeyousseif@gmail.com"
+      },
+      {
+        "name": "TBD",
+        "phone": "",
+        "email": ""
+      }
+    ]
+  },
+  {
+    "center_id": "college_application_cocody",
+    "center_name": "Collège Moderne d'Application Jean Piaget",
+    "region": "Abidjan (Cocody)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "KAMAGATE Mohamed",
+        "phone": "07 77 65 12 31",
+        "email": "prinscp04@gmail.com"
+      },
+      {
+        "name": "SINDOU Yusulu",
+        "phone": "07 07 18 23 55",
+        "email": "yooseeth@gmail.com"
+      },
+      {
+        "name": "CAMARA Djibourlaye",
+        "phone": "01 50 17 02 13",
+        "email": "camaradjibourlaye@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "college_mpouto",
+    "center_name": "Collège Moderne de M'Pouto",
+    "region": "Abidjan (Cocody/M'Pouto)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "COULIBALY Navigue",
+        "phone": "07 47 54 59 77",
+        "email": "coulibaiyneric@gmail.com"
+      },
+      {
+        "name": "ANGUI du Bois",
+        "phone": "07 78 01 85 68",
+        "email": "edsonangui@gmail.com"
+      },
+      {
+        "name": "YOBOUET Hathobra Cyrille",
+        "phone": "05 75 29 97 66",
+        "email": "dispatchdisciplle@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "lycee_technique_cocody",
+    "center_name": "Lycée Technique de Cocody",
+    "region": "Abidjan (Cocody)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "ASSEBLE Jean Decourt",
+        "phone": "07 07 00 20 79",
+        "email": "jeandecourt@aol.com"
+      },
+      {
+        "name": "ODO épse N'Guesson Bitti Adja",
+        "phone": "07 08 31 52 44",
+        "email": "odophrisca23@gmail.com"
+      },
+      {
+        "name": "KOUTOUR Kacou Henri",
+        "phone": "07 07 29 06 53",
+        "email": "kouthen70@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "mairie_cocody",
+    "center_name": "Mairie de Cocody",
+    "region": "Abidjan (Cocody)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "AKOU Norbert",
+        "phone": "07 08 37 88 85",
+        "email": "goubn7@gmail.com"
+      },
+      {
+        "name": "EHOUMAN Hervé Ludovic",
+        "phone": "07 07 75 25 83",
+        "email": "ndoubaludovic.herve.ehouman@yahoo.fr"
+      },
+      {
+        "name": "KACOU Nanguy Mathurin",
+        "phone": "01 02 04 36 66",
+        "email": "mathurinananguy@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "college_williamsville",
+    "center_name": "Collège Moderne de Williamsville",
+    "region": "Abidjan (Williamsville/Adjamé)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "DON Loba Urbain",
+        "phone": "01 01 69 16 90",
+        "email": "urbain.don@gmail.com"
+      },
+      {
+        "name": "TOURE Zoumana",
+        "phone": "07 08 74 99 05",
+        "email": "tourezoumana3@yahoo.fr"
+      },
+      {
+        "name": "KOUAKOU Jacques Christian",
+        "phone": "07 49 26 56 91",
+        "email": "kouakoujacqueschristian.com"
+      }
+    ]
+  },
+  {
+    "center_id": "mairie_adjame",
+    "center_name": "Mairie d'Adjamé",
+    "region": "Abidjan (Adjamé)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "AKRE Amoioth Comeille",
+        "phone": "07 57 41 29 50",
+        "email": "akrecomeille@gmail.com"
+      },
+      {
+        "name": "ABROGOUA Aurelia Erika",
+        "phone": "07 09 54 97 73",
+        "email": "alice-erika@hotmail.fr"
+      },
+      {
+        "name": "DIARRA Aisha",
+        "phone": "05 86 33 98 72",
+        "email": "aichoudai847@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "lycee_abobo",
+    "center_name": "Lycée Moderne d'Abobo",
+    "region": "Abidjan (Abobo)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "KONE Souleymane",
+        "phone": "05 05 85 78 09",
+        "email": "k.souleymane3@yahoo.fr"
+      },
+      {
+        "name": "ATSIN Jean Michael Sébastien",
+        "phone": "07 09 13 05 93",
+        "email": "atsinjms85@gmail.com"
+      },
+      {
+        "name": "KORE Yves Hermann Innocent",
+        "phone": "07 57 55 21 41 / 07 77 61 21 21",
+        "email": "marcos85@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "lpro_commercial_yopougon",
+    "center_name": "Lycée Professionnel Commercial de Yopougon",
+    "region": "Abidjan (Yopougon)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "ASSEPO Bessekon Abdou",
+        "phone": "05 05 97 54 79",
+        "email": "bekassepo@gmail.com"
+      },
+      {
+        "name": "BAHAN Dungyouyakeu Jeannol",
+        "phone": "07 07 84 94 11",
+        "email": "bahane75@gmail.com"
+      },
+      {
+        "name": "AFFOU Stéphane Romaric",
+        "phone": "07 58 09 28 15",
+        "email": "danielaffou@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "college_songon",
+    "center_name": "Collège Moderne de Songon",
+    "region": "Abidjan (Songon)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "SEDION Sionna",
+        "phone": "07 47 57 74 11",
+        "email": "bedionsionna@gmail.com"
+      },
+      {
+        "name": "SANGARE Anihou",
+        "phone": "07 08 34 69 44",
+        "email": "sangusally@gmail.com"
+      },
+      {
+        "name": "AMIAN Gnantiam Kevin",
+        "phone": "05 05 64 25 46",
+        "email": "kevinmian06@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "lycee_bingerville",
+    "center_name": "Lycée Moderne de Bingerville",
+    "region": "Bingerville",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "BAKAYOKO Vakaba",
+        "phone": "07 09 66 07 59",
+        "email": "hyavakaba@gmail.com"
+      },
+      {
+        "name": "ZOBANDE Serge",
+        "phone": "07 08 11 70 36",
+        "email": "ozogbanderge@gmail.com"
+      },
+      {
+        "name": "ACHOU née Nangui Roseline",
+        "phone": "07 08 41 43 55",
+        "email": "roselinenangui@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "mairie_bingerville",
+    "center_name": "Mairie de Bingerville",
+    "region": "Bingerville",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "GOWA Lida Jean",
+        "phone": "07 59 85 60 35",
+        "email": "jeangowa@tresor.gouv.ci"
+      },
+      {
+        "name": "AGNIMEL Jonathan",
+        "phone": "Non renseigné",
+        "email": "jonathangraphicd@gmail.com"
+      },
+      {
+        "name": "CRAO Amia Fallone",
+        "phone": "07 89 37 89 53",
+        "email": "fallonejcrao@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "mairie_grand_bassam",
+    "center_name": "Mairie de Grand-Bassam",
+    "region": "Grand-Bassam",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "KOUASSI Ahoyssi Estelle Roseline",
+        "phone": "Non renseigné",
+        "email": "esteliek739@gmail.com"
+      },
+      {
+        "name": "SAMAKE Idrissa",
+        "phone": "07 07 25 85 60",
+        "email": "samdrissa35@gmail.com"
+      },
+      {
+        "name": "PALE Kouame Dorgeles",
+        "phone": "05 46 18 81 16",
+        "email": "pkdorger111@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "univ_korhogo",
+    "center_name": "Université Pelefororo Gon Coulibaly de Korhogo",
+    "region": "Korhogo",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "SILIE Nlamogo",
+        "phone": "01 02 39 65 43",
+        "email": "silenamogo@hotmail.fr"
+      },
+      {
+        "name": "COULIBALY Kassoum",
+        "phone": "01 40 15 84 14",
+        "email": "ckassoum@ugpc.edu.ci"
+      },
+      {
+        "name": "MIAN Alain",
+        "phone": "07 07 48 83 84",
+        "email": "mianclaude@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "lpro_gagnoa",
+    "center_name": "Lycée Professionnel Industriel de Gagnoa",
+    "region": "Gagnoa",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "KOBENAN Yao Gervais",
+        "phone": "07 09 37 40 17",
+        "email": "kyaogervais@gmail.com"
+      },
+      {
+        "name": "MEITE Mamadou",
+        "phone": "07 09 33 27 18",
+        "email": "hyagogermadou7@gmail.com"
+      },
+      {
+        "name": "ADINGRA Aloutou Charles Désiré",
+        "phone": "07 47 26 67 22",
+        "email": "adingracd@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "lpro_daloa",
+    "center_name": "Lycée Professionnel Industriel de Daloa",
+    "region": "Daloa",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "SIAGBE Bissa Ambroise",
+        "phone": "01 02 26 96 56",
+        "email": "siagbe@yahoo.fr"
+      },
+      {
+        "name": "TIOTE Goue Jules",
+        "phone": "07 09 89 00 66",
+        "email": "tiotejules@yahoo.fr"
+      },
+      {
+        "name": "N'DOUA Blindine",
+        "phone": "07 87 67 27 76",
+        "email": "ndouablidine@gmail.com"
+      },
+      {
+        "name": "BAMBA Moussa",
+        "phone": "07 49 97 70 92",
+        "email": "unclesaham@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "univ_man",
+    "center_name": "Université de Man",
+    "region": "Man",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "DIARRASSOUBA Chifomail dit Ali",
+        "phone": "07 07 75 55 88",
+        "email": "chiforradi.diarrassouba@univ-man.edu.ci"
+      },
+      {
+        "name": "YEO Zana Bakary",
+        "phone": "05 45 30 31 30",
+        "email": "zana.yeo@univ-man.edu.ci"
+      },
+      {
+        "name": "COULIBALY Sandotin Lassina",
+        "phone": "07 78 19 62 61",
+        "email": "sandotin.coulibaly@univ-man.edu.ci"
+      }
+    ]
+  },
+  {
+    "center_id": "lpte_man",
+    "center_name": "Lycée Technique et Professionnel de Man",
+    "region": "Man",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "KOFFI Kouakou Kévin Luc Anicet",
+        "phone": "07 09 13 23 96",
+        "email": "anicet.3kla@gmail.com"
+      },
+      {
+        "name": "KONE Brahima",
+        "phone": "07 08 87 53 58",
+        "email": "kone@gmail.com"
+      },
+      {
+        "name": "AHOURE Ahmin Raphaël",
+        "phone": "07 08 06 65 05",
+        "email": "ahiminraphael@gmail.com"
+      }
+    ]
+  },
+  {
+    "center_id": "lpro_gbeleban",
+    "center_name": "Lycée Professionnel de Gbéléban",
+    "region": "Gbéléban (Nawa)",
+    "phase": "Phase 2",
+    "coordinators": [
+      {
+        "name": "MOUROUFIE Kouadio Henri Jean-Anselme",
+        "phone": "07 87 03 51 25",
+        "email": "hjean3869@gmail.com"
+      },
+      {
+        "name": "FADIGA Amara",
+        "phone": "07 57 25 05 34 / 05 44 43 91 41",
+        "email": "amarafd970@gmail.com"
+      },
+      {
+        "name": "DIARRA Hamzah",
+        "phone": "05 84 00 38 22",
+        "email": "diarrahamzah2018@gmail.com"
+      }
+    ]
+  }
+]

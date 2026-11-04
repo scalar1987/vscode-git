@@ -74,15 +74,7 @@
         },
         "1.2.6": {
           "status": "Critical",
-          "narrative": "Combined university (0/7,830) and secondary/TVET (111/26,100) enrollment severely behind. Total 111 enrolled vs 33,930 project target. Expansion planned Q1-Q2 2026 with offline transitional delivery."
-        },
-        "1.2.6.1": {
-          "status": "Critical",
-          "narrative": "0 students enrolled vs 2,160 target. Enrollment framework finalized; University of Bondoukou merit-based selection model ready for Q1 2026 launch."
-        },
-        "1.2.6.2": {
-          "status": "Critical",
-          "narrative": "Target (project total): 26100 | Actual (to date): 111 | Variance: -99.6% | Next step: Scale enrollments in Q1–Q2 2026 across Phase II centers. 111 students enrolled (LPIA Treichville pilot) vs 26,100 target. Severe shortfall due to infrastructure delays. Mitigation: 'Offline transitory option' and 'LPIA Treichville Model' rollout in Q1 2026."
+          "narrative": "Target (project total): 33930 | Actual (to date): 111 | Variance: -99.7% | Next step: Scale enrollments in Q1–Q2 2026 across Phase II centers. 111 students enrolled (LPIA Treichville pilot) vs 33,930 target. Severe shortfall due to infrastructure delays. Mitigation: 'Offline transitory option' and 'LPIA Treichville Model' rollout in Q1 2026."
         },
         "1.2.7": {
           "status": "Critical",

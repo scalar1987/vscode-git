@@ -60,7 +60,7 @@ export function KPIBar() {
     return (
       <div className={styles.kpiBar}>
         <div className={styles.kpiContainer}>
-          {[1, 2, 3, 4, 5].map(i => (
+          {[1, 2, 3, 4, 5, 6, 7].map(i => (
             <div key={i} className={styles.kpiItemSkeleton}>
               <div className={styles.skeletonIcon} />
               <div className={styles.skeletonContent}>
@@ -80,22 +80,34 @@ export function KPIBar() {
     <div className={styles.kpiBar}>
       <div className={styles.kpiContainer}>
         <KPIItem
-          icon="🏢"
-          label="GENIE Centers Operational"
-          value={kpiData.centersOperational.value}
-          target={kpiData.centersOperational.target}
-        />
-        <KPIItem
           icon="🎓"
           label="Youth & Adults with ICT/Green Skills"
           value={kpiData.youthWithSkills.value}
           target={kpiData.youthWithSkills.target}
         />
         <KPIItem
+          icon="👩‍🏫"
+          label="Trainers Certified (Basic + Advanced)"
+          value={kpiData.trainersCertified.value}
+          target={kpiData.trainersCertified.target}
+        />
+        <KPIItem
+          icon="🏢"
+          label="GENIE Centers Operational"
+          value={kpiData.centersOperational.value}
+          target={kpiData.centersOperational.target}
+        />
+        <KPIItem
           icon="💼"
-          label="Greenpreneurs Incubated"
-          value={kpiData.greenpreneursIncubated.value}
-          target={kpiData.greenpreneursIncubated.target}
+          label="Greenpreneurs Participated"
+          value={kpiData.greenpreneursParticipated.value}
+          target={kpiData.greenpreneursParticipated.target}
+        />
+        <KPIItem
+          icon="🚀"
+          label="Start-ups Registered"
+          value={kpiData.startups.value}
+          target={kpiData.startups.target}
         />
         <KPIItem
           icon="🌱"

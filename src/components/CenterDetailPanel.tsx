@@ -1,15 +1,10 @@
-import { Center, CenterStatus } from '../types/center';
+import { Center, CENTER_STATUS_COLORS as STATUS_COLORS } from '../types/center';
 import styles from './CenterDetailPanel.module.css';
 
 interface CenterDetailPanelProps {
   center: Center | null;
   onClose: () => void;
 }
-
-const STATUS_COLORS: Record<CenterStatus, string> = {
-  'Operational': '#2E7D32',
-  'Non-Operational': '#9CA3AF',
-};
 
 const TYPE_ICONS: Record<string, string> = {
   'University': '🎓',
