@@ -56,7 +56,7 @@ export const useGENIEData = (): UseGENIEDataResult => {
           {
             icon: '🎓',
             title: 'Students Trained',
-            value: actualValues['1.2.6.2'] || 0,
+            value: actualValues['1.2.6'] || 0,
             target: 26100,
             unit: 'students',
             status: 'Off Track'

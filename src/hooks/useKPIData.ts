@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react';
 interface KPIData {
   centersOperational: { value: number; target: number };
   youthWithSkills: { value: number; target: number };
-  greenpreneursIncubated: { value: number; target: number };
+  greenpreneursParticipated: { value: number; target: number };
+  startups: { value: number; target: number };
   greenJobsCreated: { value: number; target: number };
   fundMobilized: { value: number; target: number; baseline: number };
+  trainersCertified: { value: number; target: number };
 }
 
 export const useKPIData = () => {
@@ -21,7 +23,8 @@ export const useKPIData = () => {
           fetch('/centers.json').then(r => r.json())
         ]);
 
-        const composites = performanceActuals[0].computed_composites;
+        // Use the latest reporting period (last entry in performance_actuals.json)
+        const composites = performanceActuals[performanceActuals.length - 1].computed_composites;
 
         // Count operational centers from centers.json for real-time accuracy
         const operationalCenters = centers.filter(
@@ -37,9 +40,13 @@ export const useKPIData = () => {
             value: composites.outcome_1_beneficiaries.value,
             target: composites.outcome_1_beneficiaries.target
           },
-          greenpreneursIncubated: {
-            value: composites.greenpreneurs_trained.value,
-            target: composites.greenpreneurs_trained.target
+          greenpreneursParticipated: {
+            value: composites.greenpreneurs_participated.value,
+            target: composites.greenpreneurs_participated.target
+          },
+          startups: {
+            value: composites.outcome_2_startups.value,
+            target: composites.outcome_2_startups.target
           },
           greenJobsCreated: {
             value: composites.outcome_2_green_jobs.value,
@@ -49,6 +56,10 @@ export const useKPIData = () => {
             value: composites.outcome_3_funding.value,
             target: composites.outcome_3_funding.target,
             baseline: composites.outcome_3_funding.baseline
+          },
+          trainersCertified: {
+            value: composites.trainers_certified.value,
+            target: composites.trainers_certified.target
           }
         });
         setLoading(false);

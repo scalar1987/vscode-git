@@ -196,8 +196,8 @@
       "progress": 1,
       "status": "Delayed",
       "responsible": "Training Team",
-      "notes": "University: 0/7,830 enrolled. Secondary/TVET: 111/26,100 enrolled (LPIA Treichville pilot). Expansion Q1-Q2 2026.",
-      "linkedIndicators": ["1.2.6.1", "1.2.6.2"],
+      "notes": "1.2.6 students enrolled: 111/33,930 (LPIA Treichville pilot). Expansion Q1-Q2 2026.",
+      "linkedIndicators": ["1.2.6"],
       "linkedCenters": ["treichville_lpelia", "univ_bondoukou"]
     },
     {

@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Building2, GraduationCap, Briefcase, Leaf, DollarSign, MapPin, Target, Clock, Wallet, AlertTriangle, FileText, type LucideIcon } from 'lucide-react';
 import { useGENIEData, type KPICard as KPICardData } from '../hooks/useGENIEData';
 import { useOutputProgress } from '../hooks/useOutputProgress';
+import { TrainingFlowSection } from '../components/dashboard/TrainingFlowSection';
+import type { CenterStatus } from '../types/center';
 import {
   HeroSection,
   KPICard,
@@ -24,7 +27,7 @@ interface Center {
   type: 'University' | 'School' | 'Mairie';
   coordinates: [number, number];
   region: string;
-  status: 'Operational' | 'Non-Operational';
+  status: CenterStatus;
   phase: string;
   students: number | string;
   computers: number;
@@ -174,12 +177,30 @@ export function Dashboard() {
       )}
 
       {/* Centers Section */}
-      <section id="centers" className="px-4 md:px-6 lg:px-8 pb-8 min-h-screen">
+      <section id="training" className="px-4 md:px-6 lg:px-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <MapPin className="w-6 h-6 text-dg-green-600" />
-            DigiGreen Centers Network
+            <GraduationCap className="w-6 h-6 text-dg-green-600" />
+            GENIE Capacity Building
           </h2>
+          <TrainingFlowSection />
+        </div>
+      </section>
+
+      <section id="centers" className="px-4 md:px-6 lg:px-8 pb-8 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <MapPin className="w-6 h-6 text-dg-green-600" />
+              35 GENIE Centers Network
+            </h2>
+            <Link
+              to="/centers"
+              className="px-4 py-2 rounded-lg bg-dg-green-600 hover:bg-dg-green-700 text-white text-sm font-medium transition-colors"
+            >
+              View all centres table
+            </Link>
+          </div>
 
           <CentersMapSection centers={centers} loading={centersLoading} />
         </div>
