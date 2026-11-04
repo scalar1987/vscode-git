@@ -29,7 +29,7 @@ const OUTPUT_CONFIG = [
 ];
 
 const OUTCOME_CONFIG = [
-  { id: '1', name: 'Youth with ICT Skills', indicatorIds: ['1.2.6.2', '1.3.4.1'] },
+  { id: '1', name: 'Youth with ICT Skills', indicatorIds: ['1.2.6', '1.3.4.1'] },
   { id: '2', name: 'Technology Start-ups Created', indicatorIds: ['2.2.2.1'] },
   { id: '2.1', name: 'Green Jobs Created', indicatorIds: ['2.1'] },
   { id: '3', name: 'Mobilized Investment (USD)', indicatorIds: ['3.1.2'] },
@@ -116,7 +116,7 @@ export function ReportGeneratorSection() {
         return { id: config.id, name: config.name, progress: avgProgress, status: getStatus(avgProgress) };
       });
 
-      const keyNarrativeIds = ['1', '1.1.4', '1.2.6.2', '2', '2.1', '2.2.2.1', '3', 'OVERALL'];
+      const keyNarrativeIds = ['1', '1.1.4', '1.2.6', '2', '2.1', '2.2.2.1', '3', 'OVERALL'];
       const narratives = keyNarrativeIds
         .filter(id => latestNarratives.stories[id])
         .map(id => ({
