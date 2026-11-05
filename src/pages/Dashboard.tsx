@@ -163,7 +163,7 @@ export function Dashboard() {
       <section id="performance" className="px-4 md:px-6 lg:px-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Target className="w-6 h-6 text-dg-green-600" />
+            <Target className="w-5 h-5 text-gray-500" />
             Performance Overview
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -184,13 +184,13 @@ export function Dashboard() {
       <section id="centers" className="px-4 md:px-6 lg:px-8 pb-8 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <MapPin className="w-6 h-6 text-dg-green-600" />
+            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
+              <MapPin className="w-5 h-5 text-gray-500" />
               35 GENIE Centers Network
             </h2>
             <Link
               to="/centers"
-              className="px-4 py-2 rounded-lg bg-dg-green-600 hover:bg-dg-green-700 text-white text-sm font-medium transition-colors"
+              className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
             >
               View all centres table
             </Link>
@@ -203,13 +203,13 @@ export function Dashboard() {
       <section id="training" className="px-4 md:px-6 lg:px-8 pt-6 pb-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <GraduationCap className="w-6 h-6 text-dg-green-600" />
+            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
+              <GraduationCap className="w-5 h-5 text-gray-500" />
               GENIE Capacity Building Program
             </h2>
             <Link
               to="/advanced-programme"
-              className="px-4 py-2 rounded-lg bg-dg-blue-600 hover:bg-dg-blue-700 text-white text-sm font-medium transition-colors"
+              className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
             >
               Advanced programme progress
             </Link>
@@ -222,15 +222,15 @@ export function Dashboard() {
       <section id="greenpreneur" className="px-4 md:px-6 lg:px-8 pb-8">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Briefcase className="w-6 h-6 text-dg-green-600" />
+            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
+              <Briefcase className="w-5 h-5 text-gray-500" />
               GENIE Greenpreneur Incubation Program
             </h2>
             <Link
               to="/greenpreneur-input"
-              className="px-4 py-2 rounded-lg bg-dg-green-600 hover:bg-dg-green-700 text-white text-sm font-medium transition-colors"
+              className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
             >
-              Enter data
+              Greenpreneur programme progress
             </Link>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3 -mt-4">
@@ -251,28 +251,30 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <IndicatorCard view={gpView}
-              id="2.2.2.1"
-              label="Greenpreneurs in incubation (2.2.2.1)"
-              value={gpKpi?.greenpreneursParticipated.value ?? 0}
-              target={gpKpi?.greenpreneursParticipated.target ?? 675}
-            />
-            <IndicatorCard view={gpView} id="2" label="Technology-based start-ups (2)" value={gpKpi?.startups.value ?? 0} target={gpKpi?.startups.target ?? 135} />
-            <IndicatorCard view={gpView}
-              id="2.1"
-              label="Green jobs created (2.1)"
-              value={gpKpi?.greenJobsCreated.value ?? 0}
-              target={gpKpi?.greenJobsCreated.target ?? 122}
-            />
-            <IndicatorCard view={gpView}
-              id="3"
-              label="Seed capital mobilised (USD)"
-              value={(gpKpi?.fundMobilized.value ?? 0) + (gpKpi?.fundMobilized.baseline ?? 0)}
-              target={gpKpi?.fundMobilized.target ?? 1000000}
-              baseline={gpKpi?.fundMobilized.baseline ?? 0}
-              currency
-            />
+          <div className="rounded-xl border border-gray-200 border-l-4 border-l-dg-green-600 bg-white p-5 shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+              <IndicatorCard view={gpView}
+                id="2.2.2.1"
+                label="Greenpreneurs in incubation (2.2.2.1)"
+                value={gpKpi?.greenpreneursParticipated.value ?? 0}
+                target={gpKpi?.greenpreneursParticipated.target ?? 675}
+              />
+              <IndicatorCard view={gpView} id="2" label="Technology-based start-ups (2)" value={gpKpi?.startups.value ?? 0} target={gpKpi?.startups.target ?? 135} />
+              <IndicatorCard view={gpView}
+                id="2.1"
+                label="Green jobs created (2.1)"
+                value={gpKpi?.greenJobsCreated.value ?? 0}
+                target={gpKpi?.greenJobsCreated.target ?? 122}
+              />
+              <IndicatorCard view={gpView}
+                id="3"
+                label="Seed capital mobilised (USD)"
+                value={(gpKpi?.fundMobilized.value ?? 0) + (gpKpi?.fundMobilized.baseline ?? 0)}
+                target={gpKpi?.fundMobilized.target ?? 1000000}
+                baseline={gpKpi?.fundMobilized.baseline ?? 0}
+                currency
+              />
+            </div>
           </div>
 
         </div>
@@ -284,7 +286,7 @@ export function Dashboard() {
           <section id="targets" className="px-4 md:px-6 lg:px-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Target className="w-6 h-6 text-dg-green-600" />
+            <Target className="w-5 h-5 text-gray-500" />
             Key Targets & Milestones
           </h2>
 
@@ -296,7 +298,7 @@ export function Dashboard() {
       <section id="activity" className="px-4 md:px-6 lg:px-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Clock className="w-6 h-6 text-dg-green-600" />
+            <Clock className="w-5 h-5 text-gray-500" />
             Activity Tracker
           </h2>
           <ActivitySection />
@@ -307,7 +309,7 @@ export function Dashboard() {
       <section id="budget" className="px-4 md:px-6 lg:px-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Wallet className="w-6 h-6 text-dg-green-600" />
+            <Wallet className="w-5 h-5 text-gray-500" />
             Budget Tracking
           </h2>
           <BudgetSection />
@@ -329,7 +331,7 @@ export function Dashboard() {
       <section id="tools" className="px-4 md:px-6 lg:px-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <FileText className="w-6 h-6 text-dg-green-600" />
+            <FileText className="w-5 h-5 text-gray-500" />
             Data Tools
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
