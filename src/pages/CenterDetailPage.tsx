@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { loadCenters, loadTotRecords } from '../lib/centersData';
+import { loadCenters, loadTotRecords, supabase } from '../lib/centersData';
+import { canEditSection, getProfile, getSession, isApproved, onAuthChange, type Profile } from '../lib/auth';
 import { useState, useEffect, Fragment } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -34,6 +35,7 @@ interface Center {
   linkedActivities: string[];
   note: string;
   center_coordinators?: Array<{ name: string; phone: string; email: string }>;
+  advanced_trainers?: any[];
   infrastructure?: any;
   training?: any;
   greenpreneur?: any;
@@ -48,29 +50,100 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   'Mairie': <Briefcase className="w-8 h-8" />,
 };
 
-type ToTChannel = { completed: boolean; date: string };
-type ToTEntry = { online_lms: ToTChannel; in_person: ToTChannel };
-type CoordinatorWithToT = { name: string; phone: string; email: string; tot?: ToTEntry };
+type TrainerModule = 'word' | 'excel' | 'ppt' | 'green';
+const TRAINER_MODULES: Array<{ key: TrainerModule; label: string }> = [
+  { key: 'word', label: 'Microsoft Word' },
+  { key: 'excel', label: 'Microsoft Excel' },
+  { key: 'ppt', label: 'Microsoft PowerPoint' },
+  { key: 'green', label: 'Green Practices' },
+];
 
-const emptyToT = (): ToTEntry => ({
-  online_lms: { completed: false, date: '' },
-  in_person: { completed: false, date: '' },
-});
+// One trainer's ToT: in-person (single flag) and online LMS (one flag per module)
+type TrainerTot = { in_person: boolean; in_person_date: string; lms: Record<TrainerModule, boolean> };
+type TrainerWithToT = { name: string; phone: string; email: string };
 
-function ToTInputForm({ coordinators }: { coordinators: CoordinatorWithToT[] }) {
-  const [entries, setEntries] = useState<ToTEntry[]>(() => coordinators.map(c => c.tot ?? emptyToT()));
+// Online LMS is complete only when all four modules are complete
+const lmsComplete = (t: TrainerTot) => TRAINER_MODULES.every(m => t.lms[m.key]);
+
+function ToTInputForm({
+  centreId,
+  canSave,
+  coordinators,
+  records,
+}: {
+  centreId: string;
+  canSave: boolean;
+  coordinators: TrainerWithToT[];
+  records: TotBasicRecord[];
+}) {
+  // Start from the saved flags (matched by position within the centre)
+  const [entries, setEntries] = useState<TrainerTot[]>(() =>
+    coordinators.map((_, i) => {
+      const r = records[i];
+      return {
+        in_person: r?.in_person_completed === true,
+        in_person_date: r?.in_person_date ?? '',
+        lms: {
+          word: r?.lms_word === true,
+          excel: r?.lms_excel === true,
+          ppt: r?.lms_ppt === true,
+          green: r?.lms_green === true,
+        },
+      };
+    }),
+  );
   const [copied, setCopied] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  const updateChannel = (index: number, channel: keyof ToTEntry, patch: Partial<ToTChannel>) => {
-    setEntries(prev => prev.map((entry, i) => (i === index ? { ...entry, [channel]: { ...entry[channel], ...patch } } : entry)));
+  const saveToDatabase = async () => {
+    if (!supabase) return setSaveMsg('Supabase is not configured');
+    setSaving(true);
+    setSaveMsg(null);
+    const { data: { user } } = await supabase.auth.getUser();
+    const rows = coordinators.map((c, i) => ({
+      centre_id: centreId,
+      position: i + 1,
+      name: c.name,
+      in_person_completed: entries[i].in_person,
+      in_person_date: entries[i].in_person && entries[i].in_person_date ? entries[i].in_person_date : null,
+      lms_word: entries[i].lms.word,
+      lms_excel: entries[i].lms.excel,
+      lms_ppt: entries[i].lms.ppt,
+      lms_green: entries[i].lms.green,
+      updated_at: new Date().toISOString(),
+      updated_by: user?.id ?? null,
+    }));
+    const { error } = await supabase.from('tot_trainees').upsert(rows);
+    setSaving(false);
+    setSaveMsg(error ? `Save failed: ${error.message}` : 'Saved to database');
+  };
+
+  const setInPerson = (index: number, value: boolean) => {
+    setEntries(prev => prev.map((e, i) => (i === index ? { ...e, in_person: value } : e)));
+    setCopied(false);
+  };
+  const setInPersonDate = (index: number, value: string) => {
+    setEntries(prev => prev.map((e, i) => (i === index ? { ...e, in_person_date: value } : e)));
+    setCopied(false);
+  };
+  const setModule = (index: number, key: TrainerModule, value: boolean) => {
+    setEntries(prev => prev.map((e, i) => (i === index ? { ...e, lms: { ...e.lms, [key]: value } } : e)));
     setCopied(false);
   };
 
-  const onlineDone = entries.filter(e => e.online_lms.completed).length;
-  const inPersonDone = entries.filter(e => e.in_person.completed).length;
+  const onlineDone = entries.filter(lmsComplete).length;
+  const inPersonDone = entries.filter(e => e.in_person).length;
 
   const copyJson = async () => {
-    const payload = coordinators.map((c, i) => ({ name: c.name, phone: c.phone, email: c.email, tot: entries[i] }));
+    const payload = coordinators.map((c, i) => ({
+      name: c.name,
+      phone: c.phone,
+      email: c.email,
+      in_person: entries[i].in_person,
+      lms: entries[i].lms,
+      lms_complete: lmsComplete(entries[i]),
+    }));
     try {
       await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
       setCopied(true);
@@ -79,44 +152,15 @@ function ToTInputForm({ coordinators }: { coordinators: CoordinatorWithToT[] }) 
     }
   };
 
-  const channelRow = (
-    index: number,
-    channel: keyof ToTEntry,
-    label: string,
-    icon: React.ReactNode,
-  ) => {
-    const value = entries[index][channel];
-    return (
-      <div className="flex flex-wrap items-center gap-3 py-2">
-        <label className="flex items-center gap-2 text-sm text-gray-700 w-40 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={value.completed}
-            onChange={e => updateChannel(index, channel, { completed: e.target.checked, date: e.target.checked ? value.date : '' })}
-            className="w-4 h-4 accent-dg-green-600"
-          />
-          {icon}
-          {label}
-        </label>
-        <input
-          type="date"
-          value={value.date}
-          disabled={!value.completed}
-          onChange={e => updateChannel(index, channel, { date: e.target.value })}
-          aria-label={`${label} completion date`}
-          className="px-2 py-1 text-sm border border-gray-300 rounded-md disabled:bg-gray-100 disabled:text-gray-400"
-        />
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Coordinator ToT Completion</h3>
-            <p className="text-sm text-gray-600">Online LMS and In-person training tracked separately per coordinator</p>
+            <h3 className="text-lg font-semibold text-gray-900">105 trainers ToT completion</h3>
+            <p className="text-sm text-gray-600">
+              Online LMS is complete when all four modules are done. In-person is tracked separately.
+            </p>
           </div>
           <div className="flex gap-3 text-sm">
             <span className="px-3 py-1 rounded-full bg-dg-blue-50 text-dg-blue-700">
@@ -129,14 +173,57 @@ function ToTInputForm({ coordinators }: { coordinators: CoordinatorWithToT[] }) 
         </div>
 
         <div className="space-y-4">
-          {coordinators.map((coordinator, index) => (
-            <div key={`${coordinator.name}-${index}`} className="p-4 rounded-lg border border-gray-200">
-              <p className="font-semibold text-gray-900 mb-1">
-                #{index + 1} {coordinator.name}
-              </p>
-              <div className="divide-y divide-gray-100">
-                {channelRow(index, 'online_lms', 'Online LMS', <Monitor className="w-4 h-4 text-dg-blue-600" />)}
-                {channelRow(index, 'in_person', 'In-person', <Users className="w-4 h-4 text-dg-green-600" />)}
+          {coordinators.map((trainer, index) => (
+            <div key={`${trainer.name}-${index}`} className="p-4 rounded-lg border border-gray-200">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <p className="font-semibold text-gray-900">#{index + 1} {trainer.name}</p>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    lmsComplete(entries[index]) ? 'bg-dg-blue-100 text-dg-blue-700' : 'bg-gray-100 text-gray-500'
+                  }`}
+                >
+                  Online LMS {lmsComplete(entries[index]) ? 'complete' : 'in progress'}
+                </span>
+              </div>
+
+              <label className="flex items-center gap-2 text-sm text-gray-700 mb-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={entries[index].in_person}
+                  disabled={!canSave}
+                  onChange={e => setInPerson(index, e.target.checked)}
+                  className="w-4 h-4 accent-dg-green-600"
+                />
+                <Users className="w-4 h-4 text-dg-green-600" />
+                In-person training completed
+              </label>
+              {entries[index].in_person && (
+                <label className="flex items-center gap-2 text-sm text-gray-700 mb-3">
+                  In-person date
+                  <input
+                    type="date"
+                    disabled={!canSave}
+                    value={entries[index].in_person_date}
+                    onChange={e => setInPersonDate(index, e.target.value)}
+                    className="px-2 py-1 text-sm border border-gray-300 rounded-md disabled:bg-gray-100"
+                  />
+                </label>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 pl-1">
+                {TRAINER_MODULES.map(m => (
+                  <label key={m.key} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={entries[index].lms[m.key]}
+                      disabled={!canSave}
+                      onChange={e => setModule(index, m.key, e.target.checked)}
+                      className="w-4 h-4 accent-dg-blue-600"
+                    />
+                    <Monitor className="w-4 h-4 text-dg-blue-600" />
+                    LMS: {m.label}
+                  </label>
+                ))}
               </div>
             </div>
           ))}
@@ -149,16 +236,22 @@ function ToTInputForm({ coordinators }: { coordinators: CoordinatorWithToT[] }) 
           >
             Copy JSON
           </button>
+          {canSave && (
+            <button
+              onClick={saveToDatabase}
+              disabled={saving}
+              className="px-4 py-2 bg-dg-blue-600 text-white rounded-lg hover:bg-dg-blue-700 disabled:opacity-60 transition-colors font-medium"
+            >
+              {saving ? 'Saving…' : 'Save to database'}
+            </button>
+          )}
           {copied && <span className="text-sm text-dg-green-700">Copied to clipboard</span>}
+          {saveMsg && <span className="text-sm text-gray-700">{saveMsg}</span>}
         </div>
-        <p className="mt-3 text-xs text-gray-500">
-          No save backend is connected yet. Entries are kept until the page is reloaded. Use Copy JSON to store them in centers.json.
-        </p>
       </div>
     </div>
   );
 }
-
 type InfraStatus = 'Pending' | 'In Progress' | 'Completed';
 type InfraIssue = { date: string; description: string; resolved: boolean };
 type RoomState = { status: InfraStatus };
@@ -224,11 +317,52 @@ function toInfraState(raw: any): InfraState {
   };
 }
 
-function InfrastructureInputForm({ infrastructure }: { infrastructure: any }) {
+function InfrastructureInputForm({
+  centreId,
+  canSave,
+  infrastructure,
+}: {
+  centreId: string;
+  canSave: boolean;
+  infrastructure: any;
+}) {
   const [state, setState] = useState<InfraState>(() => toInfraState(infrastructure));
   const [issueText, setIssueText] = useState('');
   const [issueDate, setIssueDate] = useState('');
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+
+  const saveToDatabase = async () => {
+    if (!supabase) return setSaveMsg('Supabase is not configured');
+    setSaving(true);
+    setSaveMsg(null);
+    const { data: { user } } = await supabase.auth.getUser();
+    const row = {
+      centre_id: centreId,
+      overall_status: infrastructure?.overall_status ?? null,
+      renovation_status: state.renovation.status,
+      renovation_pct: state.renovation.completion_percentage,
+      renovation_notes: state.renovation.progress_notes ?? '',
+      renovation_issues: state.renovation.issues ?? [],
+      rooms: state.renovation.rooms,
+      internet_status: state.internet_infrastructure.status,
+      internet_bandwidth_mbps: state.internet_infrastructure.bandwidth_mbps,
+      internet_access_points: state.internet_infrastructure.access_points,
+      electricity_status: state.electricity.status,
+      electricity_notes: state.electricity.notes ?? '',
+      equipment_status: state.equipment.status,
+      equipment_pct: state.equipment.completion_percentage,
+      // equipment notes are not editable in this form, so keep the stored value
+      equipment_notes: infrastructure?.equipment?.notes ?? '',
+      equipment_items: state.equipment.items,
+      updated_at: new Date().toISOString(),
+      updated_by: user?.id ?? null,
+    };
+    const { error } = await supabase.from('centre_infrastructure').upsert(row);
+    setSaving(false);
+    setSaveMsg(error ? `Save failed: ${error.message}` : 'Saved to database');
+  };
 
   const patchRenovation = (patch: Partial<InfraState['renovation']>) => {
     setState(s => ({ ...s, renovation: { ...s.renovation, ...patch } }));
@@ -505,7 +639,17 @@ function InfrastructureInputForm({ infrastructure }: { infrastructure: any }) {
         >
           Copy infrastructure JSON
         </button>
+        {canSave && (
+          <button
+            onClick={saveToDatabase}
+            disabled={saving}
+            className="px-4 py-2 bg-dg-blue-600 text-white rounded-lg hover:bg-dg-blue-700 disabled:opacity-60 transition-colors font-medium"
+          >
+            {saving ? 'Saving…' : 'Save to database'}
+          </button>
+        )}
         {copied && <span className="text-sm text-dg-green-700">Copied to clipboard</span>}
+        {saveMsg && <span className="text-sm text-gray-700">{saveMsg}</span>}
       </div>
     </div>
   );
@@ -570,9 +714,33 @@ function toGpState(raw: any): GpState {
   return { status: raw?.status ?? 'Not Started', years };
 }
 
-function GreenpreneurInputForm({ greenpreneur }: { greenpreneur: any }) {
+function GreenpreneurInputForm({
+  centreId,
+  canSave,
+  greenpreneur,
+}: {
+  centreId: string;
+  canSave: boolean;
+  greenpreneur: any;
+}) {
   const [state, setState] = useState<GpState>(() => toGpState(greenpreneur));
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+
+  const saveToDatabase = async () => {
+    if (!supabase) return setSaveMsg('Supabase is not configured');
+    setSaving(true);
+    setSaveMsg(null);
+    const { data: { user } } = await supabase.auth.getUser();
+    // Same shape as the static greenpreneur block: year keys plus overall status
+    const data = { ...state.years, status: state.status };
+    const { error } = await supabase
+      .from('centre_greenpreneur')
+      .upsert({ centre_id: centreId, data, updated_at: new Date().toISOString(), updated_by: user?.id ?? null });
+    setSaving(false);
+    setSaveMsg(error ? `Save failed: ${error.message}` : 'Saved to database');
+  };
 
   const patch = (updater: (s: GpState) => GpState) => {
     setState(updater);
@@ -725,17 +893,450 @@ function GreenpreneurInputForm({ greenpreneur }: { greenpreneur: any }) {
         >
           Copy Greenpreneur JSON
         </button>
+        {canSave && (
+          <button
+            onClick={saveToDatabase}
+            disabled={saving}
+            className="px-4 py-2 bg-dg-blue-600 text-white rounded-lg hover:bg-dg-blue-700 disabled:opacity-60 transition-colors font-medium"
+          >
+            {saving ? 'Saving…' : 'Save to database'}
+          </button>
+        )}
         {copied && <span className="text-sm text-dg-green-700">Copied to clipboard</span>}
+        {saveMsg && <span className="text-sm text-gray-700">{saveMsg}</span>}
       </div>
     </div>
   );
 }
 
-type InputSection = 'tot' | 'infrastructure' | 'greenpreneur';
+// Advanced ICT & green business (DigiFemme): trainers assigned per centre, and yearly student counts
+const ADVANCED_MODULES = [
+  { key: 'ui_ux', label: 'UI/UX Design' },
+  { key: 'ios', label: 'iOS' },
+  { key: 'android', label: 'Android' },
+  { key: 'green_business', label: 'Green Business' },
+] as const;
+type AdvancedModuleKey = (typeof ADVANCED_MODULES)[number]['key'];
+
+interface AdvancedTrainerRow {
+  id: string;
+  name: string;
+  in_person: boolean;
+  in_person_date: string;
+  lms: Record<AdvancedModuleKey, boolean>;
+}
+
+function AdvancedInputForm({
+  mode,
+  centreId,
+  canSave,
+  canIct = false,
+  canGreen = false,
+  trainers,
+  advancedByYear,
+}: {
+  mode: 'trainers' | 'students';
+  centreId: string;
+  canSave: boolean;
+  canIct?: boolean;
+  canGreen?: boolean;
+  trainers: any[];
+  advancedByYear: Record<string, { enrolled?: number; passed?: number }>;
+}) {
+  const [rows, setRows] = useState<AdvancedTrainerRow[]>(() =>
+    trainers.map(t => ({
+      id: t.id,
+      name: t.name,
+      in_person: t.in_person_completed === true,
+      in_person_date: t.in_person_date ?? '',
+      lms: {
+        ui_ux: t.lms_ui_ux === true,
+        ios: t.lms_ios === true,
+        android: t.lms_android === true,
+        green_business: t.lms_green_business === true,
+      },
+    })),
+  );
+  const [removedIds, setRemovedIds] = useState<string[]>([]);
+  const [years, setYears] = useState<Record<string, { enrolled: number; passed: number }>>(() =>
+    Object.fromEntries(
+      TRAINING_YEARS.map(y => [y, { enrolled: advancedByYear[y]?.enrolled ?? 0, passed: advancedByYear[y]?.passed ?? 0 }]),
+    ),
+  );
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+
+  const num = (v: string) => Math.max(0, Math.floor(Number(v) || 0));
+
+  const updateRow = (id: string, patch: Partial<AdvancedTrainerRow>) =>
+    setRows(prev => prev.map(r => (r.id === id ? { ...r, ...patch } : r)));
+  const removeRow = (id: string) => {
+    setRows(prev => prev.filter(r => r.id !== id));
+    setRemovedIds(prev => [...prev, id]);
+  };
+  const addRow = () =>
+    setRows(prev => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        name: '',
+        in_person: false,
+        in_person_date: '',
+        lms: { ui_ux: false, ios: false, android: false, green_business: false },
+      },
+    ]);
+
+  const saveToDatabase = async () => {
+    if (!supabase) return setSaveMsg('Supabase is not configured');
+    const unnamed = mode === 'trainers' && rows.some(r => !r.name.trim());
+    if (unnamed) return setSaveMsg('Enter a name for every trainer (or remove the empty row).');
+    setSaving(true);
+    setSaveMsg(null);
+    const { data: { user } } = await supabase.auth.getUser();
+    const now = new Date().toISOString();
+    const trainerRows = rows.map(r => ({
+      id: r.id,
+      centre_id: centreId,
+      name: r.name.trim(),
+      in_person_completed: r.in_person,
+      in_person_date: r.in_person && r.in_person_date ? r.in_person_date : null,
+      lms_ui_ux: r.lms.ui_ux,
+      lms_ios: r.lms.ios,
+      lms_android: r.lms.android,
+      lms_green_business: r.lms.green_business,
+      updated_at: now,
+      updated_by: user?.id ?? null,
+    }));
+    const yearRows = TRAINING_YEARS.map(y => ({
+      centre_id: centreId,
+      year: Number(y),
+      enrolled: years[y].enrolled,
+      passed: years[y].passed,
+      updated_at: now,
+      updated_by: user?.id ?? null,
+    }));
+    const results = await Promise.all(mode === 'trainers'
+      ? [
+          trainerRows.length ? supabase.from('advanced_trainers').upsert(trainerRows) : Promise.resolve({ error: null }),
+          removedIds.length ? supabase.from('advanced_trainers').delete().in('id', removedIds) : Promise.resolve({ error: null }),
+        ]
+      : [supabase.from('centre_training_advanced').upsert(yearRows)]);
+    setSaving(false);
+    const error = results.find(r => r.error)?.error;
+    if (!error) setRemovedIds([]);
+    setSaveMsg(error ? `Save failed: ${error.message}` : 'Saved to database');
+  };
+
+  const cell = 'w-28 px-2 py-1.5 text-sm text-right border border-gray-200 rounded-md tabular-nums focus:outline-none focus:ring-2 focus:ring-dg-green-500';
+
+  return (
+    <div className="space-y-6">
+      {mode === 'trainers' && (
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Advanced trainers ToT completion</h3>
+            <p className="text-sm text-gray-600">
+              Complete = in-person training and all four online modules (UI/UX Design, iOS, Android, Green Business)
+            </p>
+          </div>
+
+        </div>
+
+        <div className="space-y-4">
+          {rows.map((r, index) => (
+            <div key={r.id} className="p-4 rounded-lg border border-gray-200">
+              <div className="flex flex-wrap items-center gap-3 mb-3">
+                <span className="text-xs text-gray-500">#{index + 1}</span>
+                <input
+                  type="text"
+                  value={r.name}
+                  disabled={!canSave}
+                  placeholder="Trainer name"
+                  onChange={e => updateRow(r.id, { name: e.target.value })}
+                  className="flex-1 min-w-[200px] px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+                />
+                {canSave && (
+                  <button
+                    type="button"
+                    onClick={() => removeRow(r.id)}
+                    className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-md"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4 mb-3 text-sm text-gray-700">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={r.in_person}
+                    disabled={!canSave}
+                    onChange={e => updateRow(r.id, { in_person: e.target.checked })}
+                    className="w-4 h-4 accent-dg-green-600"
+                  />
+                  <Users className="w-4 h-4 text-dg-green-600" />
+                  In-person training completed
+                </label>
+                {r.in_person && (
+                  <label className="flex items-center gap-2">
+                    In-person date
+                    <input
+                      type="date"
+                      value={r.in_person_date}
+                      disabled={!canSave}
+                      onChange={e => updateRow(r.id, { in_person_date: e.target.value })}
+                      className="px-2 py-1 text-sm border border-gray-300 rounded-md disabled:bg-gray-100"
+                    />
+                  </label>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 pl-1">
+                {ADVANCED_MODULES.map(m => (
+                  <label key={m.key} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={r.lms[m.key]}
+                      disabled={m.key === 'green_business' ? !canGreen : !canIct}
+                      onChange={e => updateRow(r.id, { lms: { ...r.lms, [m.key]: e.target.checked } })}
+                      className="w-4 h-4 accent-dg-blue-600"
+                    />
+                    <Monitor className="w-4 h-4 text-dg-blue-600" />
+                    LMS: {m.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {canSave && rows.length === 0 && (
+          <button
+            type="button"
+            onClick={addRow}
+            className="mt-4 px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            + Add trainer
+          </button>
+        )}
+      </div>
+      )}
+
+      {mode === 'students' && (
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <h3 className="text-base font-semibold text-gray-900 mb-3">Advanced students enrolled and passed, by year</h3>
+        <table className="text-sm">
+          <thead>
+            <tr className="text-left text-xs text-gray-500">
+              <th className="py-2 pr-6 font-medium">Year</th>
+              <th className="py-2 pr-6 font-medium">Enrolled</th>
+              <th className="py-2 font-medium">Passed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {TRAINING_YEARS.map(y => (
+              <tr key={y} className="border-t border-gray-100">
+                <td className="py-2 pr-6 text-gray-700">{y}</td>
+                <td className="py-2 pr-6">
+                  <input
+                    type="number"
+                    min={0}
+                    disabled={!canSave}
+                    value={years[y].enrolled}
+                    onChange={e => setYears(s => ({ ...s, [y]: { ...s[y], enrolled: num(e.target.value) } }))}
+                    className={cell}
+                  />
+                </td>
+                <td className="py-2">
+                  <input
+                    type="number"
+                    min={0}
+                    disabled={!canSave}
+                    value={years[y].passed}
+                    onChange={e => setYears(s => ({ ...s, [y]: { ...s[y], passed: num(e.target.value) } }))}
+                    className={cell}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-3">
+        {canSave && (
+          <button
+            onClick={saveToDatabase}
+            disabled={saving}
+            className="px-4 py-2 bg-dg-blue-600 text-white rounded-lg hover:bg-dg-blue-700 disabled:opacity-60 transition-colors font-medium"
+          >
+            {saving ? 'Saving…' : 'Save to database'}
+          </button>
+        )}
+        {saveMsg && <span className="text-sm text-gray-700">{saveMsg}</span>}
+      </div>
+    </div>
+  );
+}
+// Student training (basic ICT & green practices): yearly enrolled / passed, and passed per module
+const TRAINING_YEARS = ['2025', '2026', '2027'] as const;
+const BASIC_MODULE_KEYS = [
+  { key: 'word', label: 'Microsoft Word' },
+  { key: 'excel', label: 'Microsoft Excel' },
+  { key: 'ppt', label: 'Microsoft PowerPoint' },
+  { key: 'green', label: 'Green Practices' },
+] as const;
+
+function BasicTrainingInputForm({
+  centreId,
+  canSave,
+  training,
+}: {
+  centreId: string;
+  canSave: boolean;
+  training: any;
+}) {
+  const school = training?.basic_ict_green?.school_students?.by_year ?? {};
+  const university = training?.basic_ict_green?.university_students?.by_year ?? {};
+  const [years, setYears] = useState<Record<string, { enrolled: number; passed: number }>>(() =>
+    Object.fromEntries(
+      TRAINING_YEARS.map(y => [
+        y,
+        {
+          enrolled: (school[y]?.enrolled ?? 0) + (university[y]?.enrolled ?? 0),
+          passed: school[y]?.passed ?? 0,
+        },
+      ]),
+    ),
+  );
+  const [modules, setModules] = useState<Record<string, number>>(() =>
+    Object.fromEntries(BASIC_MODULE_KEYS.map(m => [m.key, training?.basic_modules?.[m.key]?.passed ?? 0])),
+  );
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+
+  const num = (v: string) => Math.max(0, Math.floor(Number(v) || 0));
+
+  const saveToDatabase = async () => {
+    if (!supabase) return setSaveMsg('Supabase is not configured');
+    setSaving(true);
+    setSaveMsg(null);
+    const { data: { user } } = await supabase.auth.getUser();
+    const now = new Date().toISOString();
+    const yearRows = TRAINING_YEARS.map(y => ({
+      centre_id: centreId,
+      year: Number(y),
+      enrolled: years[y].enrolled,
+      passed: years[y].passed,
+      updated_at: now,
+      updated_by: user?.id ?? null,
+    }));
+    const moduleRows = BASIC_MODULE_KEYS.map(m => ({
+      centre_id: centreId,
+      module: m.key,
+      passed: modules[m.key],
+      updated_at: now,
+      updated_by: user?.id ?? null,
+    }));
+    const [a, b] = await Promise.all([
+      supabase.from('centre_training_basic').upsert(yearRows),
+      supabase.from('centre_basic_modules').upsert(moduleRows),
+    ]);
+    setSaving(false);
+    const error = a.error ?? b.error;
+    setSaveMsg(error ? `Save failed: ${error.message}` : 'Saved to database');
+  };
+
+  const cell = 'w-28 px-2 py-1.5 text-sm text-right border border-gray-200 rounded-md tabular-nums focus:outline-none focus:ring-2 focus:ring-dg-green-500';
+
+  return (
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-6">
+      <div>
+        <h3 className="text-base font-semibold text-gray-900 mb-3">Students enrolled and passed, by year</h3>
+        <table className="text-sm">
+          <thead>
+            <tr className="text-left text-xs text-gray-500">
+              <th className="py-2 pr-6 font-medium">Year</th>
+              <th className="py-2 pr-6 font-medium">Enrolled</th>
+              <th className="py-2 font-medium">Passed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {TRAINING_YEARS.map(y => (
+              <tr key={y} className="border-t border-gray-100">
+                <td className="py-2 pr-6 text-gray-700">{y}</td>
+                <td className="py-2 pr-6">
+                  <input
+                    type="number"
+                    min={0}
+                    disabled={!canSave}
+                    value={years[y].enrolled}
+                    onChange={e => setYears(s => ({ ...s, [y]: { ...s[y], enrolled: num(e.target.value) } }))}
+                    className={cell}
+                  />
+                </td>
+                <td className="py-2">
+                  <input
+                    type="number"
+                    min={0}
+                    disabled={!canSave}
+                    value={years[y].passed}
+                    onChange={e => setYears(s => ({ ...s, [y]: { ...s[y], passed: num(e.target.value) } }))}
+                    className={cell}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <h3 className="text-base font-semibold text-gray-900 mb-3">Passed by module</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {BASIC_MODULE_KEYS.map(m => (
+            <label key={m.key} className="flex items-center justify-between gap-4 text-sm text-gray-700">
+              <span>{m.label}</span>
+              <input
+                type="number"
+                min={0}
+                disabled={!canSave}
+                value={modules[m.key]}
+                onChange={e => setModules(s => ({ ...s, [m.key]: num(e.target.value) }))}
+                className={cell}
+              />
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        {canSave && (
+          <button
+            onClick={saveToDatabase}
+            disabled={saving}
+            className="px-4 py-2 bg-dg-blue-600 text-white rounded-lg hover:bg-dg-blue-700 disabled:opacity-60 transition-colors font-medium"
+          >
+            {saving ? 'Saving…' : 'Save to database'}
+          </button>
+        )}
+        {saveMsg && <span className="text-sm text-gray-700">{saveMsg}</span>}
+      </div>
+    </div>
+  );
+}
+
+type InputSection = 'tot' | 'infrastructure' | 'greenpreneur' | 'training' | 'advanced' | 'advanced_tot';
 
 const INPUT_SECTIONS: Array<{ value: InputSection; label: string }> = [
-  { value: 'tot', label: 'Coordinator ToT completion' },
-  { value: 'infrastructure', label: 'Infrastructure (renovation, equipment, internet)' },
+  { value: 'tot', label: '105 trainers ToT completion' },
+  { value: 'training', label: 'Student training (basic ICT & green practices)' },
+  { value: 'advanced_tot', label: 'Advanced trainers ToT completion' },
+  { value: 'advanced', label: 'Advanced students enrolled and passed' },
+  { value: 'infrastructure', label: 'Infrastructure (renovation, equipment)' },
   { value: 'greenpreneur', label: 'Greenpreneur program' },
 ];
 
@@ -874,6 +1475,11 @@ interface TotBasicRecord {
   name: string;
   in_person_completed: boolean | null;
   lms_completed: boolean | null;
+  lms_word?: boolean;
+  lms_excel?: boolean;
+  lms_ppt?: boolean;
+  lms_green?: boolean;
+  in_person_date?: string | null;
 }
 
 type TotState = 'completed' | 'partial' | 'none';
@@ -915,21 +1521,62 @@ function TotSummary({ record }: { record: TotBasicRecord | undefined }) {
   );
 }
 
-// Summary bar above the coordinator cards
-function CoordinatorTotProgress({ records, total }: { records: TotBasicRecord[]; total: number }) {
-  const done = records.filter(r => totState(r) === 'completed').length;
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+// Advanced trainers (DigiFemme): summary bar + one card per trainer, same layout as the basic trainers
+const ADVANCED_CHIP_MODULES = [
+  { key: 'lms_ui_ux', label: 'UI/UX Design', by: 'Betterworld' },
+  { key: 'lms_ios', label: 'iOS', by: 'Betterworld' },
+  { key: 'lms_android', label: 'Android', by: 'Betterworld' },
+  { key: 'lms_green_business', label: 'Green Business', by: 'Impact Lab' },
+] as const;
+
+function AdvancedTrainerProgress({ trainers }: { trainers: any[] }) {
+  const isDone = (t: any) => t.in_person_completed === true && ADVANCED_CHIP_MODULES.every(m => t[m.key] === true);
+
+  const chip = (on: boolean) =>
+    `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border ${
+      on ? 'bg-dg-green-50 text-dg-green-700 border-dg-green-200' : 'bg-white text-gray-400 border-gray-200'
+    }`;
+
   return (
-    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-sm font-semibold text-gray-900">Basic ToT completed (in-person + online)</p>
-        <p className="text-lg font-bold text-gray-900 tabular-nums">
-          {done} <span className="text-sm font-normal text-gray-400">/ {total}</span>
-        </p>
-      </div>
-      <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-dg-green-500 to-dg-green-600 transition-all" style={{ width: `${pct}%` }} />
-      </div>
+    <div className="space-y-4">
+      {trainers.length === 0 ? (
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center">
+          <p className="text-gray-500">No advanced trainer assigned</p>
+        </div>
+      ) : (
+        trainers.slice(0, 1).map((t, idx) => {
+          const complete = isDone(t);
+          const started = t.in_person_completed === true || ADVANCED_CHIP_MODULES.some(m => t[m.key] === true);
+          const badge = complete
+            ? { text: 'ToT completed', cls: 'bg-dg-blue-600 text-white' }
+            : started
+              ? { text: 'ToT in progress', cls: 'bg-dg-amber-100 text-dg-amber-700' }
+              : { text: 'ToT not started', cls: 'bg-gray-100 text-gray-600' };
+          const border = complete ? 'border-l-dg-blue-500' : started ? 'border-l-dg-amber-500' : 'border-l-gray-300';
+          return (
+            <div key={t.id ?? idx} className={`bg-white rounded-xl p-6 shadow-sm border border-gray-100 border-l-4 ${border}`}>
+              <div className="flex items-start justify-between mb-3">
+                <h4 className="text-lg font-semibold text-gray-900">{t.name}</h4>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${badge.cls}`}>{badge.text}</span>
+                <span className={chip(t.in_person_completed === true)}>
+                  <span className="font-bold">{t.in_person_completed === true ? '✓' : '○'}</span>
+                  In-person{t.in_person_completed === true && t.in_person_date ? ` · ${t.in_person_date}` : ''}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {ADVANCED_CHIP_MODULES.map(m => (
+                  <span key={m.key} className={chip(t[m.key] === true)} title={`Entered by ${m.by}`}>
+                    <span className="font-bold">{t[m.key] === true ? '✓' : '○'}</span>
+                    {m.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })
+      )}
     </div>
   );
 }
@@ -993,6 +1640,38 @@ export function CenterDetailPage() {
   const [inputSection, setInputSection] = useState<InputSection>('tot');
   // Basic ToT records per coordinator (index-matched to center_coordinators)
   const [totBasic, setTotBasic] = useState<TotBasicRecord[]>([]);
+  // Signed-in profile decides whether Data Input is shown for this centre
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    const load = () => {
+      getSession().then(session => (session ? getProfile() : null)).then(p => setProfile(p));
+    };
+    load();
+    return onAuthChange(load);
+  }, []);
+
+  // Per-section rights (mirrors the database policies)
+  const centreKey = id ?? '';
+  const canTot = isApproved(profile) && canEditSection(profile, centreKey, 'tot');
+  const canInfra = isApproved(profile) && canEditSection(profile, centreKey, 'infra');
+  const canGp = isApproved(profile) && canEditSection(profile, centreKey, 'greenpreneur');
+  const canTraining = isApproved(profile) && canEditSection(profile, centreKey, 'training');
+  const canAdvanced = isApproved(profile) && canEditSection(profile, centreKey, 'advanced');
+  const canIct = isApproved(profile) && canEditSection(profile, centreKey, 'advanced_ict');
+  const canGreen = isApproved(profile) && canEditSection(profile, centreKey, 'advanced_green');
+  const canAdvTot = canIct || canGreen;
+  const canInput = canTot || canInfra || canGp || canTraining || canAdvanced || canAdvTot;
+  const SECTION_RIGHTS: Record<InputSection, boolean> = {
+    tot: canTot,
+    training: canTraining,
+    advanced: canAdvanced,
+    advanced_tot: canAdvTot,
+    infrastructure: canInfra,
+    greenpreneur: canGp,
+  };
+  const allowedSections = INPUT_SECTIONS.filter(s => SECTION_RIGHTS[s.value]);
+  const effectiveSection = allowedSections.find(s => s.value === inputSection)?.value ?? allowedSections[0]?.value;
 
   useEffect(() => {
     loadTotRecords()
@@ -1102,7 +1781,7 @@ export function CenterDetailPage() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex gap-8 overflow-x-auto">
-            {(['overview', 'input'] as const).map((tab) => (
+            {(canInput ? (['overview', 'input'] as const) : (['overview'] as const)).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -1275,13 +1954,8 @@ export function CenterDetailPage() {
         {/* Coordinators Tab */}
         {activeTab === 'overview' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 mt-10">
-            <h2 className="text-xl font-semibold text-gray-900">Coordinators</h2>
-            {center.center_coordinators && center.center_coordinators.length > 0 && (
-              <CoordinatorTotProgress
-                records={totBasic.filter(r => r.center_id === center.id)}
-                total={center.center_coordinators.length}
-              />
-            )}
+            <h2 className="text-xl font-semibold text-gray-900">Trainers</h2>
+
             {center.center_coordinators && center.center_coordinators.length > 0 ? (
               center.center_coordinators.map((coord, idx) => (
                 <div
@@ -1311,46 +1985,82 @@ export function CenterDetailPage() {
               ))
             ) : (
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center">
-                <p className="text-gray-500">No coordinators assigned</p>
+                <p className="text-gray-500">No trainers assigned</p>
               </div>
             )}
           </motion.div>
         )}
 
+        {/* Advanced Trainers Tab */}
+        {activeTab === 'overview' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 mt-10">
+            <h2 className="text-xl font-semibold text-gray-900">Advanced Trainers</h2>
+            <AdvancedTrainerProgress trainers={center.advanced_trainers ?? []} />
+          </motion.div>
+        )}
         {/* Data Input Tab */}
         <div className={activeTab === 'input' ? 'space-y-6' : 'hidden'}>
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-wrap items-center gap-3">
             <label htmlFor="input-section" className="text-sm font-medium text-gray-700">Data to enter</label>
             <select
               id="input-section"
-              value={inputSection}
+              value={effectiveSection ?? ''}
               onChange={e => setInputSection(e.target.value as InputSection)}
               className="px-3 py-2 border border-gray-300 rounded-md bg-white text-sm min-w-[280px]"
             >
-              {INPUT_SECTIONS.map(section => (
+              {allowedSections.map(section => (
                 <option key={section.value} value={section.value}>{section.label}</option>
               ))}
             </select>
           </div>
 
           {/* Forms stay mounted so unsaved input survives switching sections */}
-          <div className={inputSection === 'tot' ? '' : 'hidden'}>
+          <div className={effectiveSection === 'tot' ? '' : 'hidden'}>
             {center.center_coordinators && center.center_coordinators.length > 0 ? (
-              <ToTInputForm coordinators={center.center_coordinators as CoordinatorWithToT[]} />
+              <ToTInputForm
+                key={totBasic.length}
+                centreId={center.id}
+                canSave={canTot}
+                coordinators={center.center_coordinators as TrainerWithToT[]}
+                records={totBasic.filter(r => r.center_id === center.id)}
+              />
             ) : (
-              <EmptyInputNotice message="No coordinators registered for this center" />
+              <EmptyInputNotice message="No trainers registered for this center" />
             )}
           </div>
-          <div className={inputSection === 'infrastructure' ? '' : 'hidden'}>
+          <div className={effectiveSection === 'advanced' ? '' : 'hidden'}>
+            <AdvancedInputForm
+              mode="students"
+              centreId={center.id}
+              canSave={canAdvanced}
+              trainers={center.advanced_trainers ?? []}
+              advancedByYear={center.training?.advanced_ict_green?.by_year ?? {}}
+            />
+          </div>
+          <div className={effectiveSection === 'advanced_tot' ? '' : 'hidden'}>
+            <AdvancedInputForm
+              mode="trainers"
+              centreId={center.id}
+              canSave={canAdvTot}
+              canIct={canIct}
+              canGreen={canGreen}
+              trainers={center.advanced_trainers ?? []}
+              advancedByYear={center.training?.advanced_ict_green?.by_year ?? {}}
+            />
+          </div>
+          <div className={effectiveSection === 'training' ? '' : 'hidden'}>
+            <BasicTrainingInputForm centreId={center.id} canSave={canTraining} training={center.training} />
+          </div>
+          <div className={effectiveSection === 'infrastructure' ? '' : 'hidden'}>
             {center.infrastructure ? (
-              <InfrastructureInputForm infrastructure={center.infrastructure} />
+              <InfrastructureInputForm centreId={center.id} canSave={canInfra} infrastructure={center.infrastructure} />
             ) : (
               <EmptyInputNotice message="No infrastructure data for this center" />
             )}
           </div>
-          <div className={inputSection === 'greenpreneur' ? '' : 'hidden'}>
+          <div className={effectiveSection === 'greenpreneur' ? '' : 'hidden'}>
             {center.greenpreneur ? (
-              <GreenpreneurInputForm greenpreneur={center.greenpreneur} />
+              <GreenpreneurInputForm centreId={center.id} canSave={canGp} greenpreneur={center.greenpreneur} />
             ) : (
               <EmptyInputNotice message="No Greenpreneur data for this center" />
             )}

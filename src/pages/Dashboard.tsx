@@ -179,10 +179,18 @@ export function Dashboard() {
       {/* Centers Section */}
       <section id="training" className="px-4 md:px-6 lg:px-8 pt-6 pb-8">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <GraduationCap className="w-6 h-6 text-dg-green-600" />
-            GENIE Capacity Building
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <GraduationCap className="w-6 h-6 text-dg-green-600" />
+              GENIE Capacity Building
+            </h2>
+            <Link
+              to="/advanced-programme"
+              className="px-4 py-2 rounded-lg bg-dg-blue-600 hover:bg-dg-blue-700 text-white text-sm font-medium transition-colors"
+            >
+              Advanced programme progress
+            </Link>
+          </div>
           <TrainingFlowSection />
         </div>
       </section>
