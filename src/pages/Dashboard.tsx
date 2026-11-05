@@ -4,6 +4,8 @@ import { Building2, GraduationCap, Briefcase, Leaf, DollarSign, MapPin, Target, 
 import { useGENIEData, type KPICard as KPICardData } from '../hooks/useGENIEData';
 import { useOutputProgress } from '../hooks/useOutputProgress';
 import { TrainingFlowSection } from '../components/dashboard/TrainingFlowSection';
+import { useKPIData } from '../hooks/useKPIData';
+import { IndicatorCard } from '../components/dashboard/IndicatorCards';
 import type { CenterStatus } from '../types/center';
 import { loadCenters } from '../lib/centersData';
 import {
@@ -36,6 +38,7 @@ interface Center {
   ongoing_programs: string[];
   linkedActivities: string[];
   note: string;
+  greenpreneur?: Record<string, any>;
 }
 
 // Project timeline: May 2024 - December 2027 (43 months)
@@ -75,6 +78,8 @@ const BUDGET = {
 const SHOW_ONLY_CENTERS = true;
 
 export function Dashboard() {
+  const [gpView, setGpView] = useState<'cumulative' | 'yearly'>('cumulative');
+  const { kpiData: gpKpi } = useKPIData();
   const { summary, loading: dataLoading } = useGENIEData();
   const { componentProgress, loading: progressLoading } = useOutputProgress();
   const { progress, currentMonth } = calculateProjectProgress();
@@ -176,25 +181,6 @@ export function Dashboard() {
         </>
       )}
 
-      {/* Centers Section */}
-      <section id="training" className="px-4 md:px-6 lg:px-8 pt-6 pb-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <GraduationCap className="w-6 h-6 text-dg-green-600" />
-              GENIE Capacity Building
-            </h2>
-            <Link
-              to="/advanced-programme"
-              className="px-4 py-2 rounded-lg bg-dg-blue-600 hover:bg-dg-blue-700 text-white text-sm font-medium transition-colors"
-            >
-              Advanced programme progress
-            </Link>
-          </div>
-          <TrainingFlowSection />
-        </div>
-      </section>
-
       <section id="centers" className="px-4 md:px-6 lg:px-8 pb-8 min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
@@ -211,6 +197,84 @@ export function Dashboard() {
           </div>
 
           <CentersMapSection centers={centers} loading={centersLoading} />
+        </div>
+      </section>
+      {/* Centers Section */}
+      <section id="training" className="px-4 md:px-6 lg:px-8 pt-6 pb-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <GraduationCap className="w-6 h-6 text-dg-green-600" />
+              GENIE Capacity Building Program
+            </h2>
+            <Link
+              to="/advanced-programme"
+              className="px-4 py-2 rounded-lg bg-dg-blue-600 hover:bg-dg-blue-700 text-white text-sm font-medium transition-colors"
+            >
+              Advanced programme progress
+            </Link>
+          </div>
+          <TrainingFlowSection />
+        </div>
+      </section>
+
+      {/* Greenpreneur Incubation Program */}
+      <section id="greenpreneur" className="px-4 md:px-6 lg:px-8 pb-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Briefcase className="w-6 h-6 text-dg-green-600" />
+              GENIE Greenpreneur Incubation Program
+            </h2>
+            <Link
+              to="/greenpreneur-input"
+              className="px-4 py-2 rounded-lg bg-dg-green-600 hover:bg-dg-green-700 text-white text-sm font-medium transition-colors"
+            >
+              Enter data
+            </Link>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 -mt-4">
+            <span className="text-sm text-gray-500">Actuals as of 2026-06-30</span>
+            <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 text-sm">
+              {((['cumulative', 'yearly'] as const)).map(v => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setGpView(v)}
+                  className={`px-3 py-1 rounded-md transition-colors ${
+                    gpView === v ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {v === 'cumulative' ? 'Cumulative' : 'By year'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <IndicatorCard view={gpView}
+              id="2.2.2.1"
+              label="Greenpreneurs in incubation (2.2.2.1)"
+              value={gpKpi?.greenpreneursParticipated.value ?? 0}
+              target={gpKpi?.greenpreneursParticipated.target ?? 675}
+            />
+            <IndicatorCard view={gpView} id="2" label="Technology-based start-ups (2)" value={gpKpi?.startups.value ?? 0} target={gpKpi?.startups.target ?? 135} />
+            <IndicatorCard view={gpView}
+              id="2.1"
+              label="Green jobs created (2.1)"
+              value={gpKpi?.greenJobsCreated.value ?? 0}
+              target={gpKpi?.greenJobsCreated.target ?? 122}
+            />
+            <IndicatorCard view={gpView}
+              id="3"
+              label="Seed capital mobilised (USD)"
+              value={(gpKpi?.fundMobilized.value ?? 0) + (gpKpi?.fundMobilized.baseline ?? 0)}
+              target={gpKpi?.fundMobilized.target ?? 1000000}
+              baseline={gpKpi?.fundMobilized.baseline ?? 0}
+              currency
+            />
+          </div>
+
         </div>
       </section>
 

@@ -714,7 +714,7 @@ function toGpState(raw: any): GpState {
   return { status: raw?.status ?? 'Not Started', years };
 }
 
-function GreenpreneurInputForm({
+export function GreenpreneurInputForm({
   centreId,
   canSave,
   greenpreneur,
@@ -1337,7 +1337,7 @@ const INPUT_SECTIONS: Array<{ value: InputSection; label: string }> = [
   { value: 'advanced_tot', label: 'Advanced trainers ToT completion' },
   { value: 'advanced', label: 'Advanced students enrolled and passed' },
   { value: 'infrastructure', label: 'Infrastructure (renovation, equipment)' },
-  { value: 'greenpreneur', label: 'Greenpreneur program' },
+
 ];
 
 // Per-center actuals for the Overview cards. Targets are per center (centers.json), not logframe totals.
