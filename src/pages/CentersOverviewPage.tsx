@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Search } from 'lucide-react';
 import { CENTER_STATUSES, CENTER_STATUS_COLORS, type CenterStatus } from '../types/center';
@@ -196,7 +196,7 @@ export function CentersOverviewPage() {
                   <th className={headCls}>Status</th>
                   <th className={`${headCls} text-right`}>Renovation</th>
                   <th className={`${headCls} text-right`}>Equipment</th>
-                  <th className={`${headCls} text-right`}>Basic ToT (coordinators done / total)</th>
+                  <th className={`${headCls} text-right`}>Basic ToT (trainers done / total)</th>
                   <th className={`${headCls} text-right`}>Basic enrolled / target</th>
                   <th className={`${headCls} text-right`}>Basic passed / pass target (64%)</th>
                 </tr>

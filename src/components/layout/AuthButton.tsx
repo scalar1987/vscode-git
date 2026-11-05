@@ -30,7 +30,7 @@ export function AuthButton() {
     );
   }
 
-  const roleLabel = profile ? (profile.role === 'ggg' ? 'GGGI' : profile.role === 'partner' ? 'Partner' : 'Coordinator') : 'No role';
+  const roleLabel = profile ? (profile.role === 'ggg' ? 'GGGI' : profile.role === 'partner' ? 'Partner' : 'Trainer') : 'No role';
 
   return (
     <div className="flex items-center gap-2">
