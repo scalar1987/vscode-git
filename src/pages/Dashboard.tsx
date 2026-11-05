@@ -121,12 +121,13 @@ export function Dashboard() {
 
   // Switch programme tab with a view transition where the browser supports it
   const switchProgram = (id: 'centres' | 'capacity' | 'greenpreneur') => {
-    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<unknown> } };
     if (!doc.startViewTransition || reduceMotion) {
       setProgram(id);
       return;
     }
-    doc.startViewTransition(() => flushSync(() => setProgram(id)));
+    // If a transition is interrupted by another click, its promise rejects; that is harmless here
+    doc.startViewTransition(() => flushSync(() => setProgram(id))).finished.catch(() => {});
   };
 
   // Hero parallax: the intro moves up and fades as the page scrolls (off for reduced-motion users)
