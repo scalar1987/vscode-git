@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { Layout } from './components/layout'
 import { Dashboard, PlaceholderPage, CenterDetailPage, CentersOverviewPage } from './pages'
+import { SmoothScroll } from './components/SmoothScroll'
 import { LoginPage } from './pages/LoginPage'
 import { SignUpPage } from './pages/SignUpPage'
 import { AdvancedProgrammePage } from './pages/AdvancedProgrammePage'
@@ -9,6 +10,7 @@ import { RequireAuth } from './components/RequireAuth'
 
 function App() {
   return (
+    <SmoothScroll>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
@@ -23,6 +25,7 @@ function App() {
         {/* All other features are now integrated into the Dashboard */}
       </Route>
     </Routes>
+    </SmoothScroll>
   )
 }
 

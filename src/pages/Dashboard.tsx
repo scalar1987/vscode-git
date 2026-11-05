@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import { flushSync } from 'react-dom';
 import { Building2, GraduationCap, Briefcase, Leaf, DollarSign, MapPin, Target, Clock, Wallet, AlertTriangle, FileText, type LucideIcon } from 'lucide-react';
 import { useGENIEData, type KPICard as KPICardData } from '../hooks/useGENIEData';
 import { useOutputProgress } from '../hooks/useOutputProgress';
@@ -117,6 +119,22 @@ export function Dashboard() {
     delay: index * 0.1,
   })) || [];
 
+  // Switch programme tab with a view transition where the browser supports it
+  const switchProgram = (id: 'centres' | 'capacity' | 'greenpreneur') => {
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown };
+    if (!doc.startViewTransition || reduceMotion) {
+      setProgram(id);
+      return;
+    }
+    doc.startViewTransition(() => flushSync(() => setProgram(id)));
+  };
+
+  // Hero parallax: the intro moves up and fades as the page scrolls (off for reduced-motion users)
+  const reduceMotion = useReducedMotion();
+  const { scrollY } = useScroll();
+  const heroY = useTransform(scrollY, [0, 400], [0, reduceMotion ? 0 : -80]);
+  const heroOpacity = useTransform(scrollY, [0, 320], [1, reduceMotion ? 1 : 0]);
+
   // Greenpreneur indicators, shown with the same flow layout as Capacity Building
   const gpFlows: FlowRow[] = [
     {
@@ -211,8 +229,38 @@ export function Dashboard() {
       )}
 
       {/* Overall summary, then one programme at a time */}
+      {/* Intro: large title on a soft gradient, fades away as the page scrolls */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-dg-green-50 via-white to-dg-blue-50 px-4 md:px-6 lg:px-8 pt-16 pb-20 md:pt-24 md:pb-28">
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="max-w-7xl mx-auto">
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-xs uppercase tracking-[0.25em] text-dg-green-700"
+          >
+            GENIE · Global Green Growth Institute
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="mt-4 text-4xl md:text-6xl font-semibold leading-tight tracking-tight text-gray-900 max-w-4xl"
+          >
+            Empowering Côte d'Ivoire's Youth
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.25 }}
+            className="mt-5 text-lg md:text-xl text-gray-600 max-w-2xl"
+          >
+            Through digital skills and green innovation
+          </motion.p>
+        </motion.div>
+      </section>
+
       {/* Programme tabs stay at the top of the screen while scrolling */}
-      <div className="sticky top-0 z-30 -mt-8 bg-white/95 backdrop-blur border-b border-gray-200 px-4 md:px-6 lg:px-8 pt-2">
+      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-gray-200 px-4 md:px-6 lg:px-8 pt-2">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-end justify-between gap-3">
           <div role="tablist" className="flex flex-wrap gap-6 text-sm">
@@ -226,7 +274,7 @@ export function Dashboard() {
                 type="button"
                 role="tab"
                 aria-selected={program === id}
-                onClick={() => setProgram(id)}
+                onClick={() => switchProgram(id)}
                 className={`-mb-px border-b-2 pb-3 pt-3 font-medium transition-colors ${
                   program === id ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
@@ -243,7 +291,14 @@ export function Dashboard() {
       </div>
 
       {program === 'centres' && (
-      <section id="centers" className="px-4 md:px-6 lg:px-8 pt-8 pb-8">
+      <motion.section
+        id="centers"
+        className="px-4 md:px-6 lg:px-8 pt-8 pb-8"
+        initial={reduceMotion ? false : { opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-80px' }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+      >
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
@@ -260,11 +315,18 @@ export function Dashboard() {
 
           <CentersMapSection centers={centers} loading={centersLoading} />
         </div>
-      </section>
+      </motion.section>
       )}
       {/* Centers Section */}
       {program === 'capacity' && (
-      <section id="training" className="px-4 md:px-6 lg:px-8 pt-8 pb-8">
+      <motion.section
+        id="training"
+        className="px-4 md:px-6 lg:px-8 pt-8 pb-8"
+        initial={reduceMotion ? false : { opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-80px' }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+      >
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
@@ -283,12 +345,19 @@ export function Dashboard() {
           </div>
           <TrainingFlowSection view={flowView} />
         </div>
-      </section>
+      </motion.section>
       )}
 
       {/* Greenpreneur Incubation Program */}
       {program === 'greenpreneur' && (
-      <section id="greenpreneur" className="px-4 md:px-6 lg:px-8 pt-8 pb-8">
+      <motion.section
+        id="greenpreneur"
+        className="px-4 md:px-6 lg:px-8 pt-8 pb-8"
+        initial={reduceMotion ? false : { opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-80px' }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+      >
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
@@ -308,7 +377,7 @@ export function Dashboard() {
           <TrainingFlowSection flows={gpFlows} view={flowView} />
 
         </div>
-      </section>
+      </motion.section>
       )}
 
       {!SHOW_ONLY_CENTERS && (
