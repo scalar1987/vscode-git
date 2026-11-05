@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { signIn } from '../lib/auth';
+import { AuthShell } from '../components/auth/AuthShell';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -22,33 +23,38 @@ export function LoginPage() {
     navigate('/');
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <form onSubmit={onSubmit} className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
-        <h1 className="text-xl font-semibold text-gray-900">Sign in</h1>
-        <p className="text-sm text-gray-500">GENIE M&amp;E staff and centre trainers</p>
+  const inputCls =
+    'mt-1.5 w-full px-3.5 py-2.5 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500 focus:border-dg-green-500';
 
-        <label className="block text-sm">
-          <span className="text-gray-700">Email</span>
+  return (
+    <AuthShell>
+      <form onSubmit={onSubmit} className="space-y-5">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Sign in</h1>
+          <p className="mt-1 text-sm text-gray-600">For GENIE M&amp;E staff and centre trainers</p>
+        </div>
+
+        <label className="block text-sm font-medium text-gray-800">
+          Email
           <input
             type="email"
             required
             autoComplete="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="mt-1 w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+            className={inputCls}
           />
         </label>
 
-        <label className="block text-sm">
-          <span className="text-gray-700">Password</span>
+        <label className="block text-sm font-medium text-gray-800">
+          Password
           <input
             type="password"
             required
             autoComplete="current-password"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="mt-1 w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+            className={inputCls}
           />
         </label>
 
@@ -57,17 +63,17 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full px-4 py-2 rounded-lg bg-dg-green-600 hover:bg-dg-green-700 disabled:opacity-60 text-white text-sm font-medium"
+          className="w-full px-4 py-2.5 rounded-lg bg-dg-green-600 hover:bg-dg-green-700 disabled:opacity-60 text-white text-base font-medium transition-colors"
         >
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
 
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-600 text-center">
           No account yet?{' '}
           <Link to="/signup" className="font-medium text-dg-green-700 hover:underline">Create an account</Link>
         </p>
       </form>
-    </div>
+    </AuthShell>
   );
 }
 
