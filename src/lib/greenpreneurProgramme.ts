@@ -21,6 +21,7 @@ export const GP_ITEMS: Record<GpTrack, string[]> = {
     'Networking session 1',
     'Networking session 2',
     'Group coaching session',
+    'Closing ceremony',
   ],
   irp: [
     'Module 1 · Problem & green value proposition',
@@ -72,23 +73,39 @@ export interface GpProgress {
   mentors: number | null;
 }
 
+// Pitch Competition results (programme-wide, per edition)
+export type PitchCategory = 'Operating entrepreneurs' | 'Aspiring entrepreneurs';
+export const PITCH_CATEGORIES: PitchCategory[] = ['Operating entrepreneurs', 'Aspiring entrepreneurs'];
+
+export interface PitchResult {
+  id: string;
+  edition: number;
+  category: PitchCategory;
+  rank_no: number;
+  laureate: string;
+  prize_usd: number;
+}
+
 export interface GpData {
   cohorts: GpCohort[];
   progress: GpProgress[];
   centreIds: string[];
+  pitch: PitchResult[];
 }
 
 export async function loadGreenpreneurProgramme(): Promise<GpData> {
-  if (!supabase) return { cohorts: [], progress: [], centreIds: [] };
-  const [c, p, l] = await Promise.all([
+  if (!supabase) return { cohorts: [], progress: [], centreIds: [], pitch: [] };
+  const [c, p, l, pr] = await Promise.all([
     supabase.from('greenpreneur_cohorts').select('id, track, name, start_date, end_date, enrolled').order('start_date', { ascending: true }),
     supabase.from('greenpreneur_cohort_progress').select('cohort_id, item_no, completed, completed_date, completed_at, sessions, note, mentors'),
     supabase.from('greenpreneur_centres').select('centre_id'),
+    supabase.from('greenpreneur_pitch_results').select('id, edition, category, rank_no, laureate, prize_usd').order('edition', { ascending: false }).order('rank_no', { ascending: true }),
   ]);
   return {
     cohorts: (c.data ?? []) as GpCohort[],
     progress: (p.data ?? []) as GpProgress[],
     centreIds: ((l.data ?? []) as Array<{ centre_id: string }>).map(r => r.centre_id),
+    pitch: (pr.data ?? []) as PitchResult[],
   };
 }
 

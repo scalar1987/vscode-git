@@ -11,6 +11,8 @@ import {
   type GpCohort,
   type GpData,
   type GpTrack,
+  PITCH_CATEGORIES,
+  type PitchCategory,
 } from '../lib/greenpreneurProgramme';
 
 interface CentreLite {
@@ -35,13 +37,45 @@ const inputCls =
 export function GreenpreneurInputPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [centres, setCentres] = useState<CentreLite[]>([]);
-  const [data, setData] = useState<GpData>({ cohorts: [], progress: [], centreIds: [] });
+  const [data, setData] = useState<GpData>({ cohorts: [], progress: [], centreIds: [], pitch: [] });
   // Checklist state for every cohort, keyed by cohort id, so all checklists can be shown at once
   const [checks, setChecks] = useState<Record<string, ChecklistState>>({});
   const [newCohort, setNewCohort] = useState({ track: 'training' as GpTrack, name: '', start: '', end: '', enrolled: '' });
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [centreQuery, setCentreQuery] = useState('');
+  const [pitchForm, setPitchForm] = useState({
+    edition: String(new Date().getFullYear()),
+    category: 'Operating entrepreneurs' as PitchCategory,
+    rank: '1',
+    laureate: '',
+    prize: '',
+  });
+
+  const addPitch = async () => {
+    if (!supabase || !canEdit) return;
+    if (!pitchForm.laureate.trim()) return setMsg('Enter the laureate name.');
+    setBusy(true);
+    const { error } = await supabase.from('greenpreneur_pitch_results').insert({
+      edition: Number(pitchForm.edition),
+      category: pitchForm.category,
+      rank_no: Number(pitchForm.rank) || 1,
+      laureate: pitchForm.laureate.trim(),
+      prize_usd: Number(pitchForm.prize) || 0,
+    });
+    setBusy(false);
+    if (error) return setMsg(`Could not add result: ${error.message}`);
+    setPitchForm({ ...pitchForm, rank: '1', laureate: '', prize: '' });
+    setMsg('Pitch result added');
+    await reload();
+  };
+
+  const deletePitch = async (id: string) => {
+    if (!supabase || !canEdit) return;
+    const { error } = await supabase.from('greenpreneur_pitch_results').delete().eq('id', id);
+    setMsg(error ? `Could not delete: ${error.message}` : 'Deleted');
+    await reload();
+  };
 
   const canEdit = !!profile && (profile.role === 'ggg' || (profile.role === 'partner' && profile.section_access.includes('greenpreneur')));
   const isGgg = profile?.role === 'ggg';
@@ -401,6 +435,118 @@ export function GreenpreneurInputPage() {
             </div>
           );
         })}
+
+        {/* Pitch competition results (programme-wide, per edition) */}
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-5">
+          <h2 className="text-base font-semibold text-gray-900">Pitch competition</h2>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="text-sm text-gray-700">
+              Edition
+              <input
+                type="number"
+                value={pitchForm.edition}
+                onChange={e => setPitchForm({ ...pitchForm, edition: e.target.value })}
+                disabled={!canEdit}
+                className={inputCls}
+              />
+            </label>
+            <label className="text-sm text-gray-700">
+              Category
+              <select
+                value={pitchForm.category}
+                onChange={e => setPitchForm({ ...pitchForm, category: e.target.value as PitchCategory })}
+                disabled={!canEdit}
+                className={`${inputCls} w-56`}
+              >
+                {PITCH_CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm text-gray-700">
+              Placing
+              <input
+                type="number"
+                min={1}
+                value={pitchForm.rank}
+                onChange={e => setPitchForm({ ...pitchForm, rank: e.target.value })}
+                disabled={!canEdit}
+                className={inputCls}
+              />
+            </label>
+            <label className="text-sm text-gray-700">
+              Laureate
+              <input
+                type="text"
+                value={pitchForm.laureate}
+                onChange={e => setPitchForm({ ...pitchForm, laureate: e.target.value })}
+                placeholder="Enterprise name"
+                disabled={!canEdit}
+                className={inputCls}
+              />
+            </label>
+            <label className="text-sm text-gray-700">
+              Prize (USD)
+              <input
+                type="number"
+                min={0}
+                value={pitchForm.prize}
+                onChange={e => setPitchForm({ ...pitchForm, prize: e.target.value })}
+                disabled={!canEdit}
+                className={inputCls}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={addPitch}
+              disabled={!canEdit || busy}
+              className="px-4 py-2 rounded-lg text-gray-900 text-sm font-semibold hover:bg-gray-100 disabled:opacity-60"
+            >
+              + Add result
+            </button>
+          </div>
+
+          {data.pitch.length === 0 ? (
+            <p className="text-sm text-gray-500">No pitch competition results yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-sm">
+                <thead>
+                  <tr className="text-xs text-gray-500 border-b border-gray-200">
+                    <th className="py-2 px-3 text-left font-medium">Edition</th>
+                    <th className="py-2 px-3 text-left font-medium">Category</th>
+                    <th className="py-2 px-3 text-right font-medium">Placing</th>
+                    <th className="py-2 px-3 text-left font-medium">Laureate</th>
+                    <th className="py-2 px-3 text-right font-medium">Prize (USD)</th>
+                    <th className="py-2 px-3" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.pitch.map(r => (
+                    <tr key={r.id}>
+                      <td className="py-2.5 px-3 text-gray-900 border-b border-gray-100 tabular-nums">{r.edition}</td>
+                      <td className="py-2.5 px-3 text-gray-700 border-b border-gray-100">{r.category}</td>
+                      <td className="py-2.5 px-3 text-right tabular-nums text-gray-700 border-b border-gray-100">{r.rank_no}</td>
+                      <td className="py-2.5 px-3 text-gray-900 border-b border-gray-100">{r.laureate}</td>
+                      <td className="py-2.5 px-3 text-right tabular-nums text-gray-700 border-b border-gray-100">{r.prize_usd.toLocaleString()}</td>
+                      <td className="py-2.5 px-3 text-right border-b border-gray-100">
+                        {canEdit && (
+                          <button
+                            type="button"
+                            onClick={() => deletePitch(r.id)}
+                            className="px-3 py-1.5 rounded-md border border-red-200 text-red-700 hover:bg-red-50 text-xs font-medium"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
 
         {/* Linked centres (compact: same pattern as the Advanced programme venues) */}
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-center gap-3">
