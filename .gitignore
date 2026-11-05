@@ -6,3 +6,5 @@ nul
 __pycache__
 .pdca-status.json
 .env.supabase
+# local seed data with personal details - not for GitHub
+supabase/
