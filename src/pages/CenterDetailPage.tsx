@@ -655,260 +655,6 @@ function InfrastructureInputForm({
   );
 }
 
-type GpStatus = 'Not Started' | 'Scheduled' | 'In Progress' | 'Completed';
-type GpYearKey = '2025' | '2026' | '2027';
-type GpPitch = {
-  participants: number;
-  round_number: number;
-  winners: number;
-  total_seed_capital_allocated: number;
-  seed_capital_per_winner: number;
-  scheduled_date: string;
-  status: GpStatus;
-};
-type GpIncubation = {
-  status: GpStatus;
-  start_date: string;
-  end_date: string;
-  participants_enrolled: number;
-  participants_completed: number;
-};
-type GpYear = { pitch_competition: GpPitch; incubation?: GpIncubation };
-type GpState = { status: GpStatus; years: Record<GpYearKey, GpYear> };
-
-const GP_STATUSES: GpStatus[] = ['Not Started', 'Scheduled', 'In Progress', 'Completed'];
-const GP_YEARS: GpYearKey[] = ['2025', '2026', '2027'];
-const GP_PARTICIPANT_TARGET_PER_YEAR = 225;
-
-const nonNegative = (value: number) => (Number.isFinite(value) && value > 0 ? value : 0);
-
-function toGpState(raw: any): GpState {
-  const years = {} as Record<GpYearKey, GpYear>;
-  GP_YEARS.forEach((year, index) => {
-    const yearRaw = raw?.[year];
-    const pitch = yearRaw?.pitch_competition;
-    const incubation = yearRaw?.incubation;
-    years[year] = {
-      pitch_competition: {
-        participants: pitch?.participants ?? 0,
-        round_number: pitch?.round_number ?? index + 1,
-        winners: pitch?.winners ?? 0,
-        total_seed_capital_allocated: pitch?.total_seed_capital_allocated ?? 0,
-        seed_capital_per_winner: pitch?.seed_capital_per_winner ?? 15000,
-        scheduled_date: pitch?.scheduled_date ?? '',
-        status: pitch?.status ?? 'Scheduled',
-      },
-      ...(incubation
-        ? {
-            incubation: {
-              status: incubation.status ?? 'Not Started',
-              start_date: incubation.start_date ?? '',
-              end_date: incubation.end_date ?? '',
-              participants_enrolled: incubation.participants_enrolled ?? 0,
-              participants_completed: incubation.participants_completed ?? 0,
-            },
-          }
-        : {}),
-    };
-  });
-  return { status: raw?.status ?? 'Not Started', years };
-}
-
-export function GreenpreneurInputForm({
-  centreId,
-  canSave,
-  greenpreneur,
-}: {
-  centreId: string;
-  canSave: boolean;
-  greenpreneur: any;
-}) {
-  const [state, setState] = useState<GpState>(() => toGpState(greenpreneur));
-  const [copied, setCopied] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState<string | null>(null);
-
-  const saveToDatabase = async () => {
-    if (!supabase) return setSaveMsg('Supabase is not configured');
-    setSaving(true);
-    setSaveMsg(null);
-    const { data: { user } } = await supabase.auth.getUser();
-    // Same shape as the static greenpreneur block: year keys plus overall status
-    const data = { ...state.years, status: state.status };
-    const { error } = await supabase
-      .from('centre_greenpreneur')
-      .upsert({ centre_id: centreId, data, updated_at: new Date().toISOString(), updated_by: user?.id ?? null });
-    setSaving(false);
-    setSaveMsg(error ? `Save failed: ${error.message}` : 'Saved to database');
-  };
-
-  const patch = (updater: (s: GpState) => GpState) => {
-    setState(updater);
-    setCopied(false);
-  };
-
-  const patchPitch = (year: GpYearKey, values: Partial<GpPitch>) =>
-    patch(s => ({
-      ...s,
-      years: { ...s.years, [year]: { ...s.years[year], pitch_competition: { ...s.years[year].pitch_competition, ...values } } },
-    }));
-
-  const patchIncubation = (year: GpYearKey, values: Partial<GpIncubation>) =>
-    patch(s => ({
-      ...s,
-      years: {
-        ...s.years,
-        [year]: { ...s.years[year], incubation: { ...(s.years[year].incubation as GpIncubation), ...values } },
-      },
-    }));
-
-  const totals = GP_YEARS.reduce(
-    (acc, year) => {
-      const pitch = state.years[year].pitch_competition;
-      acc.participants += pitch.participants;
-      acc.winners += pitch.winners;
-      acc.seedCapital += pitch.total_seed_capital_allocated;
-      return acc;
-    },
-    { participants: 0, winners: 0, seedCapital: 0 },
-  );
-
-  const copyJson = async () => {
-    try {
-      await navigator.clipboard.writeText(JSON.stringify({ ...greenpreneur, ...state.years, status: state.status }, null, 2));
-      setCopied(true);
-    } catch (error) {
-      console.error('Clipboard write failed:', error);
-    }
-  };
-
-  const selectField = (label: string, value: GpStatus, onChange: (v: GpStatus) => void) => (
-    <label className="flex flex-col gap-1 text-sm text-gray-700">
-      {label}
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value as GpStatus)}
-        className="px-2 py-1.5 border border-gray-300 rounded-md bg-white"
-      >
-        {GP_STATUSES.map(s => (
-          <option key={s} value={s}>{s}</option>
-        ))}
-      </select>
-    </label>
-  );
-
-  const numberField = (label: string, value: number, onChange: (v: number) => void) => (
-    <label className="flex flex-col gap-1 text-sm text-gray-700">
-      {label}
-      <input
-        type="number"
-        min={0}
-        value={value}
-        onChange={e => onChange(nonNegative(Number(e.target.value)))}
-        className="px-2 py-1.5 border border-gray-300 rounded-md"
-      />
-    </label>
-  );
-
-  const dateField = (label: string, value: string, onChange: (v: string) => void) => (
-    <label className="flex flex-col gap-1 text-sm text-gray-700">
-      {label}
-      <input
-        type="date"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className="px-2 py-1.5 border border-gray-300 rounded-md"
-      />
-    </label>
-  );
-
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Greenpreneur Program</h3>
-            <p className="text-sm text-gray-600">
-              Logframe 2.2.2.1: {GP_PARTICIPANT_TARGET_PER_YEAR} participants per year (675 total)
-            </p>
-          </div>
-          <div className="w-56">
-            {selectField('Overall status', state.status, v => patch(s => ({ ...s, status: v })))}
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-3 text-sm">
-          <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
-            <p className="text-xs text-gray-600">Pitch participants</p>
-            <p className="text-xl font-bold text-gray-900">{totals.participants}</p>
-          </div>
-          <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
-            <p className="text-xs text-gray-600">Winners</p>
-            <p className="text-xl font-bold text-gray-900">{totals.winners}</p>
-          </div>
-          <div className="p-3 rounded-lg bg-gray-50 border border-gray-200">
-            <p className="text-xs text-gray-600">Seed capital allocated</p>
-            <p className="text-xl font-bold text-gray-900">{totals.seedCapital.toLocaleString()}</p>
-          </div>
-        </div>
-      </div>
-
-      {GP_YEARS.map(year => {
-        const { pitch_competition: pitch, incubation } = state.years[year];
-        return (
-          <div key={year} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <h4 className="text-base font-semibold text-gray-900 mb-4">{year}</h4>
-
-            <div className="mb-6">
-              <p className="text-sm font-semibold text-gray-700 mb-3">Pitch competition (round {pitch.round_number})</p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {numberField('Participants', pitch.participants, v => patchPitch(year, { participants: v }))}
-                {numberField('Winners', pitch.winners, v => patchPitch(year, { winners: v }))}
-                {selectField('Status', pitch.status, v => patchPitch(year, { status: v }))}
-                {dateField('Scheduled date', pitch.scheduled_date, v => patchPitch(year, { scheduled_date: v }))}
-                {numberField('Seed capital per winner', pitch.seed_capital_per_winner, v => patchPitch(year, { seed_capital_per_winner: v }))}
-                {numberField('Total seed capital allocated', pitch.total_seed_capital_allocated, v => patchPitch(year, { total_seed_capital_allocated: v }))}
-              </div>
-            </div>
-
-            {incubation && (
-              <div>
-                <p className="text-sm font-semibold text-gray-700 mb-3">Incubation</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {selectField('Status', incubation.status, v => patchIncubation(year, { status: v }))}
-                  {dateField('Start date', incubation.start_date, v => patchIncubation(year, { start_date: v }))}
-                  {dateField('End date', incubation.end_date, v => patchIncubation(year, { end_date: v }))}
-                  {numberField('Participants enrolled', incubation.participants_enrolled, v => patchIncubation(year, { participants_enrolled: v }))}
-                  {numberField('Participants completed', incubation.participants_completed, v => patchIncubation(year, { participants_completed: v }))}
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })}
-
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          onClick={copyJson}
-          className="px-4 py-2 bg-dg-green-600 text-white rounded-lg hover:bg-dg-green-700 transition-colors font-medium"
-        >
-          Copy Greenpreneur JSON
-        </button>
-        {canSave && (
-          <button
-            onClick={saveToDatabase}
-            disabled={saving}
-            className="px-4 py-2 bg-dg-blue-600 text-white rounded-lg hover:bg-dg-blue-700 disabled:opacity-60 transition-colors font-medium"
-          >
-            {saving ? 'Saving…' : 'Save to database'}
-          </button>
-        )}
-        {copied && <span className="text-sm text-dg-green-700">Copied to clipboard</span>}
-        {saveMsg && <span className="text-sm text-gray-700">{saveMsg}</span>}
-      </div>
-    </div>
-  );
-}
-
 // Advanced ICT & green business (DigiFemme): trainers assigned per centre, and yearly student counts
 const ADVANCED_MODULES = [
   { key: 'ui_ux', label: 'UI/UX Design' },
@@ -1329,7 +1075,7 @@ function BasicTrainingInputForm({
   );
 }
 
-type InputSection = 'tot' | 'infrastructure' | 'greenpreneur' | 'training' | 'advanced' | 'advanced_tot';
+type InputSection = 'tot' | 'infrastructure' | 'training' | 'advanced' | 'advanced_tot';
 
 const INPUT_SECTIONS: Array<{ value: InputSection; label: string }> = [
   { value: 'tot', label: '105 trainers ToT completion' },
@@ -1337,7 +1083,6 @@ const INPUT_SECTIONS: Array<{ value: InputSection; label: string }> = [
   { value: 'advanced_tot', label: 'Advanced trainers ToT completion' },
   { value: 'advanced', label: 'Advanced students enrolled and passed' },
   { value: 'infrastructure', label: 'Infrastructure (renovation, equipment)' },
-
 ];
 
 // Per-center actuals for the Overview cards. Targets are per center (centers.json), not logframe totals.
@@ -1655,20 +1400,18 @@ export function CenterDetailPage() {
   const centreKey = id ?? '';
   const canTot = isApproved(profile) && canEditSection(profile, centreKey, 'tot');
   const canInfra = isApproved(profile) && canEditSection(profile, centreKey, 'infra');
-  const canGp = isApproved(profile) && canEditSection(profile, centreKey, 'greenpreneur');
   const canTraining = isApproved(profile) && canEditSection(profile, centreKey, 'training');
   const canAdvanced = isApproved(profile) && canEditSection(profile, centreKey, 'advanced');
   const canIct = isApproved(profile) && canEditSection(profile, centreKey, 'advanced_ict');
   const canGreen = isApproved(profile) && canEditSection(profile, centreKey, 'advanced_green');
   const canAdvTot = canIct || canGreen;
-  const canInput = canTot || canInfra || canGp || canTraining || canAdvanced || canAdvTot;
+  const canInput = canTot || canInfra || canTraining || canAdvanced || canAdvTot;
   const SECTION_RIGHTS: Record<InputSection, boolean> = {
     tot: canTot,
     training: canTraining,
     advanced: canAdvanced,
     advanced_tot: canAdvTot,
     infrastructure: canInfra,
-    greenpreneur: canGp,
   };
   const allowedSections = INPUT_SECTIONS.filter(s => SECTION_RIGHTS[s.value]);
   const effectiveSection = allowedSections.find(s => s.value === inputSection)?.value ?? allowedSections[0]?.value;
@@ -2056,13 +1799,6 @@ export function CenterDetailPage() {
               <InfrastructureInputForm centreId={center.id} canSave={canInfra} infrastructure={center.infrastructure} />
             ) : (
               <EmptyInputNotice message="No infrastructure data for this center" />
-            )}
-          </div>
-          <div className={effectiveSection === 'greenpreneur' ? '' : 'hidden'}>
-            {center.greenpreneur ? (
-              <GreenpreneurInputForm centreId={center.id} canSave={canGp} greenpreneur={center.greenpreneur} />
-            ) : (
-              <EmptyInputNotice message="No Greenpreneur data for this center" />
             )}
           </div>
         </div>
