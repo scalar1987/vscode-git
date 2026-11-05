@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { supabase } from '../lib/centersData';
 import { getProfile, getSession, onAuthChange, type Profile } from '../lib/auth';
 
@@ -130,6 +131,7 @@ interface ProgressRow {
   item_no: number;
   completed: boolean;
   completed_date: string | null;
+  completed_at: string | null;
 }
 
 // "2025-08" + offset months -> "August 2025"
@@ -148,7 +150,23 @@ const isFinished = (label: string, r?: { completed: boolean; completed_date: str
 
 const itemKey = (cohortId: string, track: Track, month: number, item: number) => `${cohortId}|${track}|${month}|${item}`;
 
-export function AdvancedProgrammePage() {
+// "Week 6 · ..." -> 6 (0 if the label has no week prefix)
+const weekOf = (label: string) => {
+  const m = label.match(/^Week (\d+)/);
+  return m ? Number(m[1]) : 0;
+};
+
+function StatCard({ label, value, sub, tone = 'default' }: { label: string; value: string; sub?: string; tone?: 'default' | 'warn' }) {
+  return (
+    <div className={`rounded-xl p-5 shadow-sm border ${tone === 'warn' ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-100'}`}>
+      <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
+      <p className={`mt-2 text-3xl font-semibold tabular-nums ${tone === 'warn' ? 'text-amber-700' : 'text-gray-900'}`}>{value}</p>
+      {sub && <p className="mt-1 text-xs text-gray-500">{sub}</p>}
+    </div>
+  );
+}
+
+export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress' | 'input' }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [selected, setSelected] = useState<string>('');
@@ -163,6 +181,9 @@ export function AdvancedProgrammePage() {
   });
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteName, setDeleteName] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   const canEdit = !!profile && (profile.role === 'ggg' || (profile.role === 'partner' && profile.section_access.includes('advanced')));
 
@@ -178,7 +199,7 @@ export function AdvancedProgrammePage() {
     if (!supabase) return;
     const [c, p, ce, v] = await Promise.all([
       supabase.from('advanced_cohorts').select('id, name, start_month').order('start_month', { ascending: false }),
-      supabase.from('advanced_cohort_progress').select('cohort_id, track, month_no, item_no, completed, completed_date'),
+      supabase.from('advanced_cohort_progress').select('cohort_id, track, month_no, item_no, completed, completed_date, completed_at'),
       supabase.from('centres').select('id, name').order('sort_order'),
       supabase.from('advanced_cohort_centres').select('cohort_id, centre_id'),
     ]);
@@ -214,6 +235,49 @@ export function AdvancedProgrammePage() {
     return n;
   }, [rows, current]);
 
+  // Summary for the progress view: per-month counts, latest dated completions, and what is next
+  const progressView = useMemo(() => {
+    if (!current) return null;
+    const monthStats = [0, 1, 2, 3].map(m => ({
+      m,
+      total: CURRICULUM.ict[m].length + CURRICULUM.green[m].length,
+      done: 0,
+    }));
+    const all: { label: string; month: number; done: boolean; at: string | null; week: number }[] = [];
+    (['ict', 'green'] as Track[]).forEach(track =>
+      CURRICULUM[track].forEach((items, m) =>
+        items.forEach((label, i) => {
+          const r = rows[itemKey(current.id, track, m + 1, i)];
+          const done = isFinished(label, r);
+          if (done) monthStats[m].done++;
+          all.push({ label, month: m, done, at: r?.completed_at ?? null, week: weekOf(label) });
+        }),
+      ),
+    );
+    // Completed items ordered by when they were ticked (oldest first; items without a time count as oldest)
+    const byTime = all
+      .map((x, idx) => ({ ...x, idx }))
+      .filter(x => x.done)
+      .sort((a, b) => (a.at ?? '').localeCompare(b.at ?? '') || a.idx - b.idx);
+    const recent = byTime.slice(-5).reverse();
+    // Next up: the six unfinished items that come after the most recently ticked item in programme order
+    const latestIdx = byTime.length ? byTime[byTime.length - 1].idx : -1;
+    const next = all.slice(latestIdx + 1).filter(x => !x.done).slice(0, 5);
+    // Outstanding: earlier items (before the most recently ticked one) that are still not done
+    const outstanding = all.slice(0, Math.max(latestIdx, 0)).filter(x => !x.done);
+    // Cumulative items per programme week: planned (curriculum) vs actual (ticked)
+    let plannedSum = 0;
+    let actualSum = 0;
+    const weekly = Array.from({ length: 13 }, (_, k) => k + 1).map(w => {
+      plannedSum += all.filter(x => x.week === w).length;
+      actualSum += all.filter(x => x.week === w && x.done).length;
+      return { week: `W${w}`, planned: plannedSum, actual: actualSum };
+    });
+    return { monthStats, recent, next, outstanding, weekly };
+  }, [rows, current]);
+
+  const pctOf = (d: number, t: number) => (t > 0 ? Math.round((d / t) * 100) : 0);
+
   const setItem = (track: Track, month: number, item: number, patch: Partial<ProgressRow>) => {
     if (!current) return;
     const key = itemKey(current.id, track, month, item);
@@ -228,6 +292,7 @@ export function AdvancedProgrammePage() {
           item_no: item,
           completed: cur?.completed ?? false,
           completed_date: cur?.completed_date ?? null,
+          completed_at: cur?.completed_at ?? null,
           ...patch,
         },
       };
@@ -268,6 +333,21 @@ export function AdvancedProgrammePage() {
     setSaveMsg('Cohort added');
   };
 
+  // Deleting a cohort also removes its progress rows and venue links (ON DELETE CASCADE)
+  const deleteCohort = async () => {
+    if (!supabase || !current) return;
+    setDeleting(true);
+    const { data, error } = await supabase.from('advanced_cohorts').delete().eq('id', current.id).select('id');
+    setDeleting(false);
+    if (error) return setSaveMsg(`Could not delete cohort: ${error.message}`);
+    if (!data || data.length === 0) return setSaveMsg('Could not delete cohort: permission denied.');
+    const name = current.name;
+    setDeleteOpen(false);
+    setDeleteName('');
+    await loadAll();
+    setSaveMsg(`Deleted "${name}"`);
+  };
+
   const saveProgress = async () => {
     if (!supabase || !current) return;
     setSaving(true);
@@ -286,6 +366,7 @@ export function AdvancedProgrammePage() {
             item_no: i,
             completed: isFinished(label, r),
             completed_date: needsDate(label) && r?.completed_date ? r.completed_date : null,
+            completed_at: r?.completed ? (r.completed_at ?? now) : null,
             updated_at: now,
             updated_by: user?.id ?? null,
           });
@@ -304,10 +385,16 @@ export function AdvancedProgrammePage() {
           <Link to="/" className="p-2 rounded-lg hover:bg-gray-100 text-gray-600" aria-label="Back to dashboard">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Advanced programme progress</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{mode === 'input' ? 'Advanced programme: data input' : 'Advanced programme: progress'}</h1>
+          <Link
+            to={mode === 'input' ? '/advanced-programme' : '/advanced-programme/input'}
+            className="ml-auto px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
+          >
+            {mode === 'input' ? 'Progress' : 'Data input'}
+          </Link>
         </div>
 
-        {canEdit && (
+        {mode === 'input' && canEdit && (
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-end gap-3">
             <label className="text-sm text-gray-700">
               New cohort name
@@ -360,12 +447,134 @@ export function AdvancedProgrammePage() {
               {doneCount} / {totalItems} done
             </span>
           )}
+          {current && mode === 'input' && profile?.role === 'ggg' && (
+            <button
+              type="button"
+              onClick={() => { setDeleteName(''); setDeleteOpen(true); }}
+              className="px-3 py-2 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 text-sm font-medium"
+            >
+              Delete cohort
+            </button>
+          )}
         </div>
+
+
+        {current && progressView && mode === 'progress' && (
+          <>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard label="Overall progress" value={`${pctOf(doneCount, totalItems)}%`} sub={`${doneCount} of ${totalItems} items`} />
+              <StatCard label="Items completed" value={String(doneCount)} sub={`${totalItems - doneCount} remaining`} />
+              <StatCard label="Centres" value={String((venues[current.id] ?? []).length)} sub="running this cohort" />
+              <StatCard
+                label="Outstanding"
+                value={String(progressView.outstanding.length)}
+                sub="earlier items still open"
+                tone={progressView.outstanding.length > 0 ? 'warn' : 'default'}
+              />
+            </div>
+
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="mb-4">
+                <h3 className="text-base font-semibold text-gray-900">Planned vs actual</h3>
+                <p className="text-xs text-gray-500">Cumulative items completed by programme week</p>
+              </div>
+              <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={progressView.weekly} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                    <XAxis dataKey="week" tickLine={false} axisLine={{ stroke: '#e5e7eb' }} tick={{ fontSize: 12, fill: '#6b7280' }} />
+                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
+                    <Tooltip contentStyle={{ borderRadius: 8, borderColor: '#e5e7eb', fontSize: 12 }} />
+                    <Legend verticalAlign="top" align="right" iconType="plainline" wrapperStyle={{ fontSize: 12, paddingBottom: 8 }} />
+                    <Line type="monotone" dataKey="planned" name="Planned" stroke="#9ca3af" strokeDasharray="6 4" dot={false} strokeWidth={2} />
+                    <Line type="monotone" dataKey="actual" name="Actual" stroke="#15803d" strokeWidth={3} dot={{ r: 3 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <h3 className="text-base font-semibold text-gray-900 mb-4">Monthly progress</h3>
+              <div className="space-y-4">
+                {progressView.monthStats.map(s => (
+                  <div key={s.m} className="grid items-center gap-4" style={{ gridTemplateColumns: '9rem 1fr 5rem' }}>
+                    <span className="text-sm text-gray-700">{monthLabel(current.start_month, s.m)}</span>
+                    <div className="h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
+                      <div className="h-2.5 rounded-full bg-dg-green-500" style={{ width: `${pctOf(s.done, s.total)}%` }} />
+                    </div>
+                    <span className="text-sm text-gray-600 text-right tabular-nums">{s.done} / {s.total}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-base font-semibold text-gray-900 mb-4">Latest completed</h3>
+                {progressView.recent.length === 0 ? (
+                  <p className="text-sm text-gray-500">Nothing completed yet.</p>
+                ) : (
+                  <ul className="space-y-4">
+                    {progressView.recent.map((x, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <Check className="mt-0.5 w-4 h-4 shrink-0 text-dg-green-600" />
+                        <div className="min-w-0">
+                          <p className="text-sm text-gray-900">{x.label}</p>
+                          <p className="text-xs text-gray-500">{monthLabel(current.start_month, x.month)}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                <h3 className="text-base font-semibold text-gray-900 mb-4">Next up</h3>
+                {progressView.next.length === 0 ? (
+                  <p className="text-sm text-gray-500">All items are done.</p>
+                ) : (
+                  <ul className="space-y-4">
+                    {progressView.next.map((x, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <span className="mt-1.5 w-2 h-2 shrink-0 rounded-full bg-gray-300" />
+                        <div className="min-w-0">
+                          <p className="text-sm text-gray-900">{x.label}</p>
+                          <p className="text-xs text-gray-500">{monthLabel(current.start_month, x.month)}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            <div className={`rounded-xl p-6 shadow-sm border ${progressView.outstanding.length > 0 ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-100'}`}>
+              <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+                <h3 className="text-base font-semibold text-gray-900">Outstanding</h3>
+                <span className="text-xs text-gray-600">Earlier items not yet done</span>
+              </div>
+              {progressView.outstanding.length === 0 ? (
+                <p className="text-sm text-gray-500">No earlier items are left open.</p>
+              ) : (
+                <ul className="space-y-4">
+                  {progressView.outstanding.map((x, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      <span className="mt-1.5 w-2 h-2 shrink-0 rounded-full bg-amber-500" />
+                      <div className="min-w-0">
+                        <p className="text-sm text-gray-900">{x.label}</p>
+                        <p className="text-xs text-gray-600">{monthLabel(current.start_month, x.month)}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </>
+        )}
 
         {current && (
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-center gap-3">
             <span className="text-sm font-semibold text-gray-900">Centres where this cohort runs</span>
-            <details className="relative">
+            {mode === 'input' && <details className="relative">
               <summary className="list-none cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md bg-white min-w-[260px] flex items-center justify-between gap-3">
                 <span>{(venues[current.id] ?? []).length} selected</span>
                 <span className="text-gray-400">▾</span>
@@ -398,13 +607,13 @@ export function AdvancedProgrammePage() {
                     })}
                 </div>
               </div>
-            </details>
-            <ol className="w-full list-decimal list-inside space-y-1 text-sm text-gray-700">
+            </details>}
+            <ol className="w-full flex flex-wrap gap-2">
               {centres
                 .filter(ce => (venues[current.id] ?? []).includes(ce.id))
                 .map(ce => (
                   <li key={ce.id}>
-                    <Link to={`/centers/${ce.id}`} className="text-dg-blue-700 hover:underline">{ce.name}</Link>
+                    <Link to={`/centers/${ce.id}`} className="inline-block rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-dg-blue-700 hover:bg-white hover:border-dg-blue-300">{ce.name}</Link>
                   </li>
                 ))}
             </ol>
@@ -412,7 +621,7 @@ export function AdvancedProgrammePage() {
           </div>
         )}
 
-        {current &&
+        {current && mode === 'input' &&
           [0, 1, 2, 3].map(m => (
             <div key={m} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-4">
               <h2 className="text-base font-semibold text-gray-900">{monthLabel(current.start_month, m)}</h2>
@@ -433,6 +642,7 @@ export function AdvancedProgrammePage() {
                               onChange={e =>
                                 setItem(track, m + 1, i, {
                                   completed: e.target.checked,
+                                  completed_at: e.target.checked ? new Date().toISOString() : null,
                                   completed_date: e.target.checked ? (r?.completed_date ?? null) : null,
                                 })
                               }
@@ -459,7 +669,7 @@ export function AdvancedProgrammePage() {
             </div>
           ))}
 
-        {current && canEdit && (
+        {mode === 'input' && current && canEdit && (
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={saveProgress}
@@ -471,9 +681,51 @@ export function AdvancedProgrammePage() {
             {saveMsg && <span className="text-sm text-gray-700">{saveMsg}</span>}
           </div>
         )}
-        {current && !canEdit && (
+        {mode === 'input' && current && !canEdit && (
           <p className="text-sm text-gray-500">Sign in with a DigiFemme or GGGI account to update progress.</p>
         )}
+        {deleteOpen && current && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+            onClick={() => { setDeleteOpen(false); setDeleteName(''); }}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div onClick={e => e.stopPropagation()} className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-xl space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">Delete cohort?</h3>
+              <p className="text-sm text-gray-700">
+                This permanently deletes <strong>{current.name}</strong>, including {doneCount} completed items and {(venues[current.id] ?? []).length} linked centres. This cannot be undone.
+              </p>
+              <label className="block text-sm text-gray-700">
+                Type the cohort name to confirm
+                <input
+                  type="text"
+                  value={deleteName}
+                  onChange={e => setDeleteName(e.target.value)}
+                  className="mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md"
+                />
+              </label>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setDeleteOpen(false); setDeleteName(''); }}
+                  className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={deleteCohort}
+                  disabled={deleting || deleteName !== current.name}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm font-medium disabled:opacity-40"
+                >
+                  {deleting ? 'Deleting…' : 'Delete cohort'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {!current && saveMsg && <p className="text-sm text-gray-700">{saveMsg}</p>}
       </div>
     </div>
