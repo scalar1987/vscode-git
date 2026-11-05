@@ -16,6 +16,7 @@ function App() {
         <Route index element={<Dashboard />} />
         <Route path="centers" element={<CentersOverviewPage />} />
         <Route path="advanced-programme" element={<AdvancedProgrammePage />} />
+        <Route path="advanced-programme/input" element={<AdvancedProgrammePage mode="input" />} />
         <Route path="greenpreneur-input" element={<GreenpreneurInputPage />} />
         <Route path="centers/:id" element={<CenterDetailPage />} />
         <Route path="settings" element={<PlaceholderPage title="Settings" description="Configure your dashboard preferences" icon="⚙️" />} />

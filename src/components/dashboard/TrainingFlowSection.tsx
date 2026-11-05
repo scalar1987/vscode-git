@@ -61,8 +61,8 @@ const FLOWS: FlowRow[] = [
 ];
 
 const COLOR = {
-  green: { bar: 'bg-dg-green-500', text: 'text-dg-green-700', ring: 'border-dg-green-200', bg: 'bg-dg-green-50' },
-  blue: { bar: 'bg-dg-blue-500', text: 'text-dg-blue-700', ring: 'border-dg-blue-200', bg: 'bg-dg-blue-50' },
+  green: { bar: 'bg-dg-green-500', text: 'text-dg-green-700', ring: 'border-dg-green-200', bg: 'bg-dg-green-50', accent: 'border-l-dg-green-600' },
+  blue: { bar: 'bg-dg-blue-500', text: 'text-dg-blue-700', ring: 'border-dg-blue-200', bg: 'bg-dg-blue-50', accent: 'border-l-dg-blue-600' },
 } as const;
 
 const pct = (value: number, target: number) => (target > 0 ? Math.min(100, (value / target) * 100) : 0);
@@ -136,7 +136,7 @@ export function TrainingFlowSection() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: flowIdx * 0.1 }}
-            className={`rounded-xl border ${c.ring} ${c.bg} p-5`}
+            className={`rounded-xl border border-gray-200 border-l-4 ${c.accent} bg-white p-5 shadow-sm`}
           >
             <h3 className={`font-semibold mb-4 ${c.text}`}>{flow.title}</h3>
             <div className="flex flex-col md:flex-row md:items-stretch gap-3">
@@ -167,15 +167,15 @@ export function TrainingFlowSection() {
                         isSelected ? 'border-gray-900 shadow-md' : 'border-gray-200'
                       }`}
                     >
-                      <div className="text-xs text-gray-500">{node.indicatorId} · {node.label}</div>
+                      <div className="text-sm text-gray-600">{node.indicatorId} · {node.label}</div>
                       {view === 'yearly' && (
                         <div className="mt-1 text-[11px] uppercase tracking-wide text-gray-400">2026 (H1)</div>
                       )}
                       <div className="mt-1 flex items-baseline gap-1">
-                        <span className="text-2xl font-bold text-gray-900 tabular-nums">
+                        <span className="text-3xl font-bold text-gray-900 tabular-nums">
                           <CountUp end={value} duration={1} separator="," preserveValue />
                         </span>
-                        <span className="text-sm text-gray-400">/ {target.toLocaleString()}</span>
+                        <span className="text-lg text-gray-400">/ {target.toLocaleString()}</span>
                       </div>
                       <div className="mt-2 h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
                         <motion.div
