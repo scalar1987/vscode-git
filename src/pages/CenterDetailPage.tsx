@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { loadCenters, loadTotRecords } from '../lib/centersData';
 import { useState, useEffect, Fragment } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -994,17 +995,15 @@ export function CenterDetailPage() {
   const [totBasic, setTotBasic] = useState<TotBasicRecord[]>([]);
 
   useEffect(() => {
-    fetch('/training_records.json')
-      .then(r => r.json())
-      .then((data: { tot_basic: TotBasicRecord[] }) => setTotBasic(data.tot_basic ?? []))
+    loadTotRecords()
+      .then(records => setTotBasic(records))
       .catch(() => setTotBasic([]));
   }, []);
 
   useEffect(() => {
     const fetchCenter = async () => {
       try {
-        const response = await fetch('/centers.json');
-        const centers: Center[] = await response.json();
+        const centers = (await loadCenters()) as Center[];
         const found = centers.find(c => c.id === id);
         setCenter(found || null);
       } catch (error) {
@@ -1237,6 +1236,9 @@ export function CenterDetailPage() {
                     barClass="bg-gradient-to-r from-dg-amber-500 to-dg-amber-600"
                     summary={center.infrastructure.equipment.status ?? 'Pending'}
                   >
+                    {center.infrastructure.equipment.notes && (
+                      <p className="text-sm text-gray-600 mb-4">{center.infrastructure.equipment.notes}</p>
+                    )}
                     <div className="space-y-2 text-sm">
                       {(center.infrastructure.equipment.items ?? []).map((item: any, i: number) => (
                         <div key={i} className="flex justify-between gap-4">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { loadCenters } from '../lib/centersData';
 
 interface KPIData {
   centersOperational: { value: number; target: number };
@@ -20,7 +21,7 @@ export const useKPIData = () => {
       try {
         const [performanceActuals, centers] = await Promise.all([
           fetch('/performance_actuals.json').then(r => r.json()),
-          fetch('/centers.json').then(r => r.json())
+          loadCenters()
         ]);
 
         // Use the latest reporting period (last entry in performance_actuals.json)

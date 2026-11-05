@@ -22,6 +22,7 @@
   "description": "",
   "dependencies": {
     "@headlessui/react": "^2.2.9",
+    "@supabase/supabase-js": "^2.119.0",
     "@tailwindcss/forms": "^0.5.11",
     "clsx": "^2.1.1",
     "docx": "^9.5.1",

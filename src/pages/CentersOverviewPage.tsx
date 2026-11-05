@@ -2,6 +2,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Search } from 'lucide-react';
 import { CENTER_STATUSES, CENTER_STATUS_COLORS, type CenterStatus } from '../types/center';
+import { loadCenters, loadTotRecords } from '../lib/centersData';
 
 // One table row per centre. Data: public/centers.json + public/training_records.json
 interface CenterRow {
@@ -32,18 +33,10 @@ const SHORT_STATUS: Record<CenterStatus, string> = {
   'Works not started': 'Not started',
 };
 
-const INFRA_STATUS_CLS: Record<string, string> = {
-  Completed: 'bg-dg-green-100 text-dg-green-700',
-  'In Progress': 'bg-dg-amber-100 text-dg-amber-700',
-  Pending: 'bg-gray-100 text-gray-500',
-};
-
 interface RowData {
   c: CenterRow;
   renov: number;
   equip: number;
-  internet: string;
-  elec: string;
   totDone: number;
   coords: number;
   enrolled: number;
@@ -59,10 +52,6 @@ function Bar({ value, max, cls }: { value: number; max: number; cls: string }) {
       <div className={`h-full ${cls}`} style={{ width: `${pct}%` }} />
     </div>
   );
-}
-
-function Pill({ text, cls }: { text: string; cls: string }) {
-  return <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${cls}`}>{text}</span>;
 }
 
 function summarize(items: RowData[]) {
@@ -91,13 +80,10 @@ export function CentersOverviewPage() {
   const [query, setQuery] = useState('');
 
   useEffect(() => {
-    Promise.all([
-      fetch('/centers.json').then(r => r.json()),
-      fetch('/training_records.json').then(r => r.json()),
-    ])
-      .then(([c, t]) => {
+    Promise.all([loadCenters(), loadTotRecords()])
+      .then(([c, records]) => {
         setCenters(c);
-        setTot(t.tot_basic ?? []);
+        setTot(records);
       })
       .catch(() => setCenters([]))
       .finally(() => setLoading(false));
@@ -114,8 +100,6 @@ export function CentersOverviewPage() {
         c,
         renov: c.infrastructure?.renovation?.completion_percentage ?? 0,
         equip: c.infrastructure?.equipment?.completion_percentage ?? 0,
-        internet: c.infrastructure?.internet_infrastructure?.status ?? 'Pending',
-        elec: c.infrastructure?.electricity?.status ?? 'Pending',
         totDone: recs.filter(r => r.in_person_completed === true && r.lms_completed === true).length,
         coords: c.center_coordinators?.length ?? 0,
         enrolled: (basic?.school_students?.enrolled ?? 0) + (basic?.university_students?.enrolled ?? 0),
@@ -146,7 +130,6 @@ export function CentersOverviewPage() {
         </td>
         <td className={numCls}>{s.renovAvg}% <span className="text-xs font-normal text-gray-400">avg</span></td>
         <td className={numCls}>{s.equipAvg}% <span className="text-xs font-normal text-gray-400">avg</span></td>
-        <td className={cellCls} colSpan={2}></td>
         <td className={numCls}>{s.totDone} / {s.coords}</td>
         <td className={numCls}>{s.enrolled.toLocaleString()} / {s.target.toLocaleString()}</td>
         <td className={numCls}>{s.passed.toLocaleString()} / {s.passTarget.toLocaleString()}</td>
@@ -213,8 +196,6 @@ export function CentersOverviewPage() {
                   <th className={headCls}>Status</th>
                   <th className={`${headCls} text-right`}>Renovation</th>
                   <th className={`${headCls} text-right`}>Equipment</th>
-                  <th className={headCls}>Internet</th>
-                  <th className={headCls}>Electricity</th>
                   <th className={`${headCls} text-right`}>Basic ToT (coordinators done / total)</th>
                   <th className={`${headCls} text-right`}>Basic enrolled / target</th>
                   <th className={`${headCls} text-right`}>Basic passed / pass target (64%)</th>
@@ -223,7 +204,7 @@ export function CentersOverviewPage() {
               <tbody>
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center text-sm text-gray-500">No centres match these filters</td>
+                    <td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500">No centres match these filters</td>
                   </tr>
                 )}
                 {filtered.map(r => (
@@ -253,12 +234,6 @@ export function CentersOverviewPage() {
                         <Bar value={r.equip} max={100} cls="bg-dg-amber-500" />
                       </span>
                       {r.equip}%
-                    </td>
-                    <td className={cellCls}>
-                      <Pill text={r.internet} cls={INFRA_STATUS_CLS[r.internet] ?? INFRA_STATUS_CLS.Pending} />
-                    </td>
-                    <td className={cellCls}>
-                      <Pill text={r.elec} cls={INFRA_STATUS_CLS[r.elec] ?? INFRA_STATUS_CLS.Pending} />
                     </td>
                     <td className={numCls}>{r.totDone} / {r.coords}</td>
                     <td className={numCls}>
