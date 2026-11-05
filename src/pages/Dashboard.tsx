@@ -5,6 +5,7 @@ import { useGENIEData, type KPICard as KPICardData } from '../hooks/useGENIEData
 import { useOutputProgress } from '../hooks/useOutputProgress';
 import { TrainingFlowSection } from '../components/dashboard/TrainingFlowSection';
 import type { CenterStatus } from '../types/center';
+import { loadCenters } from '../lib/centersData';
 import {
   HeroSection,
   KPICard,
@@ -82,8 +83,7 @@ export function Dashboard() {
 
   // Fetch centers data
   useEffect(() => {
-    fetch('/centers.json')
-      .then(res => res.json())
+    loadCenters()
       .then((data: Center[]) => {
         setCenters(data);
         setCentersLoading(false);
@@ -177,7 +177,7 @@ export function Dashboard() {
       )}
 
       {/* Centers Section */}
-      <section id="training" className="px-4 md:px-6 lg:px-8 pb-8">
+      <section id="training" className="px-4 md:px-6 lg:px-8 pt-6 pb-8">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
             <GraduationCap className="w-6 h-6 text-dg-green-600" />
