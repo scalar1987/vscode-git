@@ -41,7 +41,9 @@ export const useGENIEData = (): UseGENIEDataResult => {
 
         // Extract values from the data arrays
         const actualValues = actuals[0].values as Record<string, number>;
-        const stories = narratives[0].stories as Record<string, { narrative?: string }>;
+        // narratives.json is { narratives: [ { stories } ] }; older files were a bare array
+        const narrativeList: Array<{ stories?: unknown }> = Array.isArray(narratives) ? narratives : (narratives.narratives ?? []);
+        const stories = (narrativeList[0]?.stories ?? {}) as Record<string, { narrative?: string }>;
 
         // Build 4 KPI cards from key indicators (ordered as requested)
         const cards: KPICard[] = [
