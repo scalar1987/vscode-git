@@ -157,7 +157,7 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>
       {!SHOW_ONLY_CENTERS && (
         <>
           {/* Overview Section */}
@@ -368,7 +368,7 @@ export function Dashboard() {
             <div className="flex flex-wrap items-center gap-3">
               <ViewToggle value={flowView} onChange={setFlowView} />
               <Link
-                to="/greenpreneur-input"
+                to="/greenpreneur-progress"
                 className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
               >
                 Greenpreneur programme progress

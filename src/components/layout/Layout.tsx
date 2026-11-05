@@ -6,7 +6,7 @@ export function Layout() {
   return (
     <div className={styles.layout}>
       {/* Top bar: logo | centred title | sign-in state (visible on every page) */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="border-b border-gray-200" style={{ backgroundColor: '#FAFAF7' }}>
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 h-20 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
           <div className="flex items-center min-w-0">
             <Link to="/" aria-label="Home">
@@ -21,7 +21,6 @@ export function Layout() {
           </div>
         </div>
       </div>
-      <div className="h-8" />
       <main className={styles.main}>
         <Outlet />
       </main>

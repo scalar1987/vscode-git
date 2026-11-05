@@ -174,8 +174,8 @@ export function CentersOverviewPage() {
   const selectCls = 'py-2.5 pl-3 pr-10 min-w-[150px] text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-5">
+    <div className="min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 pt-10 pb-8 space-y-5">
         <div className="flex items-center gap-3">
           <Link to="/" className="p-2 rounded-lg hover:bg-gray-100 text-gray-600" aria-label="Back to dashboard">
             <ArrowLeft className="w-5 h-5" />

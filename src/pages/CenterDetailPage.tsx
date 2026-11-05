@@ -1723,12 +1723,12 @@ export function CenterDetailPage() {
   const isOperational = center.status === 'Operational';
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm"
+        className="mt-6 bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm"
       >
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">

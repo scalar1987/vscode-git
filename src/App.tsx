@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage'
 import { SignUpPage } from './pages/SignUpPage'
 import { AdvancedProgrammePage } from './pages/AdvancedProgrammePage'
 import { GreenpreneurInputPage } from './pages/GreenpreneurInputPage'
+import { GreenpreneurProgressPage } from './pages/GreenpreneurProgressPage'
 import { RequireAuth } from './components/RequireAuth'
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path="centers" element={<CentersOverviewPage />} />
         <Route path="advanced-programme" element={<AdvancedProgrammePage />} />
         <Route path="advanced-programme/input" element={<AdvancedProgrammePage mode="input" />} />
+        <Route path="greenpreneur-progress" element={<GreenpreneurProgressPage />} />
         <Route path="greenpreneur-input" element={<GreenpreneurInputPage />} />
         <Route path="centers/:id" element={<CenterDetailPage />} />
         <Route path="settings" element={<PlaceholderPage title="Settings" description="Configure your dashboard preferences" icon="⚙️" />} />
