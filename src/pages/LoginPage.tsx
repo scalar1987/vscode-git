@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { signIn } from '../lib/auth';
 
 export function LoginPage() {
@@ -26,7 +26,7 @@ export function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <form onSubmit={onSubmit} className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
         <h1 className="text-xl font-semibold text-gray-900">Sign in</h1>
-        <p className="text-sm text-gray-500">GENIE M&amp;E staff and centre coordinators</p>
+        <p className="text-sm text-gray-500">GENIE M&amp;E staff and centre trainers</p>
 
         <label className="block text-sm">
           <span className="text-gray-700">Email</span>
@@ -61,6 +61,11 @@ export function LoginPage() {
         >
           {busy ? 'Signing in…' : 'Sign in'}
         </button>
+
+        <p className="text-sm text-gray-500">
+          No account yet?{' '}
+          <Link to="/signup" className="font-medium text-dg-green-700 hover:underline">Create an account</Link>
+        </p>
       </form>
     </div>
   );
