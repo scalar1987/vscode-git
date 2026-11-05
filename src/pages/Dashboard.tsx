@@ -302,13 +302,13 @@ export function Dashboard() {
       >
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
-              <MapPin className="w-5 h-5 text-gray-500" />
+            <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
+              <MapPin className="w-6 h-6 text-gray-500" />
               35 GENIE Centres Network
             </h2>
             <Link
               to="/centers"
-              className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
+              className="px-4 py-2 rounded-lg bg-dg-green-600 hover:bg-dg-green-700 text-white text-sm font-medium transition-colors"
             >
               View all centres table
             </Link>
@@ -330,8 +330,8 @@ export function Dashboard() {
       >
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
-              <GraduationCap className="w-5 h-5 text-gray-500" />
+            <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
+              <GraduationCap className="w-6 h-6 text-gray-500" />
               GENIE Capacity Building Program
             </h2>
             <div className="flex flex-wrap items-center gap-3">
@@ -361,8 +361,8 @@ export function Dashboard() {
       >
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
-              <Briefcase className="w-5 h-5 text-gray-500" />
+            <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
+              <Briefcase className="w-6 h-6 text-gray-500" />
               GENIE Greenpreneur Incubation Program
             </h2>
             <div className="flex flex-wrap items-center gap-3">
