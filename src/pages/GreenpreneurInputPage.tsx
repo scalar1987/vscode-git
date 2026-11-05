@@ -33,13 +33,19 @@ export function GreenpreneurInputPage() {
   const canSave = !!centre && canEditSection(profile, centre.id, 'greenpreneur');
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>
       <div className="max-w-5xl mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-6">
         <div className="flex items-center gap-3">
           <Link to="/?program=greenpreneur" className="p-2 rounded-lg hover:bg-gray-100 text-gray-600" aria-label="Back to dashboard">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">GENIE Greenpreneur Incubation Program: data input</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Greenpreneur programme: data input</h1>
+          <Link
+            to="/greenpreneur-progress"
+            className="ml-auto px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
+          >
+            Progress
+          </Link>
         </div>
 
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-center gap-3">
