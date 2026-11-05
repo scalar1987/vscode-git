@@ -4814,96 +4814,96 @@
         }
       },
       "equipment": {
-        "status": "Completed",
-        "completion_percentage": 100,
+        "status": "In Progress",
+        "completion_percentage": 99,
         "items": [
           {
             "item": "Computers",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Monitors",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Keyboards",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Mouse",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Headsets",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Office desks",
             "total_quantity": 31,
-            "quantity_installed": 0,
+            "quantity_installed": 31,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Chairs",
             "total_quantity": 37,
-            "quantity_installed": 0,
+            "quantity_installed": 37,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Sofa",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Flower vases",
             "total_quantity": 2,
-            "quantity_installed": 0,
+            "quantity_installed": 2,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Waiting chairs",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Smart TV",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Air conditioners",
@@ -4916,20 +4916,21 @@
           {
             "item": "Electrical backup system",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Meeting room table",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           }
-        ]
+        ],
+        "notes": "Excel memo: Awaiting AC installation and provisional acceptance – CIE issue (one phase faulty) – unchanged since 18 Oct"
       },
       "internet_infrastructure": {
         "status": "Completed",
@@ -5154,90 +5155,90 @@
           {
             "item": "Computers",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Monitors",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Keyboards",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Mouse",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Headsets",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Office desks",
             "total_quantity": 31,
-            "quantity_installed": 0,
+            "quantity_installed": 31,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Chairs",
             "total_quantity": 37,
-            "quantity_installed": 0,
+            "quantity_installed": 37,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Sofa",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Flower vases",
             "total_quantity": 2,
-            "quantity_installed": 0,
+            "quantity_installed": 2,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Waiting chairs",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Smart TV",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Air conditioners",
@@ -5250,18 +5251,18 @@
           {
             "item": "Electrical backup system",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Meeting room table",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           }
         ]
       },
@@ -5822,114 +5823,114 @@
           {
             "item": "Computers",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Monitors",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Keyboards",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Mouse",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Headsets",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Office desks",
             "total_quantity": 31,
-            "quantity_installed": 0,
+            "quantity_installed": 31,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Chairs",
             "total_quantity": 37,
-            "quantity_installed": 0,
+            "quantity_installed": 37,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Sofa",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Flower vases",
             "total_quantity": 2,
-            "quantity_installed": 0,
+            "quantity_installed": 2,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Waiting chairs",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Smart TV",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Air conditioners",
             "total_quantity": 2,
-            "quantity_installed": 0,
+            "quantity_installed": 2,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Electrical backup system",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Meeting room table",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           }
         ]
       },
@@ -7820,96 +7821,96 @@
         }
       },
       "equipment": {
-        "status": "Completed",
-        "completion_percentage": 100,
+        "status": "In Progress",
+        "completion_percentage": 99,
         "items": [
           {
             "item": "Computers",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Monitors",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Keyboards",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Mouse",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Headsets",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Office desks",
             "total_quantity": 31,
-            "quantity_installed": 0,
+            "quantity_installed": 31,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Chairs",
             "total_quantity": 37,
-            "quantity_installed": 0,
+            "quantity_installed": 37,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Sofa",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Flower vases",
             "total_quantity": 2,
-            "quantity_installed": 0,
+            "quantity_installed": 2,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Waiting chairs",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Smart TV",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Air conditioners",
@@ -7922,20 +7923,21 @@
           {
             "item": "Electrical backup system",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Meeting room table",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           }
-        ]
+        ],
+        "notes": "Excel memo: Electricity issue – awaiting AC installation – unchanged since 18 Oct"
       },
       "internet_infrastructure": {
         "status": "Completed",
@@ -8494,90 +8496,90 @@
           {
             "item": "Computers",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Monitors",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Keyboards",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Mouse",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Headsets",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Office desks",
             "total_quantity": 31,
-            "quantity_installed": 0,
+            "quantity_installed": 31,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Chairs",
             "total_quantity": 37,
-            "quantity_installed": 0,
+            "quantity_installed": 37,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Sofa",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Flower vases",
             "total_quantity": 2,
-            "quantity_installed": 0,
+            "quantity_installed": 2,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Waiting chairs",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Smart TV",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Air conditioners",
@@ -8590,18 +8592,18 @@
           {
             "item": "Electrical backup system",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Meeting room table",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           }
         ]
       },
@@ -8822,8 +8824,8 @@
         }
       },
       "equipment": {
-        "status": "Completed",
-        "completion_percentage": 100,
+        "status": "In Progress",
+        "completion_percentage": 99,
         "items": [
           {
             "item": "Computers",
@@ -8937,7 +8939,8 @@
             "supplier": "TBD",
             "status": "Completed"
           }
-        ]
+        ],
+        "notes": "Excel memo: Awaiting provisional acceptance – insulated AC pipes were cut and removed"
       },
       "internet_infrastructure": {
         "status": "Completed",
@@ -9824,96 +9827,96 @@
         }
       },
       "equipment": {
-        "status": "Completed",
-        "completion_percentage": 100,
+        "status": "In Progress",
+        "completion_percentage": 98,
         "items": [
           {
             "item": "Computers",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Monitors",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Keyboards",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Mouse",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Headsets",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Office desks",
             "total_quantity": 31,
-            "quantity_installed": 0,
+            "quantity_installed": 31,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Chairs",
             "total_quantity": 37,
-            "quantity_installed": 0,
+            "quantity_installed": 37,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Sofa",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Flower vases",
             "total_quantity": 2,
-            "quantity_installed": 0,
+            "quantity_installed": 2,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Waiting chairs",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Smart TV",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Air conditioners",
@@ -9934,12 +9937,13 @@
           {
             "item": "Meeting room table",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           }
-        ]
+        ],
+        "notes": "Excel memo: Awaiting AC and UPS installation – unchanged since 18 Oct"
       },
       "internet_infrastructure": {
         "status": "Completed",
@@ -10168,96 +10172,96 @@
         }
       },
       "equipment": {
-        "status": "Completed",
-        "completion_percentage": 100,
+        "status": "In Progress",
+        "completion_percentage": 99,
         "items": [
           {
             "item": "Computers",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Monitors",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Keyboards",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Mouse",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Headsets",
             "total_quantity": 30,
-            "quantity_installed": 0,
+            "quantity_installed": 30,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Office desks",
             "total_quantity": 31,
-            "quantity_installed": 0,
+            "quantity_installed": 31,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Chairs",
             "total_quantity": 37,
-            "quantity_installed": 0,
+            "quantity_installed": 37,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Sofa",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Flower vases",
             "total_quantity": 2,
-            "quantity_installed": 0,
+            "quantity_installed": 2,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Waiting chairs",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Smart TV",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Air conditioners",
@@ -10270,20 +10274,21 @@
           {
             "item": "Electrical backup system",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           },
           {
             "item": "Meeting room table",
             "total_quantity": 1,
-            "quantity_installed": 0,
+            "quantity_installed": 1,
             "installation_date": null,
             "supplier": "TBD",
-            "status": "Pending"
+            "status": "Completed"
           }
-        ]
+        ],
+        "notes": "Excel memo: Waterproofing and electricity issues – awaiting AC installation – unchanged since 18 Oct"
       },
       "internet_infrastructure": {
         "status": "Completed",

@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 import styles from './Header.module.css'
+import { AuthButton } from './AuthButton'
 
 // Project timeline: May 2024 - December 2027 (43 months)
 const PROJECT_START = new Date('2024-05-01');
@@ -94,6 +95,7 @@ export function Header() {
       </nav>
 
       <div className={styles.right}>
+        <AuthButton />
         <div className={styles.progress}>
           <div className={styles.progressRing}>
             <svg viewBox="0 0 36 36" className={styles.progressSvg}>
