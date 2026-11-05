@@ -93,7 +93,7 @@ export function IndicatorCard({ id, label, value: valueProp, target: targetProp,
         <div className="mt-4 h-2 w-full rounded-full bg-gray-100 overflow-hidden">
           <div className={`h-2 rounded-full ${bar}`} style={{ width: `${pct(value, target)}%` }} />
         </div>
-        <p className="mt-1 text-xs text-gray-500">{pct(value, target).toFixed(1)}% · click for details</p>
+        <p className="mt-1 text-sm text-gray-500">{pct(value, target).toFixed(1)}%</p>
       </button>
 
       {open && (

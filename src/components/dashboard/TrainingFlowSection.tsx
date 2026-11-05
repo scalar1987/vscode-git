@@ -23,21 +23,43 @@ interface LogframeEntry {
   targets: Record<string, number>;
 }
 
-interface FlowNode {
+export interface FlowNode {
   id: string;
   label: string;
   indicatorId: string;
   // Stage this node's pass rate is measured against (the previous stage), if any
   passRateOf?: string;
+  // Amount already raised before the logframe actuals start (added to the cumulative value)
+  baseline?: number;
 }
 
-interface FlowRow {
+export interface FlowRow {
   title: string;
   color: 'green' | 'blue';
   nodes: FlowNode[];
 }
 
-type View = 'cumulative' | 'yearly';
+export type View = 'cumulative' | 'yearly';
+
+// Cumulative / By year switch, placed by the parent next to its section title
+export function ViewToggle({ value, onChange }: { value: View; onChange: (v: View) => void }) {
+  return (
+    <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 text-sm">
+      {(['cumulative', 'yearly'] as const).map(v => (
+        <button
+          key={v}
+          type="button"
+          onClick={() => onChange(v)}
+          className={`px-3 py-1 rounded-md transition-colors ${
+            value === v ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          {v === 'cumulative' ? 'Cumulative' : 'By year'}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const FLOWS: FlowRow[] = [
   {
@@ -67,11 +89,17 @@ const COLOR = {
 
 const pct = (value: number, target: number) => (target > 0 ? Math.min(100, (value / target) * 100) : 0);
 
-export function TrainingFlowSection() {
+export function TrainingFlowSection({
+  flows = FLOWS,
+  view: viewProp,
+}: {
+  flows?: FlowRow[];
+  view?: View; // controlled by the parent when given
+} = {}) {
   const [indicators, setIndicators] = useState<Map<string, IndicatorRow> | null>(null);
-  const [date, setDate] = useState<string>('');
   const [error, setError] = useState(false);
-  const [view, setView] = useState<View>('cumulative');
+  const [viewState] = useState<View>('cumulative');
+  const view = viewProp ?? viewState;
   const [selected, setSelected] = useState<string | null>(null);
   // Year-by-year targets per indicator, from the logframe
   const [targetsById, setTargetsById] = useState<Map<string, Record<string, number>>>(new Map());
@@ -92,7 +120,6 @@ export function TrainingFlowSection() {
     ])
       .then(([data, logframe]) => {
         setIndicators(new Map(data.indicators.map(i => [i.id, i])));
-        setDate(data.date);
         setTargetsById(new Map(logframe.map(l => [l.id, l.targets])));
       })
       .catch(() => setError(true));
@@ -105,30 +132,12 @@ export function TrainingFlowSection() {
     return <p className="text-sm text-gray-400">Loading...</p>;
   }
 
-  const selectedNode = FLOWS.flatMap(f => f.nodes).find(n => n.id === selected) ?? null;
+  const selectedNode = flows.flatMap(f => f.nodes).find(n => n.id === selected) ?? null;
   const selectedRow = selectedNode ? indicators.get(selectedNode.indicatorId) : undefined;
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-gray-500">Actuals as of {date}</p>
-        <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 text-sm">
-          {(['cumulative', 'yearly'] as const).map(v => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setView(v)}
-              className={`px-3 py-1 rounded-md transition-colors ${
-                view === v ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              {v === 'cumulative' ? 'Cumulative' : 'By year'}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {FLOWS.map((flow, flowIdx) => {
+      {flows.map((flow, flowIdx) => {
         const c = COLOR[flow.color];
         return (
           <motion.div
@@ -142,7 +151,7 @@ export function TrainingFlowSection() {
             <div className="flex flex-col md:flex-row md:items-stretch gap-3">
               {flow.nodes.map((node, idx) => {
                 const row = indicators.get(node.indicatorId);
-                const value = row ? (view === 'cumulative' ? row.cumulative : row.actual_2026) : 0;
+                const value = row ? (view === 'cumulative' ? row.cumulative + (node.baseline ?? 0) : row.actual_2026) : 0;
                 const target =
                   view === 'cumulative'
                     ? (row?.target_total ?? 0)
@@ -185,7 +194,7 @@ export function TrainingFlowSection() {
                           transition={{ duration: 0.8, ease: 'easeOut' }}
                         />
                       </div>
-                      <div className="mt-1 flex justify-between text-xs text-gray-500">
+                      <div className="mt-1 flex justify-between text-sm text-gray-500">
                         <span>{share.toFixed(1)}%</span>
                         {view === 'yearly' && row && (
                           <span className="tabular-nums">
@@ -199,7 +208,7 @@ export function TrainingFlowSection() {
                       <div className="hidden md:flex flex-col items-center shrink-0 w-14">
                         <ArrowRight className="w-5 h-5 text-gray-400" />
                         {flow.nodes[idx + 1].passRateOf && passRate !== null && (
-                          <span className={`mt-1 text-xs font-semibold ${c.text}`}>{passRate.toFixed(0)}%</span>
+                          <span className={`mt-1 text-sm font-semibold ${c.text}`}>{passRate.toFixed(0)}%</span>
                         )}
                       </div>
                     )}

@@ -203,7 +203,7 @@ export function CentersMapSection({ centers, loading = false }: CentersMapSectio
     return (
       <div className="space-y-4">
         {/* Map skeleton */}
-        <div className="bg-gray-100 rounded-2xl h-[400px] animate-pulse flex items-center justify-center">
+        <div className="bg-gray-100 rounded-2xl h-[320px] sm:h-[400px] animate-pulse flex items-center justify-center">
           <MapPin className="w-12 h-12 text-gray-300" />
         </div>
       </div>
@@ -276,7 +276,7 @@ export function CentersMapSection({ centers, loading = false }: CentersMapSectio
             />
           </div>
           <span className="text-xs text-gray-500 whitespace-nowrap">
-            {filteredCenters.length} of {centers.length} centers
+            {filteredCenters.length} of {centers.length} centres
           </span>
           <button
             onClick={() => setListOpen(o => !o)}
@@ -325,7 +325,7 @@ export function CentersMapSection({ centers, loading = false }: CentersMapSectio
         className="relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
       >
         {/* Map */}
-        <div className="h-[450px] md:h-[500px]">
+        <div className="h-[320px] sm:h-[400px] md:h-[500px]">
           <MapContainer
             center={COTE_DIVOIRE_CENTER}
             zoom={DEFAULT_ZOOM}

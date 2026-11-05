@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Building2, GraduationCap, Briefcase, Leaf, DollarSign, MapPin, Target, Clock, Wallet, AlertTriangle, FileText, type LucideIcon } from 'lucide-react';
 import { useGENIEData, type KPICard as KPICardData } from '../hooks/useGENIEData';
 import { useOutputProgress } from '../hooks/useOutputProgress';
-import { TrainingFlowSection } from '../components/dashboard/TrainingFlowSection';
+import { TrainingFlowSection, ViewToggle, type FlowRow, type View } from '../components/dashboard/TrainingFlowSection';
 import { useKPIData } from '../hooks/useKPIData';
-import { IndicatorCard } from '../components/dashboard/IndicatorCards';
 import type { CenterStatus } from '../types/center';
 import { loadCenters } from '../lib/centersData';
 import {
@@ -77,8 +76,18 @@ const BUDGET = {
 // Flag to show only Centers Network section
 const SHOW_ONLY_CENTERS = true;
 
+// One reporting date for every figure on the page
+const ACTUALS_AS_OF = '2026-06-30';
+
 export function Dashboard() {
-  const [gpView, setGpView] = useState<'cumulative' | 'yearly'>('cumulative');
+  // ?program=capacity or ?program=greenpreneur opens that tab (used by the programme pages' back link)
+  const [searchParams] = useSearchParams();
+  const requestedProgram = searchParams.get('program');
+  const [program, setProgram] = useState<'centres' | 'capacity' | 'greenpreneur'>(
+    requestedProgram === 'capacity' || requestedProgram === 'greenpreneur' ? requestedProgram : 'centres',
+  );
+  // Shared Cumulative / By year switch for the two programme flows
+  const [flowView, setFlowView] = useState<View>('cumulative');
   const { kpiData: gpKpi } = useKPIData();
   const { summary, loading: dataLoading } = useGENIEData();
   const { componentProgress, loading: progressLoading } = useOutputProgress();
@@ -107,6 +116,26 @@ export function Dashboard() {
     color: (index === 0 ? 'green' : index === 1 ? 'blue' : index === 2 ? 'amber' : 'green') as 'green' | 'blue' | 'amber' | 'red',
     delay: index * 0.1,
   })) || [];
+
+  // Greenpreneur indicators, shown with the same flow layout as Capacity Building
+  const gpFlows: FlowRow[] = [
+    {
+      title: 'Incubation & start-ups',
+      color: 'green',
+      nodes: [
+        { id: 'gp-incubated', label: 'Greenpreneurs in incubation', indicatorId: '2.2.2.1' },
+        { id: 'gp-startups', label: 'Technology-based start-ups', indicatorId: '2', passRateOf: '2.2.2.1' },
+      ],
+    },
+    {
+      title: 'Jobs & capital',
+      color: 'blue',
+      nodes: [
+        { id: 'gp-capital', label: 'Seed capital mobilised (USD)', indicatorId: '3', baseline: gpKpi?.fundMobilized.baseline ?? 0 },
+        { id: 'gp-jobs', label: 'Green jobs created', indicatorId: '2.1' },
+      ],
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -181,12 +210,45 @@ export function Dashboard() {
         </>
       )}
 
-      <section id="centers" className="px-4 md:px-6 lg:px-8 pb-8 min-h-screen">
+      {/* Overall summary, then one programme at a time */}
+      {/* Programme tabs stay at the top of the screen while scrolling */}
+      <div className="sticky top-0 z-30 -mt-8 bg-white/95 backdrop-blur border-b border-gray-200 px-4 md:px-6 lg:px-8 pt-2">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+          <div role="tablist" className="flex flex-wrap gap-6 text-sm">
+            {([
+              ['centres', 'Centres network'],
+              ['capacity', 'Capacity Building'],
+              ['greenpreneur', 'Greenpreneur Incubation'],
+            ] as const).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={program === id}
+                onClick={() => setProgram(id)}
+                className={`-mb-px border-b-2 pb-3 pt-3 font-medium transition-colors ${
+                  program === id ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="pb-3 mb-0.5 text-sm text-gray-500 whitespace-nowrap">
+            All figures are actuals <span className="font-medium text-gray-700">as of {ACTUALS_AS_OF}</span>
+          </p>
+          </div>
+        </div>
+      </div>
+
+      {program === 'centres' && (
+      <section id="centers" className="px-4 md:px-6 lg:px-8 pt-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
               <MapPin className="w-5 h-5 text-gray-500" />
-              35 GENIE Centers Network
+              35 GENIE Centres Network
             </h2>
             <Link
               to="/centers"
@@ -199,86 +261,55 @@ export function Dashboard() {
           <CentersMapSection centers={centers} loading={centersLoading} />
         </div>
       </section>
+      )}
       {/* Centers Section */}
-      <section id="training" className="px-4 md:px-6 lg:px-8 pt-6 pb-8">
+      {program === 'capacity' && (
+      <section id="training" className="px-4 md:px-6 lg:px-8 pt-8 pb-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
               <GraduationCap className="w-5 h-5 text-gray-500" />
               GENIE Capacity Building Program
             </h2>
-            <Link
-              to="/advanced-programme"
-              className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
-            >
-              Advanced programme progress
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <ViewToggle value={flowView} onChange={setFlowView} />
+              <Link
+                to="/advanced-programme"
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
+              >
+                Advanced programme progress
+              </Link>
+            </div>
           </div>
-          <TrainingFlowSection />
+          <TrainingFlowSection view={flowView} />
         </div>
       </section>
+      )}
 
       {/* Greenpreneur Incubation Program */}
-      <section id="greenpreneur" className="px-4 md:px-6 lg:px-8 pb-8">
+      {program === 'greenpreneur' && (
+      <section id="greenpreneur" className="px-4 md:px-6 lg:px-8 pt-8 pb-8">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2 tracking-tight">
               <Briefcase className="w-5 h-5 text-gray-500" />
               GENIE Greenpreneur Incubation Program
             </h2>
-            <Link
-              to="/greenpreneur-input"
-              className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
-            >
-              Greenpreneur programme progress
-            </Link>
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 -mt-4">
-            <span className="text-sm text-gray-500">Actuals as of 2026-06-30</span>
-            <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 text-sm">
-              {((['cumulative', 'yearly'] as const)).map(v => (
-                <button
-                  key={v}
-                  type="button"
-                  onClick={() => setGpView(v)}
-                  className={`px-3 py-1 rounded-md transition-colors ${
-                    gpView === v ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  {v === 'cumulative' ? 'Cumulative' : 'By year'}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center gap-3">
+              <ViewToggle value={flowView} onChange={setFlowView} />
+              <Link
+                to="/greenpreneur-input"
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
+              >
+                Greenpreneur programme progress
+              </Link>
             </div>
           </div>
-
-          <div className="rounded-xl border border-gray-200 border-l-4 border-l-dg-green-600 bg-white p-5 shadow-sm">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              <IndicatorCard view={gpView}
-                id="2.2.2.1"
-                label="Greenpreneurs in incubation (2.2.2.1)"
-                value={gpKpi?.greenpreneursParticipated.value ?? 0}
-                target={gpKpi?.greenpreneursParticipated.target ?? 675}
-              />
-              <IndicatorCard view={gpView} id="2" label="Technology-based start-ups (2)" value={gpKpi?.startups.value ?? 0} target={gpKpi?.startups.target ?? 135} />
-              <IndicatorCard view={gpView}
-                id="2.1"
-                label="Green jobs created (2.1)"
-                value={gpKpi?.greenJobsCreated.value ?? 0}
-                target={gpKpi?.greenJobsCreated.target ?? 122}
-              />
-              <IndicatorCard view={gpView}
-                id="3"
-                label="Seed capital mobilised (USD)"
-                value={(gpKpi?.fundMobilized.value ?? 0) + (gpKpi?.fundMobilized.baseline ?? 0)}
-                target={gpKpi?.fundMobilized.target ?? 1000000}
-                baseline={gpKpi?.fundMobilized.baseline ?? 0}
-                currency
-              />
-            </div>
-          </div>
+          <TrainingFlowSection flows={gpFlows} view={flowView} />
 
         </div>
       </section>
+      )}
 
       {!SHOW_ONLY_CENTERS && (
         <>
