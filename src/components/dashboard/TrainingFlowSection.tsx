@@ -31,6 +31,8 @@ export interface FlowNode {
   passRateOf?: string;
   // Amount already raised before the logframe actuals start (added to the cumulative value)
   baseline?: number;
+  // Cumulative value taken from programme data instead of the national actuals file
+  valueOverride?: number;
 }
 
 export interface FlowRow {
@@ -135,6 +137,12 @@ export function TrainingFlowSection({
   const selectedNode = flows.flatMap(f => f.nodes).find(n => n.id === selected) ?? null;
   const selectedRow = selectedNode ? indicators.get(selectedNode.indicatorId) : undefined;
 
+  // Cumulative value per indicator: programme data where given, otherwise the national actuals
+  const overrides = new Map(
+    flows.flatMap(f => f.nodes).filter(n => n.valueOverride !== undefined).map(n => [n.indicatorId, n.valueOverride as number]),
+  );
+  const cumOf = (id: string) => overrides.get(id) ?? indicators.get(id)?.cumulative ?? 0;
+
   return (
     <div className="space-y-5">
       {flows.map((flow, flowIdx) => {
@@ -151,7 +159,7 @@ export function TrainingFlowSection({
             <div className="flex flex-col md:flex-row md:items-stretch gap-3">
               {flow.nodes.map((node, idx) => {
                 const row = indicators.get(node.indicatorId);
-                const value = row ? (view === 'cumulative' ? row.cumulative + (node.baseline ?? 0) : row.actual_2026) : 0;
+                const value = view === 'cumulative' ? cumOf(node.indicatorId) + (node.baseline ?? 0) : (row?.actual_2026 ?? 0);
                 const target =
                   view === 'cumulative'
                     ? (row?.target_total ?? 0)
@@ -161,8 +169,8 @@ export function TrainingFlowSection({
                 const prev = node.passRateOf ? indicators.get(node.passRateOf) : undefined;
                 const passRate = prev
                   ? pct(
-                      view === 'cumulative' ? (row?.cumulative ?? 0) : (row?.actual_2026 ?? 0),
-                      view === 'cumulative' ? prev.cumulative : prev.actual_2026,
+                      view === 'cumulative' ? cumOf(node.indicatorId) : (row?.actual_2026 ?? 0),
+                      view === 'cumulative' ? cumOf(node.passRateOf as string) : prev.actual_2026,
                     )
                   : null;
 

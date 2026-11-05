@@ -122,6 +122,8 @@ interface Cohort {
   id: string;
   name: string;
   start_month: string; // YYYY-MM
+  end_date: string | null;
+  enrolled: number;
 }
 
 interface ProgressRow {
@@ -175,6 +177,8 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const [venues, setVenues] = useState<Record<string, string[]>>({});
   const [venueQuery, setVenueQuery] = useState('');
   const [newName, setNewName] = useState('');
+  const [newEnd, setNewEnd] = useState('');
+  const [newEnrolled, setNewEnrolled] = useState('');
   const [newStart, setNewStart] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -198,7 +202,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const loadAll = async () => {
     if (!supabase) return;
     const [c, p, ce, v] = await Promise.all([
-      supabase.from('advanced_cohorts').select('id, name, start_month').order('start_month', { ascending: false }),
+      supabase.from('advanced_cohorts').select('id, name, start_month, end_date, enrolled').order('start_month', { ascending: false }),
       supabase.from('advanced_cohort_progress').select('cohort_id, track, month_no, item_no, completed, completed_date, completed_at'),
       supabase.from('centres').select('id, name').order('sort_order'),
       supabase.from('advanced_cohort_centres').select('cohort_id, centre_id'),
@@ -278,15 +282,14 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
 
   const pctOf = (d: number, t: number) => (t > 0 ? Math.round((d / t) * 100) : 0);
 
-  const setItem = (track: Track, month: number, item: number, patch: Partial<ProgressRow>) => {
-    if (!current) return;
-    const key = itemKey(current.id, track, month, item);
+  const setItem = (cohortId: string, track: Track, month: number, item: number, patch: Partial<ProgressRow>) => {
+    const key = itemKey(cohortId, track, month, item);
     setRows(prev => {
       const cur = prev[key];
       return {
         ...prev,
         [key]: {
-          cohort_id: current.id,
+          cohort_id: cohortId,
           track,
           month_no: month,
           item_no: item,
@@ -301,9 +304,8 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   };
 
   // Ticking a centre saves straight away (no separate save step)
-  const toggleVenue = async (centreId: string) => {
-    if (!supabase || !current) return;
-    const cohortId = current.id;
+  const toggleVenue = async (cohortId: string, centreId: string) => {
+    if (!supabase) return;
     const list = venues[cohortId] ?? [];
     const next = list.includes(centreId) ? list.filter(x => x !== centreId) : [...list, centreId];
     setVenues(prev => ({ ...prev, [cohortId]: next }));
@@ -322,12 +324,19 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
     setSaving(true);
     const { data, error } = await supabase
       .from('advanced_cohorts')
-      .insert({ name: newName.trim(), start_month: newStart })
+      .insert({
+        name: newName.trim(),
+        start_month: newStart,
+        end_date: newEnd || null,
+        enrolled: Number(newEnrolled) || 0,
+      })
       .select('id')
       .single();
     setSaving(false);
     if (error) return setSaveMsg(`Could not add cohort: ${error.message}`);
     setNewName('');
+    setNewEnd('');
+    setNewEnrolled('');
     await loadAll();
     setSelected(data.id);
     setSaveMsg('Cohort added');
@@ -348,8 +357,8 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
     setSaveMsg(`Deleted "${name}"`);
   };
 
-  const saveProgress = async () => {
-    if (!supabase || !current) return;
+  const saveProgress = async (cohort: Cohort) => {
+    if (!supabase) return;
     setSaving(true);
     setSaveMsg(null);
     const { data: { user } } = await supabase.auth.getUser();
@@ -358,9 +367,9 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
     (['ict', 'green'] as Track[]).forEach(track =>
       CURRICULUM[track].forEach((items, m) =>
         items.forEach((label, i) => {
-          const r = rows[itemKey(current.id, track, m + 1, i)];
+          const r = rows[itemKey(cohort.id, track, m + 1, i)];
           upserts.push({
-            cohort_id: current.id,
+            cohort_id: cohort.id,
             track,
             month_no: m + 1,
             item_no: i,
@@ -397,13 +406,13 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
         {mode === 'input' && canEdit && (
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-end gap-3">
             <label className="text-sm text-gray-700">
-              New cohort name
+              Cohort name
               <input
                 type="text"
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
-                placeholder="e.g. 2026 Cohort 1"
-                className="mt-1 block px-3 py-2 text-sm border border-gray-300 rounded-md"
+                placeholder="e.g. Cohort 5"
+                className="mt-1 block w-36 px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
               />
             </label>
             <label className="text-sm text-gray-700">
@@ -412,19 +421,39 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                 type="month"
                 value={newStart}
                 onChange={e => setNewStart(e.target.value)}
-                className="mt-1 block px-3 py-2 text-sm border border-gray-300 rounded-md"
+                className="mt-1 block w-36 px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+              />
+            </label>
+            <label className="text-sm text-gray-700">
+              End
+              <input
+                type="date"
+                value={newEnd}
+                onChange={e => setNewEnd(e.target.value)}
+                className="mt-1 block w-36 px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+              />
+            </label>
+            <label className="text-sm text-gray-700">
+              Registered
+              <input
+                type="number"
+                min={0}
+                value={newEnrolled}
+                onChange={e => setNewEnrolled(e.target.value)}
+                className="mt-1 block w-36 px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
               />
             </label>
             <button
               onClick={addCohort}
               disabled={saving}
-              className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 text-sm font-medium disabled:opacity-60"
+              className="px-4 py-2 rounded-lg text-gray-900 text-sm font-semibold hover:bg-gray-100 disabled:opacity-60"
             >
               + Add cohort
             </button>
           </div>
         )}
 
+        {mode === 'progress' && (
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-center gap-3">
           <label className="text-sm text-gray-700">
             Cohort
@@ -447,17 +476,8 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
               {doneCount} / {totalItems} done
             </span>
           )}
-          {current && mode === 'input' && profile?.role === 'ggg' && (
-            <button
-              type="button"
-              onClick={() => { setDeleteName(''); setDeleteOpen(true); }}
-              className="px-3 py-2 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 text-sm font-medium"
-            >
-              Delete cohort
-            </button>
-          )}
         </div>
-
+        )}
 
         {current && progressView && mode === 'progress' && (
           <>
@@ -571,43 +591,9 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
           </>
         )}
 
-        {current && (
+        {current && mode === 'progress' && (
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-center gap-3">
             <span className="text-sm font-semibold text-gray-900">Centres where this cohort runs</span>
-            {mode === 'input' && <details className="relative">
-              <summary className="list-none cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md bg-white min-w-[260px] flex items-center justify-between gap-3">
-                <span>{(venues[current.id] ?? []).length} selected</span>
-                <span className="text-gray-400">▾</span>
-              </summary>
-              <div className="absolute z-20 mt-1 w-[320px] bg-white border border-gray-200 rounded-lg shadow-lg p-2">
-                <input
-                  type="text"
-                  value={venueQuery}
-                  onChange={e => setVenueQuery(e.target.value)}
-                  placeholder="Search centre"
-                  className="w-full mb-2 px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dg-green-500"
-                />
-                <div className="max-h-56 overflow-y-auto space-y-1">
-                  {centres
-                    .filter(ce => ce.name.toLowerCase().includes(venueQuery.trim().toLowerCase()))
-                    .map(ce => {
-                      const on = (venues[current.id] ?? []).includes(ce.id);
-                      return (
-                        <label key={ce.id} className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 rounded hover:bg-gray-50 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={on}
-                            disabled={!canEdit}
-                            onChange={() => toggleVenue(ce.id)}
-                            className="w-4 h-4 accent-dg-green-600"
-                          />
-                          <span>{ce.name}</span>
-                        </label>
-                      );
-                    })}
-                </div>
-              </div>
-            </details>}
             <ol className="w-full flex flex-wrap gap-2">
               {centres
                 .filter(ce => (venues[current.id] ?? []).includes(ce.id))
@@ -621,66 +607,179 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
           </div>
         )}
 
-        {current && mode === 'input' &&
-          [0, 1, 2, 3].map(m => (
-            <div key={m} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-4">
-              <h2 className="text-base font-semibold text-gray-900">{monthLabel(current.start_month, m)}</h2>
-              {(['ict'] as Track[]).map(track => (
-                <div key={track}>
-                  
-                  <div className="space-y-2">
-                    {CURRICULUM[track][m].map((label, i) => {
-                      const r = rows[itemKey(current.id, track, m + 1, i)];
-                      const done = r?.completed === true;
-                      return (
-                        <div key={i} className="flex flex-wrap items-center gap-3 text-sm">
-                          <label className="flex items-center gap-2 flex-1 min-w-[240px] cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={done}
-                              disabled={!canEdit}
-                              onChange={e =>
-                                setItem(track, m + 1, i, {
-                                  completed: e.target.checked,
-                                  completed_at: e.target.checked ? new Date().toISOString() : null,
-                                  completed_date: e.target.checked ? (r?.completed_date ?? null) : null,
-                                })
-                              }
-                              className="w-4 h-4 accent-dg-green-600"
-                            />
-                            <span className={isFinished(label, r) ? 'text-gray-900' : 'text-gray-700'}>{label}</span>
-                            {isFinished(label, r) && <Check className="w-4 h-4 text-dg-green-600" />}
-                          </label>
-                          {needsDate(label) && done && (
-                            <input
-                              type="date"
-                              value={r?.completed_date ?? ''}
-                              disabled={!canEdit}
-                              onChange={e => setItem(track, m + 1, i, { completed_date: e.target.value || null })}
-                              className="px-2 py-1 text-sm border border-gray-300 rounded-md disabled:bg-gray-100"
-                            />
+        {/* Cohort list (same pattern as the Greenpreneur input page) */}
+        {mode === 'input' && cohorts.length > 0 && (
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 className="text-base font-semibold text-gray-900">Cohorts</h2>
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[480px] text-sm">
+                <thead>
+                  <tr className="text-xs text-gray-500 border-b border-gray-200">
+                    <th className="py-2 px-3 text-left font-medium">Cohort</th>
+                    <th className="py-2 px-3 text-left font-medium">Starts</th>
+                    <th className="py-2 px-3 text-right font-medium">Checklist</th>
+                    <th className="py-2 px-3" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {cohorts.map(c => {
+                    const done = (['ict', 'green'] as Track[]).reduce(
+                      (n, track) =>
+                        n + CURRICULUM[track].reduce((k, items, m) => k + items.filter((label, i) => isFinished(label, rows[itemKey(c.id, track, m + 1, i)])).length, 0),
+                      0,
+                    );
+                    return (
+                      <tr key={c.id}>
+                        <td className="py-2.5 px-3 font-medium text-gray-900 border-b border-gray-100">{c.name}</td>
+                        <td className="py-2.5 px-3 text-gray-700 border-b border-gray-100">{monthLabel(c.start_month, 0)}</td>
+                        <td className="py-2.5 px-3 text-right tabular-nums text-gray-700 border-b border-gray-100">{done} / {totalItems}</td>
+                        <td className="py-2.5 px-3 text-right border-b border-gray-100 whitespace-nowrap">
+                          {profile?.role === 'ggg' && (
+                            <button
+                              type="button"
+                              onClick={() => { setSelected(c.id); setDeleteName(''); setDeleteOpen(true); }}
+                              className="px-3 py-1.5 rounded-md border border-red-200 text-red-700 hover:bg-red-50 text-xs font-medium"
+                            >
+                              Delete
+                            </button>
                           )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          ))}
-
-        {mode === 'input' && current && canEdit && (
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={saveProgress}
-              disabled={saving}
-              className="px-4 py-2 bg-dg-blue-600 text-white rounded-lg hover:bg-dg-blue-700 disabled:opacity-60 font-medium"
-            >
-              {saving ? 'Saving…' : 'Save to database'}
-            </button>
-            {saveMsg && <span className="text-sm text-gray-700">{saveMsg}</span>}
           </div>
         )}
+
+        {/* Input: every cohort's checklist is shown at once, in the order of the list above */}
+        {mode === 'input' &&
+          cohorts.map(c => {
+            const doneHere = (['ict', 'green'] as Track[]).reduce(
+              (n, track) =>
+                n + CURRICULUM[track].reduce((k, items, m) => k + items.filter((label, i) => isFinished(label, rows[itemKey(c.id, track, m + 1, i)])).length, 0),
+              0,
+            );
+            const venueIds = venues[c.id] ?? [];
+            return (
+              <div key={c.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-6">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 className="text-base font-semibold text-gray-900">{c.name} · starts {monthLabel(c.start_month, 0)}</h2>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-600 tabular-nums">{doneHere} / {totalItems} done</span>
+                    {profile?.role === 'ggg' && (
+                      <button
+                        type="button"
+                        onClick={() => { setSelected(c.id); setDeleteName(''); setDeleteOpen(true); }}
+                        className="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 hover:bg-red-50 text-sm font-medium"
+                      >
+                        Delete cohort
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-sm font-semibold text-gray-900">Centres where this cohort runs</span>
+                  <details className="relative">
+                    <summary className="list-none cursor-pointer px-3 py-2 text-sm border border-gray-300 rounded-md bg-white min-w-[260px] flex items-center justify-between gap-3">
+                      <span>{venueIds.length} selected</span>
+                      <span className="text-gray-400">▾</span>
+                    </summary>
+                    <div className="absolute z-20 mt-1 w-[320px] bg-white border border-gray-200 rounded-lg shadow-lg p-2">
+                      <input
+                        type="text"
+                        value={venueQuery}
+                        onChange={e => setVenueQuery(e.target.value)}
+                        placeholder="Search centre"
+                        className="w-full mb-2 px-2 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+                      />
+                      <div className="max-h-56 overflow-y-auto space-y-1">
+                        {centres
+                          .filter(ce => ce.name.toLowerCase().includes(venueQuery.trim().toLowerCase()))
+                          .map(ce => (
+                            <label key={ce.id} className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-700 rounded hover:bg-gray-50 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={venueIds.includes(ce.id)}
+                                disabled={!canEdit}
+                                onChange={() => toggleVenue(c.id, ce.id)}
+                                className="w-4 h-4 accent-dg-green-600"
+                              />
+                              <span>{ce.name}</span>
+                            </label>
+                          ))}
+                      </div>
+                    </div>
+                  </details>
+                  <ol className="w-full flex flex-wrap gap-2">
+                    {centres
+                      .filter(ce => venueIds.includes(ce.id))
+                      .map(ce => (
+                        <li key={ce.id}>
+                          <Link to={`/centers/${ce.id}`} className="inline-block rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-dg-blue-700 hover:bg-white hover:border-dg-blue-300">{ce.name}</Link>
+                        </li>
+                      ))}
+                  </ol>
+                </div>
+
+                {[0, 1, 2, 3].map(m => (
+                  <div key={m} className="space-y-3">
+                    <h3 className="text-sm font-semibold text-gray-900">{monthLabel(c.start_month, m)}</h3>
+                    <div className="space-y-2">
+                      {CURRICULUM.ict[m].map((label, i) => {
+                        const r = rows[itemKey(c.id, 'ict', m + 1, i)];
+                        const done = r?.completed === true;
+                        return (
+                          <div key={i} className="flex flex-wrap items-center gap-3 text-sm">
+                            <label className="flex items-center gap-2 flex-1 min-w-[240px] cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={done}
+                                disabled={!canEdit}
+                                onChange={e =>
+                                  setItem(c.id, 'ict', m + 1, i, {
+                                    completed: e.target.checked,
+                                    completed_at: e.target.checked ? new Date().toISOString() : null,
+                                    completed_date: e.target.checked ? (r?.completed_date ?? null) : null,
+                                  })
+                                }
+                                className="w-4 h-4 accent-dg-green-600"
+                              />
+                              <span className={isFinished(label, r) ? 'text-gray-900' : 'text-gray-700'}>{label}</span>
+                              {isFinished(label, r) && <Check className="w-4 h-4 text-dg-green-600" />}
+                            </label>
+                            {needsDate(label) && done && (
+                              <input
+                                type="date"
+                                value={r?.completed_date ?? ''}
+                                disabled={!canEdit}
+                                onChange={e => setItem(c.id, 'ict', m + 1, i, { completed_date: e.target.value || null })}
+                                className="px-2 py-1 text-sm border border-gray-300 rounded-md disabled:bg-gray-100"
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => saveProgress(c)}
+                    disabled={!canEdit || saving}
+                    className="px-4 py-2 bg-dg-blue-600 text-white rounded-lg hover:bg-dg-blue-700 disabled:opacity-60 font-medium"
+                  >
+                    {saving ? 'Saving…' : 'Save checklist'}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        {mode === 'input' && saveMsg && <p className="text-sm text-gray-700">{saveMsg}</p>}
         {mode === 'input' && current && !canEdit && (
           <p className="text-sm text-gray-500">Sign in with a DigiFemme or GGGI account to update progress.</p>
         )}
