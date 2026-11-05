@@ -5,6 +5,7 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, X
 import { loadCenters } from '../lib/centersData';
 import {
   GP_ITEMS,
+  PITCH_CATEGORIES,
   TRACK_LABEL,
   loadGreenpreneurProgramme,
   registeredTotal,
@@ -20,6 +21,7 @@ export function GreenpreneurProgressPage() {
   const [loading, setLoading] = useState(true);
   const [track, setTrack] = useState<GpTrack>('training');
   const [cohortId, setCohortId] = useState<string>('');
+  const [showPitch, setShowPitch] = useState(false);
 
   useEffect(() => {
     Promise.all([loadGreenpreneurProgramme(), loadCenters()])
@@ -67,11 +69,35 @@ export function GreenpreneurProgressPage() {
 
   // Programme-wide figures
   const allProgress = data.progress;
-  const totalSessions = allProgress.reduce((s, p) => s + (p.sessions ?? 0), 0);
+  // Sessions split by type, using the checklist item name of each saved session count
+  const sessionSplit = useMemo(() => {
+    const out = { networking: 0, coaching: 0, mentoring: 0 };
+    data.progress.forEach(p => {
+      const cohort = data.cohorts.find(c => c.id === p.cohort_id);
+      if (!cohort || p.sessions == null) return;
+      const label = GP_ITEMS[cohort.track][p.item_no] ?? '';
+      if (/^Networking/.test(label)) out.networking += p.sessions;
+      else if (/coaching/i.test(label)) out.coaching += p.sessions;
+      else if (/mentoring/i.test(label)) out.mentoring += p.sessions;
+    });
+    return out;
+  }, [data.progress, data.cohorts]);
   const totalMentors = allProgress.reduce((s, p) => s + (p.mentors ?? 0), 0);
   const irpEnrolled = data.cohorts.filter(c => c.track === 'irp').reduce((s, c) => s + (c.enrolled || 0), 0);
   const linkedCentres = centres.filter(c => data.centreIds.includes(c.id));
   const pct = (d: number, t: number) => (t > 0 ? Math.round((d / t) * 100) : 0);
+
+  // Pitch competition: results grouped by edition (newest first), rows in category and placing order
+  const pitchEditions = useMemo(() => {
+    const years = [...new Set(data.pitch.map(r => r.edition))].sort((a, b) => b - a);
+    return years.map(year => {
+      const rows = data.pitch
+        .filter(r => r.edition === year)
+        .sort((a, b) => PITCH_CATEGORIES.indexOf(a.category) - PITCH_CATEGORIES.indexOf(b.category) || a.rank_no - b.rank_no);
+      return { year, rows, total: rows.reduce((s, r) => s + r.prize_usd, 0) };
+    });
+  }, [data.pitch]);
+  const pitchTotal = data.pitch.reduce((s, r) => s + r.prize_usd, 0);
 
   const tabCls = (active: boolean) =>
     `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${active ? 'bg-gray-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`;
@@ -109,8 +135,20 @@ export function GreenpreneurProgressPage() {
               </div>
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                 <p className="text-xs uppercase tracking-wide text-gray-500">Sessions held</p>
-                <p className="mt-2 text-3xl font-semibold text-gray-900 tabular-nums">{totalSessions.toLocaleString()}</p>
-                <p className="mt-1 text-xs text-gray-500">networking, coaching and mentoring</p>
+                <div className="mt-2 space-y-1 text-sm text-gray-700">
+                  <div className="flex justify-between gap-3">
+                    <span>Networking</span>
+                    <span className="font-semibold text-gray-900 tabular-nums">{sessionSplit.networking.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <span>Group coaching</span>
+                    <span className="font-semibold text-gray-900 tabular-nums">{sessionSplit.coaching.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between gap-3">
+                    <span>Mentoring</span>
+                    <span className="font-semibold text-gray-900 tabular-nums">{sessionSplit.mentoring.toLocaleString()}</span>
+                  </div>
+                </div>
               </div>
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                 <p className="text-xs uppercase tracking-wide text-gray-500">Mentors</p>
@@ -131,17 +169,78 @@ export function GreenpreneurProgressPage() {
                   key={t}
                   type="button"
                   onClick={() => {
+                    setShowPitch(false);
                     setTrack(t);
                     setCohortId('');
                   }}
-                  className={tabCls(track === t)}
+                  className={tabCls(!showPitch && track === t)}
                 >
                   {TRACK_LABEL[t]}
                 </button>
               ))}
+              <button type="button" onClick={() => setShowPitch(true)} className={tabCls(showPitch)}>
+                Pitch competition
+              </button>
             </div>
 
-            {trackCohorts.length === 0 || !cohort ? (
+            {showPitch ? (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-dg-green-600 shadow-sm p-5">
+                    <p className="text-xs uppercase tracking-wide text-gray-500">Total prize awarded</p>
+                    <p className="mt-2 text-3xl font-semibold text-gray-900 tabular-nums">${pitchTotal.toLocaleString()}</p>
+                    <p className="mt-1 text-xs text-gray-500">USD across all editions</p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-dg-blue-600 shadow-sm p-5">
+                    <p className="text-xs uppercase tracking-wide text-gray-500">Laureates</p>
+                    <p className="mt-2 text-3xl font-semibold text-gray-900 tabular-nums">{data.pitch.length}</p>
+                    <p className="mt-1 text-xs text-gray-500">winning enterprises</p>
+                  </div>
+                  <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-dg-blue-600 shadow-sm p-5">
+                    <p className="text-xs uppercase tracking-wide text-gray-500">Editions</p>
+                    <p className="mt-2 text-3xl font-semibold text-gray-900 tabular-nums">{pitchEditions.length}</p>
+                    <p className="mt-1 text-xs text-gray-500">Pitch Competition (Demo Day)</p>
+                  </div>
+                </div>
+
+                {pitchEditions.length === 0 ? (
+                  <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                    <p className="text-sm text-gray-500">No pitch competition results yet.</p>
+                  </div>
+                ) : (
+                  pitchEditions.map(ed => (
+                    <div key={ed.year} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+                        <h2 className="text-base font-semibold text-gray-900">{ed.year} edition</h2>
+                        <span className="text-sm text-gray-600 tabular-nums">Total ${ed.total.toLocaleString()}</span>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[560px] text-sm">
+                          <thead>
+                            <tr className="text-xs text-gray-500 border-b border-gray-200">
+                              <th className="py-2 px-3 text-left font-medium">Category</th>
+                              <th className="py-2 px-3 text-right font-medium">Placing</th>
+                              <th className="py-2 px-3 text-left font-medium">Laureate</th>
+                              <th className="py-2 px-3 text-right font-medium">Prize (USD)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {ed.rows.map(r => (
+                              <tr key={r.id} className="hover:bg-gray-50">
+                                <td className="py-2.5 px-3 text-gray-700 border-b border-gray-100">{r.category}</td>
+                                <td className="py-2.5 px-3 text-right tabular-nums text-gray-700 border-b border-gray-100">{r.rank_no}</td>
+                                <td className="py-2.5 px-3 font-medium text-gray-900 border-b border-gray-100">{r.laureate}</td>
+                                <td className="py-2.5 px-3 text-right tabular-nums text-gray-900 border-b border-gray-100">{r.prize_usd.toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : trackCohorts.length === 0 || !cohort ? (
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                 <p className="text-sm text-gray-500">No {TRACK_LABEL[track]} cohorts yet.</p>
               </div>
