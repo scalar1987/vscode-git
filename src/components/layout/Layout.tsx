@@ -21,6 +21,7 @@ export function Layout() {
           </div>
         </div>
       </div>
+      <div className="h-8" />
       <main className={styles.main}>
         <Outlet />
       </main>
