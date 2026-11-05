@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { Map as LeafletMap } from 'leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -9,6 +12,7 @@ import {
   ChevronRight,
   ZoomIn,
   ZoomOut,
+  Maximize2,
   Search,
   ChevronDown,
 } from 'lucide-react';
@@ -97,37 +101,37 @@ L.Icon.Default.mergeOptions({
 // Status colors
 const STATUS_COLORS = CENTER_STATUS_COLORS;
 
-// Custom marker icons with pulse animation for operational centers
+// Short names for the filter chips (full names stay in the popup and list)
+const SHORT_STATUS_LABEL: Record<CenterStatus, string> = {
+  'Operational': 'Operational',
+  'Works completed – awaiting provisional acceptance': 'Awaiting acceptance',
+  'Works in progress / finishing': 'In progress',
+  'Works not started': 'Not started',
+};
+
+// Status marker: a solid circle in the status colour (same colour as the filter dots)
 const createCustomIcon = (status: CenterStatus, isSelected: boolean = false) => {
   const color = STATUS_COLORS[status];
-  const isOperational = status === 'Operational';
-  const size = isSelected ? 40 : 32;
-  const pulseRing = isOperational && !isSelected ? `
-    <circle cx="${(size + 24)/2}" cy="18" r="${size/2 + 4}" fill="none" stroke="${color}" stroke-width="2" opacity="0.3">
-      <animate attributeName="r" from="${size/2}" to="${size/2 + 12}" dur="1.5s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" from="0.6" to="0" dur="1.5s" repeatCount="indefinite"/>
-    </circle>
-  ` : '';
+  const size = isSelected ? 28 : 22;
 
   return L.divIcon({
     className: 'custom-marker',
-    html: `
-      <svg width="${size + 24}" height="${size + 16}" viewBox="0 0 ${size + 24} ${size + 16}" fill="none" xmlns="http://www.w3.org/2000/svg">
-        ${pulseRing}
-        <g filter="url(#shadow)">
-          <path d="M${(size + 24)/2} 4C${(size + 24)/2 - 10} 4 ${(size + 24)/2 - 16} 10 ${(size + 24)/2 - 16} 20c0 14 16 ${size - 8} 16 ${size - 8}s16-${size - 22} 16-${size - 8}c0-10-6-16-16-16z" fill="${color}" stroke="white" stroke-width="2"/>
-          <circle cx="${(size + 24)/2}" cy="18" r="5" fill="white"/>
-        </g>
-        <defs>
-          <filter id="shadow" x="0" y="0" width="${size + 24}" height="${size + 16}" filterUnits="userSpaceOnUse">
-            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.2"/>
-          </filter>
-        </defs>
-      </svg>
-    `,
-    iconSize: [size + 24, size + 16],
-    iconAnchor: [(size + 24) / 2, size + 12],
-    popupAnchor: [0, -(size + 8)],
+    html: `<div style="width:${size}px;height:${size}px;border-radius:9999px;background:${color};border:3px solid #ffffff;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -(size / 2 + 6)],
+  });
+};
+
+// Cluster bubble: shows how many centres are grouped together
+const createClusterIcon = (cluster: { getChildCount: () => number }) => {
+  const count = cluster.getChildCount();
+  const size = count < 10 ? 34 : count < 25 ? 40 : 46;
+  return L.divIcon({
+    className: 'centre-cluster',
+    html: `<div style="width:${size}px;height:${size}px;border-radius:9999px;background:#1f2937;color:#ffffff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;border:3px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.3);">${count}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
   });
 };
 
@@ -135,8 +139,46 @@ const createCustomIcon = (status: CenterStatus, isSelected: boolean = false) => 
 const COTE_DIVOIRE_CENTER: [number, number] = [7.54, -5.55];
 const DEFAULT_ZOOM = 7;
 
+// Zoom the map to fit the given centres (one centre: centre on it)
+function fitTo(map: LeafletMap, points: [number, number][]) {
+  if (points.length === 0) return;
+  if (points.length === 1) {
+    map.setView(points[0], 10);
+    return;
+  }
+  map.fitBounds(points, { padding: [40, 40], maxZoom: 10 });
+}
+
+// Keeps the map on the centres that match the current filters.
+// resetTick changes when "Show all" is pressed, which fits every centre again.
+function MapFit({
+  points,
+  allPoints,
+  resetTick,
+}: {
+  points: [number, number][];
+  allPoints: [number, number][];
+  resetTick: number;
+}) {
+  const map = useMap();
+  const key = points.map(p => p.join(',')).join('|');
+
+  useEffect(() => {
+    fitTo(map, points);
+    // Only re-fit when the set of visible centres changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, map]);
+
+  useEffect(() => {
+    if (resetTick > 0) fitTo(map, allPoints);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetTick, map]);
+
+  return null;
+}
+
 // Map zoom controls component
-function MapControls() {
+function MapControls({ onReset }: { onReset: () => void }) {
   const map = useMap();
 
   return (
@@ -154,6 +196,14 @@ function MapControls() {
         aria-label="Zoom out"
       >
         <ZoomOut className="w-5 h-5" />
+      </button>
+      <button
+        onClick={onReset}
+        className="w-10 h-10 bg-white rounded-lg shadow-md flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-dg-green-600 transition-colors"
+        aria-label="Show all centres"
+        title="Show all centres"
+      >
+        <Maximize2 className="w-5 h-5" />
       </button>
     </div>
   );
@@ -174,6 +224,7 @@ export function CentersMapSection({ centers, loading = false }: CentersMapSectio
   const [statusFilter, setStatusFilter] = useState<'all' | CenterStatus>('all');
   const [query, setQuery] = useState('');
   const [listOpen, setListOpen] = useState(false);
+  const [resetTick, setResetTick] = useState(0);
   const activeFilterCount = (typeFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0);
 
   const filteredCenters = centers
@@ -212,57 +263,9 @@ export function CentersMapSection({ centers, loading = false }: CentersMapSectio
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col gap-3">
-        <div className="text-sm font-medium text-gray-700">
-          Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
-        </div>
-        <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap gap-2">
-          {[
-            { value: 'all', label: 'All types', count: centers.length },
-            { value: 'University', label: 'Universities', count: centerStats.universities },
-            { value: 'School', label: 'Schools', count: centerStats.schools },
-            { value: 'Mairie', label: 'Mairies', count: centerStats.mairies },
-          ].map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setTypeFilter(opt.value as 'all' | CenterType)}
-              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
-                typeFilter === opt.value
-                  ? 'bg-dg-green-600 text-white border-dg-green-600'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-dg-green-400'
-              }`}
-            >
-              {opt.label} <span className="opacity-75">({opt.count})</span>
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {[
-            { value: 'all', label: 'All status', count: centers.length },
-            ...CENTER_STATUSES.map(s => ({ value: s, label: s, count: statusCounts[s] })),
-          ].map(opt => (
-            <button
-              key={opt.value}
-              onClick={() => setStatusFilter(opt.value as 'all' | CenterStatus)}
-              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
-                statusFilter === opt.value
-                  ? 'bg-dg-blue-600 text-white border-dg-blue-600'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-dg-blue-400'
-              }`}
-            >
-              {opt.label} <span className="opacity-75">({opt.count})</span>
-            </button>
-          ))}
-        </div>
-        </div>
-      </div>
-
-      <div>
-      {/* Centers search bar (between filters and map) */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-        <div className="p-3 flex items-center gap-3">
+      {/* Search and filters share one card */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex flex-col gap-4">
+        <div className="flex items-center gap-3">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -286,8 +289,58 @@ export function CentersMapSection({ centers, loading = false }: CentersMapSectio
             <ChevronDown className={`w-4 h-4 transition-transform ${listOpen ? 'rotate-180' : ''}`} />
           </button>
         </div>
+        <div className="text-sm font-medium text-gray-700">
+          Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+        </div>
+        <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap gap-2">
+          {[
+            { value: 'all', label: 'All types', count: centers.length },
+            { value: 'University', label: 'Universities', count: centerStats.universities },
+            { value: 'School', label: 'Schools', count: centerStats.schools },
+            { value: 'Mairie', label: 'Mairies', count: centerStats.mairies },
+          ].map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setTypeFilter(opt.value as 'all' | CenterType)}
+              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                typeFilter === opt.value
+                  ? 'bg-gray-500 text-white border-gray-500'
+                  : 'bg-white text-gray-700 border-gray-200 hover:border-dg-green-400'
+              }`}
+            >
+              {opt.label} <span className="opacity-75">({opt.count})</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { value: 'all', label: 'All status', count: centers.length },
+            ...CENTER_STATUSES.map(s => ({ value: s, label: s, count: statusCounts[s] })),
+          ].map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setStatusFilter(opt.value as 'all' | CenterStatus)}
+              className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                statusFilter === opt.value
+                  ? 'bg-gray-500 text-white border-gray-500'
+                  : 'bg-white text-gray-700 border-gray-200 hover:border-dg-blue-400'
+              }`}
+            >
+              {opt.value !== 'all' && (
+                // Same colour as the map pin for this status
+                <span
+                  className="inline-block w-2 h-2 rounded-full mr-1.5 align-middle"
+                  style={{ backgroundColor: STATUS_COLORS[opt.value as CenterStatus] }}
+                />
+              )}
+              {opt.value !== 'all' ? SHORT_STATUS_LABEL[opt.value as CenterStatus] : opt.label} <span className="opacity-75">({opt.count})</span>
+            </button>
+          ))}
+        </div>
+        </div>
         {listOpen && (
-          <ul className="max-h-72 overflow-y-auto divide-y divide-gray-100 border-t border-gray-100">
+          <ul className="-mx-4 -mb-4 max-h-72 overflow-y-auto divide-y divide-gray-100 border-t border-gray-100">
             {filteredCenters.map(center => (
               <li key={center.id}>
                 <button
@@ -337,8 +390,14 @@ export function CentersMapSection({ centers, loading = false }: CentersMapSectio
               attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <MapControls />
+            <MapControls onReset={() => setResetTick(t => t + 1)} />
+            <MapFit
+              points={filteredCenters.map(c => c.coordinates as [number, number])}
+              allPoints={centers.map(c => c.coordinates as [number, number])}
+              resetTick={resetTick}
+            />
 
+            <MarkerClusterGroup chunkedLoading iconCreateFunction={createClusterIcon} maxClusterRadius={45}>
             {filteredCenters.map((center) => (
               <Marker
                 key={center.id}
@@ -385,10 +444,10 @@ export function CentersMapSection({ centers, loading = false }: CentersMapSectio
                 </Popup>
               </Marker>
             ))}
+            </MarkerClusterGroup>
           </MapContainer>
         </div>
       </motion.div>
-      </div>
     </div>
   );
 }

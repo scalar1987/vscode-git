@@ -51,7 +51,7 @@ export function ViewToggle({ value, onChange }: { value: View; onChange: (v: Vie
           type="button"
           onClick={() => onChange(v)}
           className={`px-3 py-1 rounded-md transition-colors ${
-            value === v ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+            value === v ? 'bg-gray-500 text-white' : 'text-gray-600 hover:bg-gray-100'
           }`}
         >
           {v === 'cumulative' ? 'Cumulative' : 'By year'}
@@ -147,7 +147,7 @@ export function TrainingFlowSection({
             transition={{ duration: 0.4, delay: flowIdx * 0.1 }}
             className={`rounded-xl border border-gray-200 border-l-4 ${c.accent} bg-white p-5 shadow-sm`}
           >
-            <h3 className={`font-semibold mb-4 ${c.text}`}>{flow.title}</h3>
+            <h3 className={`text-lg font-semibold mb-4 ${c.text}`}>{flow.title}</h3>
             <div className="flex flex-col md:flex-row md:items-stretch gap-3">
               {flow.nodes.map((node, idx) => {
                 const row = indicators.get(node.indicatorId);
@@ -176,7 +176,7 @@ export function TrainingFlowSection({
                         isSelected ? 'border-gray-900 shadow-md' : 'border-gray-200'
                       }`}
                     >
-                      <div className="text-sm text-gray-600">{node.indicatorId} · {node.label}</div>
+                      <div className="text-base text-gray-600">{node.indicatorId} · {node.label}</div>
                       {view === 'yearly' && (
                         <div className="mt-1 text-[11px] uppercase tracking-wide text-gray-400">2026 (H1)</div>
                       )}
@@ -186,16 +186,16 @@ export function TrainingFlowSection({
                         </span>
                         <span className="text-lg text-gray-400">/ {target.toLocaleString()}</span>
                       </div>
-                      <div className="mt-2 h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+                      <div className="mt-2 h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
                         <motion.div
-                          className={`h-1.5 rounded-full ${c.bar}`}
+                          className={`h-2.5 rounded-full ${c.bar}`}
                           initial={{ width: 0 }}
                           animate={{ width: `${share}%` }}
                           transition={{ duration: 0.8, ease: 'easeOut' }}
                         />
                       </div>
                       <div className="mt-1 flex justify-between text-sm text-gray-500">
-                        <span>{share.toFixed(1)}%</span>
+                        <span className="text-base font-medium text-gray-700">{share.toFixed(1)}%</span>
                         {view === 'yearly' && row && (
                           <span className="tabular-nums">
                             2024: {row.actual_2024} · 2025: {row.actual_2025}
