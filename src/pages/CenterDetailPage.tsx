@@ -667,12 +667,14 @@ type AdvancedModuleKey = (typeof ADVANCED_MODULES)[number]['key'];
 interface AdvancedTrainerRow {
   id: string;
   name: string;
-  in_person: boolean;
-  in_person_date: string;
+  in_person_ict: boolean;
+  in_person_ict_date: string;
+  in_person_green: boolean;
+  in_person_green_date: string;
   lms: Record<AdvancedModuleKey, boolean>;
 }
 
-function AdvancedInputForm({
+export function AdvancedInputForm({
   mode,
   centreId,
   canSave,
@@ -693,8 +695,10 @@ function AdvancedInputForm({
     trainers.map(t => ({
       id: t.id,
       name: t.name,
-      in_person: t.in_person_completed === true,
-      in_person_date: t.in_person_date ?? '',
+      in_person_ict: t.in_person_ict === true,
+      in_person_ict_date: t.in_person_ict_date ?? '',
+      in_person_green: t.in_person_green === true,
+      in_person_green_date: t.in_person_green_date ?? '',
       lms: {
         ui_ux: t.lms_ui_ux === true,
         ios: t.lms_ios === true,
@@ -713,6 +717,8 @@ function AdvancedInputForm({
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
   const num = (v: string) => Math.max(0, Math.floor(Number(v) || 0));
+  // DigiFemme holds both ICT and Green rights: only they add, rename or remove trainers
+  const isFull = canIct && canGreen;
 
   const updateRow = (id: string, patch: Partial<AdvancedTrainerRow>) =>
     setRows(prev => prev.map(r => (r.id === id ? { ...r, ...patch } : r)));
@@ -726,8 +732,10 @@ function AdvancedInputForm({
       {
         id: crypto.randomUUID(),
         name: '',
-        in_person: false,
-        in_person_date: '',
+        in_person_ict: false,
+        in_person_ict_date: '',
+        in_person_green: false,
+        in_person_green_date: '',
         lms: { ui_ux: false, ios: false, android: false, green_business: false },
       },
     ]);
@@ -744,8 +752,10 @@ function AdvancedInputForm({
       id: r.id,
       centre_id: centreId,
       name: r.name.trim(),
-      in_person_completed: r.in_person,
-      in_person_date: r.in_person && r.in_person_date ? r.in_person_date : null,
+      in_person_ict: r.in_person_ict,
+      in_person_ict_date: r.in_person_ict && r.in_person_ict_date ? r.in_person_ict_date : null,
+      in_person_green: r.in_person_green,
+      in_person_green_date: r.in_person_green && r.in_person_green_date ? r.in_person_green_date : null,
       lms_ui_ux: r.lms.ui_ux,
       lms_ios: r.lms.ios,
       lms_android: r.lms.android,
@@ -783,7 +793,7 @@ function AdvancedInputForm({
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Advanced trainers ToT completion</h3>
             <p className="text-sm text-gray-600">
-              Complete = in-person training and all four online modules (UI/UX Design, iOS, Android, Green Business)
+              Complete = ICT in-person (Betterworld) and Green in-person (Impact Lab) plus all four online modules (UI/UX Design, iOS, Android, Green Business)
             </p>
           </div>
 
@@ -797,12 +807,12 @@ function AdvancedInputForm({
                 <input
                   type="text"
                   value={r.name}
-                  disabled={!canSave}
+                  disabled={!isFull}
                   placeholder="Trainer name"
                   onChange={e => updateRow(r.id, { name: e.target.value })}
-                  className="flex-1 min-w-[200px] px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+                  className="flex-1 min-w-[200px] px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dg-green-500 disabled:bg-gray-50"
                 />
-                {canSave && (
+                {isFull && (
                   <button
                     type="button"
                     onClick={() => removeRow(r.id)}
@@ -817,22 +827,47 @@ function AdvancedInputForm({
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={r.in_person}
-                    disabled={!canSave}
-                    onChange={e => updateRow(r.id, { in_person: e.target.checked })}
+                    checked={r.in_person_ict}
+                    disabled={!canIct}
+                    onChange={e => updateRow(r.id, { in_person_ict: e.target.checked })}
                     className="w-4 h-4 accent-dg-green-600"
                   />
                   <Users className="w-4 h-4 text-dg-green-600" />
-                  In-person training completed
+                  ICT in-person (Betterworld)
                 </label>
-                {r.in_person && (
+                {r.in_person_ict && (
                   <label className="flex items-center gap-2">
-                    In-person date
+                    Date
                     <input
                       type="date"
-                      value={r.in_person_date}
-                      disabled={!canSave}
-                      onChange={e => updateRow(r.id, { in_person_date: e.target.value })}
+                      value={r.in_person_ict_date}
+                      disabled={!canIct}
+                      onChange={e => updateRow(r.id, { in_person_ict_date: e.target.value })}
+                      className="px-2 py-1 text-sm border border-gray-300 rounded-md disabled:bg-gray-100"
+                    />
+                  </label>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-4 mb-3 text-sm text-gray-700">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={r.in_person_green}
+                    disabled={!canGreen}
+                    onChange={e => updateRow(r.id, { in_person_green: e.target.checked })}
+                    className="w-4 h-4 accent-dg-green-600"
+                  />
+                  <Users className="w-4 h-4 text-dg-green-600" />
+                  Green in-person (Impact Lab)
+                </label>
+                {r.in_person_green && (
+                  <label className="flex items-center gap-2">
+                    Date
+                    <input
+                      type="date"
+                      value={r.in_person_green_date}
+                      disabled={!canGreen}
+                      onChange={e => updateRow(r.id, { in_person_green_date: e.target.value })}
                       className="px-2 py-1 text-sm border border-gray-300 rounded-md disabled:bg-gray-100"
                     />
                   </label>
@@ -858,7 +893,7 @@ function AdvancedInputForm({
           ))}
         </div>
 
-        {canSave && rows.length === 0 && (
+        {isFull && (
           <button
             type="button"
             onClick={addRow}
@@ -1075,13 +1110,12 @@ function BasicTrainingInputForm({
   );
 }
 
-type InputSection = 'tot' | 'infrastructure' | 'training' | 'advanced' | 'advanced_tot';
+type InputSection = 'tot' | 'infrastructure' | 'training';
 
+// Advanced programme data (trainers, cohorts, students by year) is entered on the Advanced programme input page
 const INPUT_SECTIONS: Array<{ value: InputSection; label: string }> = [
   { value: 'tot', label: '105 trainers ToT completion' },
   { value: 'training', label: 'Student training (basic ICT & green practices)' },
-  { value: 'advanced_tot', label: 'Advanced trainers ToT completion' },
-  { value: 'advanced', label: 'Advanced students enrolled and passed' },
   { value: 'infrastructure', label: 'Infrastructure (renovation, equipment)' },
 ];
 
@@ -1181,39 +1215,6 @@ function BasicModuleProgress({ center }: { center: Center }) {
   );
 }
 
-function ActualsTable({ title, rows }: { title: string; rows: Array<{ year: string; enrolled: number; passed: number }> }) {
-  const totalEnrolled = rows.reduce((sum, r) => sum + r.enrolled, 0);
-  const totalPassed = rows.reduce((sum, r) => sum + r.passed, 0);
-  return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-      <table className="w-full text-sm tabular-nums">
-        <thead>
-          <tr className="text-left text-xs text-gray-500 border-b border-gray-200">
-            <th className="py-2 font-medium">Year</th>
-            <th className="py-2 font-medium text-right">Enrolled</th>
-            <th className="py-2 font-medium text-right">Passed</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map(r => (
-            <tr key={r.year} className="border-b border-gray-100">
-              <td className="py-2 text-gray-700">{r.year}</td>
-              <td className="py-2 text-right text-gray-900">{r.enrolled.toLocaleString()}</td>
-              <td className="py-2 text-right text-gray-900">{r.passed.toLocaleString()}</td>
-            </tr>
-          ))}
-          <tr className="font-semibold">
-            <td className="py-2 text-gray-900">Total</td>
-            <td className="py-2 text-right text-gray-900">{totalEnrolled.toLocaleString()}</td>
-            <td className="py-2 text-right text-gray-900">{totalPassed.toLocaleString()}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
 // Basic ToT completion per trainer. Completed = in-person AND LMS both done.
 interface TotBasicRecord {
   center_id: string;
@@ -1275,7 +1276,8 @@ const ADVANCED_CHIP_MODULES = [
 ] as const;
 
 function AdvancedTrainerProgress({ trainers }: { trainers: any[] }) {
-  const isDone = (t: any) => t.in_person_completed === true && ADVANCED_CHIP_MODULES.every(m => t[m.key] === true);
+  const isDone = (t: any) =>
+    t.in_person_ict === true && t.in_person_green === true && ADVANCED_CHIP_MODULES.every(m => t[m.key] === true);
 
   const chip = (on: boolean) =>
     `inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border ${
@@ -1289,9 +1291,10 @@ function AdvancedTrainerProgress({ trainers }: { trainers: any[] }) {
           <p className="text-gray-500">No advanced trainer assigned</p>
         </div>
       ) : (
-        trainers.slice(0, 1).map((t, idx) => {
+        trainers.map((t, idx) => {
           const complete = isDone(t);
-          const started = t.in_person_completed === true || ADVANCED_CHIP_MODULES.some(m => t[m.key] === true);
+          const lmsDone = ADVANCED_CHIP_MODULES.every(m => t[m.key] === true);
+          const started = t.in_person_ict === true || t.in_person_green === true || ADVANCED_CHIP_MODULES.some(m => t[m.key] === true);
           const badge = complete
             ? { text: 'ToT completed', cls: 'bg-dg-blue-600 text-white' }
             : started
@@ -1305,9 +1308,17 @@ function AdvancedTrainerProgress({ trainers }: { trainers: any[] }) {
               </div>
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${badge.cls}`}>{badge.text}</span>
-                <span className={chip(t.in_person_completed === true)}>
-                  <span className="font-bold">{t.in_person_completed === true ? '✓' : '○'}</span>
-                  In-person{t.in_person_completed === true && t.in_person_date ? ` · ${t.in_person_date}` : ''}
+                <span className={chip(t.in_person_ict === true)} title="Entered by Betterworld">
+                  <span className="font-bold">{t.in_person_ict === true ? '✓' : '○'}</span>
+                  In-person ICT{t.in_person_ict === true && t.in_person_ict_date ? ` · ${t.in_person_ict_date}` : ''}
+                </span>
+                <span className={chip(t.in_person_green === true)} title="Entered by Impact Lab">
+                  <span className="font-bold">{t.in_person_green === true ? '✓' : '○'}</span>
+                  In-person Green{t.in_person_green === true && t.in_person_green_date ? ` · ${t.in_person_green_date}` : ''}
+                </span>
+                <span className={chip(lmsDone)}>
+                  <span className="font-bold">{lmsDone ? '✓' : '○'}</span>
+                  Online (LMS)
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -1322,6 +1333,111 @@ function AdvancedTrainerProgress({ trainers }: { trainers: any[] }) {
           );
         })
       )}
+    </div>
+  );
+}
+
+// Advanced cohorts that run at this centre: registered, graduated and the trainers running it
+function CentreCohortsCard({
+  centreId,
+  yearRows,
+}: {
+  centreId: string;
+  yearRows: Array<{ year: string | number; enrolled: number; passed: number }>;
+}) {
+  const [rows, setRows] = useState<Array<{ cohort_id: string; name: string; start_month: string; enrolled: number; graduated: number; trainers: string[] }>>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!supabase) return;
+    Promise.all([
+      supabase.from('advanced_cohort_centres').select('cohort_id, enrolled, graduated, advanced_cohorts(name, start_month)').eq('centre_id', centreId),
+      supabase.from('advanced_cohort_trainers').select('cohort_id, advanced_trainers(name)').eq('centre_id', centreId),
+    ]).then(([cc, tt]) => {
+      const tmap = new Map<string, string[]>();
+      (tt.data ?? []).forEach((r: any) => tmap.set(r.cohort_id, [...(tmap.get(r.cohort_id) ?? []), r.advanced_trainers?.name ?? '']));
+      setRows(
+        (cc.data ?? []).map((r: any) => ({
+          cohort_id: r.cohort_id,
+          name: r.advanced_cohorts?.name ?? '',
+          start_month: r.advanced_cohorts?.start_month ?? '',
+          enrolled: r.enrolled ?? 0,
+          graduated: r.graduated ?? 0,
+          trainers: tmap.get(r.cohort_id) ?? [],
+        })),
+      );
+      setLoaded(true);
+    });
+  }, [centreId]);
+
+  return (
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <h3 className="text-base font-semibold text-gray-900 mb-3">Advanced ICT & Green Business</h3>
+      {!loaded ? (
+        <p className="text-sm text-gray-500">Loading…</p>
+      ) : rows.length === 0 ? (
+        <p className="text-sm text-gray-500">No advanced cohort runs at this centre yet</p>
+      ) : (
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs text-gray-500">
+              <th className="py-2 pr-4 font-medium">Cohort</th>
+              <th className="py-2 pr-4 font-medium">Trainers</th>
+              <th className="py-2 pr-4 font-medium text-right">Registered</th>
+              <th className="py-2 font-medium text-right">Graduated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(r => (
+              <tr key={r.cohort_id} className="border-t border-gray-100">
+                <td className="py-2 pr-4 text-gray-800">
+                  {r.name}
+                  {r.start_month && <span className="block text-xs text-gray-500">starts {r.start_month}</span>}
+                </td>
+                <td className="py-2 pr-4 text-gray-700">{r.trainers.length ? r.trainers.join(', ') : <span className="text-gray-400">No trainer assigned</span>}</td>
+                <td className="py-2 pr-4 text-right tabular-nums">{r.enrolled}</td>
+                <td className="py-2 text-right tabular-nums">{r.graduated}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="border-t border-gray-200 font-semibold text-gray-900">
+              <td className="py-2 pr-4">Total</td>
+              <td className="py-2 pr-4" />
+              <td className="py-2 pr-4 text-right tabular-nums">{rows.reduce((n, r) => n + r.enrolled, 0)}</td>
+              <td className="py-2 text-right tabular-nums">{rows.reduce((n, r) => n + r.graduated, 0)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      )}
+      <div className="mt-6 pt-4 border-t border-gray-100">
+        <h4 className="text-sm font-semibold text-gray-900 mb-2">By year</h4>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs text-gray-500">
+              <th className="py-2 font-medium">Year</th>
+              <th className="py-2 font-medium text-right">Enrolled</th>
+              <th className="py-2 font-medium text-right">Passed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {yearRows.map(y => (
+              <tr key={String(y.year)} className="border-t border-gray-100">
+                <td className="py-2 text-gray-700">{y.year}</td>
+                <td className="py-2 text-right tabular-nums">{y.enrolled}</td>
+                <td className="py-2 text-right tabular-nums">{y.passed}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="border-t border-gray-200 font-semibold text-gray-900">
+              <td className="py-2">Total</td>
+              <td className="py-2 text-right tabular-nums">{yearRows.reduce((n, y) => n + y.enrolled, 0)}</td>
+              <td className="py-2 text-right tabular-nums">{yearRows.reduce((n, y) => n + y.passed, 0)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>
   );
 }
@@ -1401,16 +1517,10 @@ export function CenterDetailPage() {
   const canTot = isApproved(profile) && canEditSection(profile, centreKey, 'tot');
   const canInfra = isApproved(profile) && canEditSection(profile, centreKey, 'infra');
   const canTraining = isApproved(profile) && canEditSection(profile, centreKey, 'training');
-  const canAdvanced = isApproved(profile) && canEditSection(profile, centreKey, 'advanced');
-  const canIct = isApproved(profile) && canEditSection(profile, centreKey, 'advanced_ict');
-  const canGreen = isApproved(profile) && canEditSection(profile, centreKey, 'advanced_green');
-  const canAdvTot = canIct || canGreen;
-  const canInput = canTot || canInfra || canTraining || canAdvanced || canAdvTot;
+  const canInput = canTot || canInfra || canTraining;
   const SECTION_RIGHTS: Record<InputSection, boolean> = {
     tot: canTot,
     training: canTraining,
-    advanced: canAdvanced,
-    advanced_tot: canAdvTot,
     infrastructure: canInfra,
   };
   const allowedSections = INPUT_SECTIONS.filter(s => SECTION_RIGHTS[s.value]);
@@ -1682,18 +1792,6 @@ export function CenterDetailPage() {
           </motion.div>
         )}
 
-        {/* Training Tab */}
-        {activeTab === "overview" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 mt-10">
-            <h2 className="text-xl font-semibold text-gray-900">Student Training</h2>
-            <BasicModuleProgress center={center} />
-            <ActualsTable
-              title="Advanced ICT & Green Business"
-              rows={ACTUAL_YEARS.map(y => ({ year: y, enrolled: sumAdvancedYear(center, y, "enrolled"), passed: sumAdvancedYear(center, y, "passed") }))}
-            />
-          </motion.div>
-        )}
-
         {/* Coordinators Tab */}
         {activeTab === 'overview' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 mt-10">
@@ -1734,11 +1832,23 @@ export function CenterDetailPage() {
           </motion.div>
         )}
 
+        {/* Training Tab */}
+        {activeTab === "overview" && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6 mt-10">
+            <h2 className="text-xl font-semibold text-gray-900">Student Training</h2>
+            <BasicModuleProgress center={center} />
+          </motion.div>
+        )}
+
         {/* Advanced Trainers Tab */}
         {activeTab === 'overview' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 mt-10">
             <h2 className="text-xl font-semibold text-gray-900">Advanced Trainers</h2>
             <AdvancedTrainerProgress trainers={center.advanced_trainers ?? []} />
+            <CentreCohortsCard
+              centreId={center.id}
+              yearRows={ACTUAL_YEARS.map(y => ({ year: y, enrolled: sumAdvancedYear(center, y, "enrolled"), passed: sumAdvancedYear(center, y, "passed") }))}
+            />
           </motion.div>
         )}
         {/* Data Input Tab */}
@@ -1770,26 +1880,6 @@ export function CenterDetailPage() {
             ) : (
               <EmptyInputNotice message="No trainers registered for this center" />
             )}
-          </div>
-          <div className={effectiveSection === 'advanced' ? '' : 'hidden'}>
-            <AdvancedInputForm
-              mode="students"
-              centreId={center.id}
-              canSave={canAdvanced}
-              trainers={center.advanced_trainers ?? []}
-              advancedByYear={center.training?.advanced_ict_green?.by_year ?? {}}
-            />
-          </div>
-          <div className={effectiveSection === 'advanced_tot' ? '' : 'hidden'}>
-            <AdvancedInputForm
-              mode="trainers"
-              centreId={center.id}
-              canSave={canAdvTot}
-              canIct={canIct}
-              canGreen={canGreen}
-              trainers={center.advanced_trainers ?? []}
-              advancedByYear={center.training?.advanced_ict_green?.by_year ?? {}}
-            />
           </div>
           <div className={effectiveSection === 'training' ? '' : 'hidden'}>
             <BasicTrainingInputForm centreId={center.id} canSave={canTraining} training={center.training} />

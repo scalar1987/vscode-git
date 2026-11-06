@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { supabase } from '../lib/centersData';
-import { getProfile, getSession, onAuthChange, type Profile } from '../lib/auth';
+import { canEditSection, getProfile, getSession, isApproved, onAuthChange, type Profile } from '../lib/auth';
+import { AdvancedInputForm } from './CenterDetailPage';
 
 // Each cohort runs ICT (DigiFemmes) and Green Business together, over 4 months.
 type Track = 'ict' | 'green';
@@ -121,10 +122,32 @@ const CURRICULUM: Record<Track, string[][]> = {
 interface Cohort {
   id: string;
   name: string;
-  start_month: string; // YYYY-MM
+  start_month: string; // YYYY-MM (derived from start_date)
+  start_date: string | null; // YYYY-MM-DD
   end_date: string | null;
   enrolled: number;
 }
+
+interface TrainerRow {
+  id: string;
+  centre_id: string;
+  name: string;
+  in_person_ict: boolean | null;
+  in_person_green: boolean | null;
+  lms_ui_ux: boolean | null;
+  lms_ios: boolean | null;
+  lms_android: boolean | null;
+  lms_green_business: boolean | null;
+}
+
+const LMS_KEYS = ['lms_ui_ux', 'lms_ios', 'lms_android', 'lms_green_business'] as const;
+const lmsCount = (t: TrainerRow) => LMS_KEYS.filter(k => t[k] === true).length;
+const trainerDone = (t: TrainerRow) => t.in_person_ict === true && t.in_person_green === true && lmsCount(t) === LMS_KEYS.length;
+const cohortStart = (c: Cohort) => c.start_date ?? `${c.start_month}-01`;
+const cohortYear = (c: Cohort) => Number(cohortStart(c).slice(0, 4));
+const todayIso = () => new Date().toISOString().slice(0, 10);
+// Logframe 1.3.3: DigiFemme advanced ToT trainers (target 19; names are still being collected)
+const TRAINER_TARGET = 19;
 
 interface ProgressRow {
   cohort_id: string;
@@ -176,12 +199,15 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const [centres, setCentres] = useState<Array<{ id: string; name: string }>>([]);
   const [venues, setVenues] = useState<Record<string, string[]>>({});
   const [venueQuery, setVenueQuery] = useState('');
+  // Per cohort and centre: registered and graduated counts, and the trainers running it
+  const [venueCounts, setVenueCounts] = useState<Record<string, Record<string, { enrolled: number; graduated: number }>>>({});
+  const [allTrainers, setAllTrainers] = useState<TrainerRow[]>([]);
+  const [venueTrainers, setVenueTrainers] = useState<Record<string, string[]>>({});
   const [newName, setNewName] = useState('');
   const [newEnd, setNewEnd] = useState('');
-  const [newEnrolled, setNewEnrolled] = useState('');
   const [newStart, setNewStart] = useState(() => {
     const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   });
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
@@ -190,6 +216,29 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const [deleting, setDeleting] = useState(false);
 
   const canEdit = !!profile && (profile.role === 'ggg' || (profile.role === 'partner' && profile.section_access.includes('advanced')));
+
+  // Centre trainers (ToT) and programme counts, entered per centre
+  const [centreSel, setCentreSel] = useState('');
+  const [centreQuery, setCentreQuery] = useState('');
+  const [centreOpen, setCentreOpen] = useState(false);
+  const [centreTrainers, setCentreTrainers] = useState<any[]>([]);
+  const [centreLoaded, setCentreLoaded] = useState(false);
+  const canIctHere = isApproved(profile) && canEditSection(profile, centreSel, 'advanced_ict');
+  const canGreenHere = isApproved(profile) && canEditSection(profile, centreSel, 'advanced_green');
+
+  useEffect(() => {
+    if (!supabase || !centreSel) return;
+    setCentreLoaded(false);
+    supabase
+      .from('advanced_trainers')
+      .select('*')
+      .eq('centre_id', centreSel)
+      .order('name')
+      .then(t => {
+        setCentreTrainers(t.data ?? []);
+        setCentreLoaded(true);
+      });
+  }, [centreSel]);
 
   useEffect(() => {
     const loadProfile = () => {
@@ -201,16 +250,30 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
 
   const loadAll = async () => {
     if (!supabase) return;
-    const [c, p, ce, v] = await Promise.all([
-      supabase.from('advanced_cohorts').select('id, name, start_month, end_date, enrolled').order('start_month', { ascending: false }),
+    const [c, p, ce, v, tr, ct] = await Promise.all([
+      supabase.from('advanced_cohorts').select('id, name, start_month, start_date, end_date, enrolled').order('start_month', { ascending: false }),
       supabase.from('advanced_cohort_progress').select('cohort_id, track, month_no, item_no, completed, completed_date, completed_at'),
       supabase.from('centres').select('id, name').order('sort_order'),
-      supabase.from('advanced_cohort_centres').select('cohort_id, centre_id'),
+      supabase.from('advanced_cohort_centres').select('cohort_id, centre_id, enrolled, graduated'),
+      supabase.from('advanced_trainers').select('id, centre_id, name, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business').order('name'),
+      supabase.from('advanced_cohort_trainers').select('cohort_id, centre_id, trainer_id'),
     ]);
     setCentres((ce.data ?? []) as Array<{ id: string; name: string }>);
     const vmap: Record<string, string[]> = {};
-    (v.data ?? []).forEach((r: any) => (vmap[r.cohort_id] = [...(vmap[r.cohort_id] ?? []), r.centre_id]));
+    const cmap: Record<string, Record<string, { enrolled: number; graduated: number }>> = {};
+    (v.data ?? []).forEach((r: any) => {
+      vmap[r.cohort_id] = [...(vmap[r.cohort_id] ?? []), r.centre_id];
+      cmap[r.cohort_id] = { ...(cmap[r.cohort_id] ?? {}), [r.centre_id]: { enrolled: r.enrolled ?? 0, graduated: r.graduated ?? 0 } };
+    });
     setVenues(vmap);
+    setVenueCounts(cmap);
+    setAllTrainers((tr.data ?? []) as TrainerRow[]);
+    const tmap: Record<string, string[]> = {};
+    (ct.data ?? []).forEach((r: any) => {
+      const k = `${r.cohort_id}|${r.centre_id}`;
+      tmap[k] = [...(tmap[k] ?? []), r.trainer_id];
+    });
+    setVenueTrainers(tmap);
     const list = (c.data ?? []) as Cohort[];
     setCohorts(list);
     setSelected(prev => (prev && list.some(x => x.id === prev) ? prev : list[0]?.id ?? ''));
@@ -282,6 +345,47 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
 
   const pctOf = (d: number, t: number) => (t > 0 ? Math.round((d / t) * 100) : 0);
 
+  // Programme-wide numbers, from the cohort centre details and the centre trainers
+  const overview = useMemo(() => {
+    let registered = 0;
+    let graduated = 0;
+    const centreIds = new Set<string>();
+    const byYear: Record<number, { registered: number; graduated: number }> = {
+      2025: { registered: 0, graduated: 0 },
+      2026: { registered: 0, graduated: 0 },
+      2027: { registered: 0, graduated: 0 },
+    };
+    cohorts.forEach(c => {
+      const year = cohortYear(c);
+      Object.entries(venueCounts[c.id] ?? {}).forEach(([cid, v]) => {
+        registered += v.enrolled;
+        graduated += v.graduated;
+        centreIds.add(cid);
+        if (byYear[year]) {
+          byYear[year].registered += v.enrolled;
+          byYear[year].graduated += v.graduated;
+        }
+      });
+    });
+    return {
+      registered,
+      graduated,
+      centres: centreIds.size,
+      trainers: allTrainers.length,
+      trainersDone: allTrainers.filter(trainerDone).length,
+      byYear,
+    };
+  }, [cohorts, venueCounts, allTrainers]);
+
+  // Registered and graduated for the selected cohort, summed over its centres
+  const cohortTotals = useMemo(() => {
+    if (!current) return { registered: 0, graduated: 0 };
+    return Object.values(venueCounts[current.id] ?? {}).reduce(
+      (t, v) => ({ registered: t.registered + v.enrolled, graduated: t.graduated + v.graduated }),
+      { registered: 0, graduated: 0 },
+    );
+  }, [venueCounts, current]);
+
   const setItem = (cohortId: string, track: Track, month: number, item: number, patch: Partial<ProgressRow>) => {
     const key = itemKey(cohortId, track, month, item);
     setRows(prev => {
@@ -303,18 +407,107 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
     setSaveMsg(null);
   };
 
-  // Ticking a centre saves straight away (no separate save step)
+  // Ticking a centre saves straight away (no separate save step); only that centre's link changes
   const toggleVenue = async (cohortId: string, centreId: string) => {
     if (!supabase) return;
-    const list = venues[cohortId] ?? [];
-    const next = list.includes(centreId) ? list.filter(x => x !== centreId) : [...list, centreId];
-    setVenues(prev => ({ ...prev, [cohortId]: next }));
+    const on = (venues[cohortId] ?? []).includes(centreId);
     setSaveMsg('Saving…');
-    const del = await supabase.from('advanced_cohort_centres').delete().eq('cohort_id', cohortId);
-    const ins = next.length
-      ? await supabase.from('advanced_cohort_centres').insert(next.map(cid => ({ cohort_id: cohortId, centre_id: cid })))
-      : { error: null };
-    const err = del.error ?? ins.error;
+    const res = on
+      ? await supabase.from('advanced_cohort_centres').delete().eq('cohort_id', cohortId).eq('centre_id', centreId)
+      : await supabase.from('advanced_cohort_centres').insert({ cohort_id: cohortId, centre_id: centreId });
+    if (res.error) return setSaveMsg(`Save failed: ${res.error.message}`);
+    // Keep the centre's students-by-year in step with its cohorts (this centre is now linked or unlinked)
+    const yearErr = await syncCentreYears([centreId]);
+    await loadAll();
+    setSaveMsg(yearErr ? `Saved, but students by year failed: ${yearErr.message}` : 'Saved');
+  };
+
+  const setVenueCount = (cohortId: string, centreId: string, patch: { enrolled?: number; graduated?: number }) =>
+    setVenueCounts(prev => {
+      const cur = prev[cohortId]?.[centreId] ?? { enrolled: 0, graduated: 0 };
+      return {
+        ...prev,
+        [cohortId]: {
+          ...(prev[cohortId] ?? {}),
+          [centreId]: { enrolled: patch.enrolled ?? cur.enrolled, graduated: patch.graduated ?? cur.graduated },
+        },
+      };
+    });
+
+  const toggleVenueTrainer = (cohortId: string, centreId: string, trainerId: string) =>
+    setVenueTrainers(prev => {
+      const k = `${cohortId}|${centreId}`;
+      const cur = prev[k] ?? [];
+      return { ...prev, [k]: cur.includes(trainerId) ? cur.filter(x => x !== trainerId) : [...cur, trainerId] };
+    });
+
+  // Students by year (2025-2027) per centre = sum over its cohorts, by the year each cohort starts.
+  // Written to centre_training_advanced so the centre pages and national totals stay in step.
+  const syncCentreYears = async (centreIds: string[]) => {
+    const db = supabase;
+    if (!db || centreIds.length === 0) return null;
+    const YEARS = [2025, 2026, 2027];
+    const { data, error } = await db
+      .from('advanced_cohort_centres')
+      .select('centre_id, enrolled, graduated, advanced_cohorts(start_month)')
+      .in('centre_id', centreIds);
+    if (error) return error;
+    const sums = new Map<string, Record<number, { enrolled: number; passed: number }>>();
+    centreIds.forEach(cid =>
+      sums.set(cid, Object.fromEntries(YEARS.map(y => [y, { enrolled: 0, passed: 0 }])) as Record<number, { enrolled: number; passed: number }>),
+    );
+    (data ?? []).forEach((r: any) => {
+      const year = Number(String(r.advanced_cohorts?.start_month ?? '').slice(0, 4));
+      const bucket = sums.get(r.centre_id);
+      if (!bucket || !bucket[year]) return;
+      bucket[year].enrolled += r.enrolled ?? 0;
+      bucket[year].passed += r.graduated ?? 0;
+    });
+    const { data: { user } } = await db.auth.getUser();
+    const now = new Date().toISOString();
+    const rows = [...sums.entries()].flatMap(([cid, b]) =>
+      YEARS.map(y => ({
+        centre_id: cid,
+        year: y,
+        enrolled: b[y].enrolled,
+        passed: b[y].passed,
+        updated_at: now,
+        updated_by: user?.id ?? null,
+      })),
+    );
+    const { error: upErr } = await db.from('centre_training_advanced').upsert(rows);
+    return upErr;
+  };
+
+  // Saves registered / graduated counts and the trainers for every centre linked to this cohort
+  const saveVenueDetails = async (cohortId: string) => {
+    if (!supabase) return;
+    setSaving(true);
+    setSaveMsg(null);
+    const db = supabase;
+    const linked = venues[cohortId] ?? [];
+    const counts = venueCounts[cohortId] ?? {};
+    const updates = await Promise.all(
+      linked.map(cid =>
+        db
+          .from('advanced_cohort_centres')
+          .update({ enrolled: counts[cid]?.enrolled ?? 0, graduated: counts[cid]?.graduated ?? 0 })
+          .eq('cohort_id', cohortId)
+          .eq('centre_id', cid),
+      ),
+    );
+    const del = await supabase.from('advanced_cohort_trainers').delete().eq('cohort_id', cohortId);
+    const trainerRows = linked.flatMap(cid =>
+      (venueTrainers[`${cohortId}|${cid}`] ?? []).map(tid => ({ cohort_id: cohortId, centre_id: cid, trainer_id: tid })),
+    );
+    const ins = trainerRows.length ? await supabase.from('advanced_cohort_trainers').insert(trainerRows) : { error: null };
+    // Cohort total registered = sum of the registered counts of its centres
+    const total = linked.reduce((n, cid) => n + (counts[cid]?.enrolled ?? 0), 0);
+    const totalSave = await db.from('advanced_cohorts').update({ enrolled: total }).eq('id', cohortId);
+    const yearErr = await syncCentreYears(linked);
+    setSaving(false);
+    const err = updates.find(u => u.error)?.error ?? del.error ?? ins.error ?? totalSave.error ?? yearErr;
+    if (!err) await loadAll();
     setSaveMsg(err ? `Save failed: ${err.message}` : 'Saved');
   };
 
@@ -326,9 +519,10 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
       .from('advanced_cohorts')
       .insert({
         name: newName.trim(),
-        start_month: newStart,
+        start_date: newStart,
+        start_month: newStart.slice(0, 7),
         end_date: newEnd || null,
-        enrolled: Number(newEnrolled) || 0,
+        enrolled: 0, // filled automatically from the centres' registered counts
       })
       .select('id')
       .single();
@@ -336,7 +530,6 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
     if (error) return setSaveMsg(`Could not add cohort: ${error.message}`);
     setNewName('');
     setNewEnd('');
-    setNewEnrolled('');
     await loadAll();
     setSelected(data.id);
     setSaveMsg('Cohort added');
@@ -403,6 +596,74 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
           </Link>
         </div>
 
+        {/* Centre trainers (ToT) input, then the cohort list */}
+        {mode === 'input' && (
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-6">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">Centre trainers and programmes</h2>
+              <p className="text-sm text-gray-600">Choose a centre to enter its trainers' ToT status and its programme counts.</p>
+            </div>
+            <div className="relative min-w-[280px] max-w-md">
+              <input
+                type="text"
+                value={centreOpen ? centreQuery : (centres.find(c => c.id === centreSel)?.name ?? '')}
+                placeholder="Search centre name"
+                onFocus={() => {
+                  setCentreOpen(true);
+                  setCentreQuery('');
+                }}
+                onChange={e => {
+                  setCentreQuery(e.target.value);
+                  setCentreOpen(true);
+                }}
+                onBlur={() => setCentreOpen(false)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+              />
+              {centreOpen && (
+                <ul className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg">
+                  {centres
+                    .filter(c => c.name.toLowerCase().includes(centreQuery.trim().toLowerCase()))
+                    .map(c => (
+                      <li key={c.id}>
+                        <button
+                          type="button"
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={() => {
+                            setCentreSel(c.id);
+                            setCentreOpen(false);
+                            setCentreQuery('');
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${c.id === centreSel ? 'text-dg-green-700 font-medium' : 'text-gray-800'}`}
+                        >
+                          {c.name}
+                        </button>
+                      </li>
+                    ))}
+                  {centres.every(c => !c.name.toLowerCase().includes(centreQuery.trim().toLowerCase())) && (
+                    <li className="px-3 py-2 text-sm text-gray-500">No centre found</li>
+                  )}
+                </ul>
+              )}
+            </div>
+            {centreSel && centreLoaded && (
+              <>
+                <AdvancedInputForm
+                  key={`trainers-${centreSel}`}
+                  mode="trainers"
+                  centreId={centreSel}
+                  canSave={canIctHere || canGreenHere}
+                  canIct={canIctHere}
+                  canGreen={canGreenHere}
+                  trainers={centreTrainers}
+                  advancedByYear={{}}
+                />
+              </>
+            )}
+            <p className="text-xs text-gray-500">
+              Students enrolled and passed by year are calculated automatically from the cohort centre details below.
+            </p>
+          </div>
+        )}
         {mode === 'input' && canEdit && (
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-end gap-3">
             <label className="text-sm text-gray-700">
@@ -411,35 +672,26 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                 type="text"
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
-                placeholder="e.g. Cohort 5"
-                className="mt-1 block w-36 px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+                placeholder="e.g. 2026 Cohort 1"
+                className="mt-1 block w-72 px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
               />
             </label>
             <label className="text-sm text-gray-700">
-              Start month
+              Start date
               <input
-                type="month"
+                type="date"
                 value={newStart}
                 onChange={e => setNewStart(e.target.value)}
-                className="mt-1 block w-36 px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+                className="mt-1 block w-52 px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
               />
             </label>
             <label className="text-sm text-gray-700">
-              End
+              End date
               <input
                 type="date"
                 value={newEnd}
                 onChange={e => setNewEnd(e.target.value)}
-                className="mt-1 block w-36 px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
-              />
-            </label>
-            <label className="text-sm text-gray-700">
-              Registered
-              <input
-                type="number"
-                min={0}
-                value={newEnrolled}
-                onChange={e => setNewEnrolled(e.target.value)}
+                style={{ width: '13rem' }}
                 className="mt-1 block w-36 px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
               />
             </label>
@@ -454,6 +706,63 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
         )}
 
         {mode === 'progress' && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              label="All cohorts · Registered 1.3.4.1"
+              value={String(overview.registered)}
+              sub={`Logframe target 900 · ${overview.centres} centres`}
+            />
+            <StatCard
+              label="All cohorts · Passed (graduated) 1.3.4.2"
+              value={String(overview.graduated)}
+              sub={`Logframe target 575 · ${pctOf(overview.graduated, overview.registered)}% of registered`}
+            />
+            <StatCard
+              label="Trainers ToT complete · 1.3.3"
+              value={`${overview.trainersDone} / ${TRAINER_TARGET}`}
+              sub={`Logframe target ${TRAINER_TARGET} · ${overview.trainers} trainers listed so far`}
+            />
+            <StatCard label="Cohorts" value={String(cohorts.length)} sub={`${cohorts.filter(c => c.end_date && c.end_date < todayIso()).length} ended`} />
+          </div>
+        )}
+
+        {mode === 'progress' && (
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h3 className="text-base font-semibold text-gray-900 mb-1">Students by year (all cohorts)</h3>
+            <p className="text-xs text-gray-500 mb-4">
+              Registered = logframe 1.3.4.1 (target 900) · Graduated = logframe 1.3.4.2, passed (target 575) · grouped by the year each cohort starts
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-gray-500">
+                    <th className="py-2 pr-4 font-medium">Year</th>
+                    <th className="py-2 pr-4 font-medium text-right">Registered</th>
+                    <th className="py-2 font-medium text-right">Graduated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(overview.byYear).map(([year, v]) => (
+                    <tr key={year} className="border-t border-gray-100">
+                      <td className="py-2 pr-4 text-gray-700">{year}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums">{v.registered}</td>
+                      <td className="py-2 text-right tabular-nums">{v.graduated}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t border-gray-200 font-semibold text-gray-900">
+                    <td className="py-2 pr-4">Total</td>
+                    <td className="py-2 pr-4 text-right tabular-nums">{overview.registered}</td>
+                    <td className="py-2 text-right tabular-nums">{overview.graduated}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {mode === 'progress' && (
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-center gap-3">
           <label className="text-sm text-gray-700">
             Cohort
@@ -461,12 +770,12 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
               value={selected}
               onChange={e => setSelected(e.target.value)}
               className="ml-2 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white"
-              style={{ minWidth: 300 }}
+              style={{ minWidth: 480 }}
             >
               {cohorts.length === 0 && <option value="">No cohorts yet</option>}
               {cohorts.map(c => (
                 <option key={c.id} value={c.id}>
-                  {c.name} (starts {monthLabel(c.start_month, 0)})
+                  {c.name} ({cohortStart(c)} ~ {c.end_date ?? 'end date TBD'}{c.end_date && c.end_date < todayIso() ? ' · ended' : ''})
                 </option>
               ))}
             </select>
@@ -482,9 +791,13 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
         {current && progressView && mode === 'progress' && (
           <>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard label="This cohort · Registered 1.3.4.1" value={String(cohortTotals.registered)} sub={`${(venues[current.id] ?? []).length} centres`} />
+              <StatCard
+                label="This cohort · Passed (graduated) 1.3.4.2"
+                value={String(cohortTotals.graduated)}
+                sub={`${pctOf(cohortTotals.graduated, cohortTotals.registered)}% of registered`}
+              />
               <StatCard label="Overall progress" value={`${pctOf(doneCount, totalItems)}%`} sub={`${doneCount} of ${totalItems} items`} />
-              <StatCard label="Items completed" value={String(doneCount)} sub={`${totalItems - doneCount} remaining`} />
-              <StatCard label="Centres" value={String((venues[current.id] ?? []).length)} sub="running this cohort" />
               <StatCard
                 label="Outstanding"
                 value={String(progressView.outstanding.length)}
@@ -493,6 +806,99 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
               />
             </div>
 
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="mb-4">
+                <h3 className="text-base font-semibold text-gray-900">Centres and trainers in this cohort</h3>
+                <p className="text-xs text-gray-500">
+                  {cohortStart(current)}{current.end_date ? ` ~ ${current.end_date}` : ''}
+                  {current.end_date && current.end_date < todayIso() ? ' · ended' : ' · running'}
+                </p>
+              </div>
+              {(venues[current.id] ?? []).length === 0 ? (
+                <p className="text-sm text-gray-500">No centre selected yet.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-xs text-gray-500">
+                        <th className="py-2 pr-4 font-medium">Centre</th>
+                        <th className="py-2 pr-4 font-medium">Trainers and ToT status</th>
+                        <th className="py-2 pr-4 font-medium text-right">Registered</th>
+                        <th className="py-2 font-medium text-right">Graduated</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {centres
+                        .filter(ce => (venues[current.id] ?? []).includes(ce.id))
+                        .map(ce => {
+                          // All trainers assigned to this centre; those running this cohort are marked
+                          const runningIds = venueTrainers[`${current.id}|${ce.id}`] ?? [];
+                          const trainers = allTrainers.filter(t => t.centre_id === ce.id);
+                          const cnt = venueCounts[current.id]?.[ce.id] ?? { enrolled: 0, graduated: 0 };
+                          return (
+                            <tr key={ce.id} className="border-t border-gray-100 align-top">
+                              <td className="py-2 pr-4">
+                                <Link to={`/centers/${ce.id}`} className="text-dg-blue-700 hover:underline">{ce.name}</Link>
+                              </td>
+                              <td className="py-2 pr-4">
+                                {trainers.length === 0 ? (
+                                  <span className="text-gray-400">Not assigned yet</span>
+                                ) : (
+                                  <ul className="space-y-1">
+                                    {trainers.map(t => (
+                                      <li key={t.id} className="flex flex-wrap items-center gap-2">
+                                        <span className="text-gray-900">{t.name}</span>
+                                        {runningIds.includes(t.id) && (
+                                          <span className="px-2 py-0.5 rounded-full text-xs bg-dg-blue-50 text-dg-blue-700">this cohort</span>
+                                        )}
+                                        <span className={`px-2 py-0.5 rounded-full text-xs ${trainerDone(t) ? 'bg-dg-green-50 text-dg-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                          {trainerDone(t) ? 'ToT complete' : 'ToT in progress'}
+                                        </span>
+                                        <span
+                                          className={`px-2 py-0.5 rounded-full text-xs ${t.in_person_ict === true ? 'bg-dg-green-50 text-dg-green-700' : 'bg-gray-100 text-gray-500'}`}
+                                          title="Entered by Betterworld"
+                                        >
+                                          ICT in-person: {t.in_person_ict === true ? 'done' : 'not yet'}
+                                        </span>
+                                        <span
+                                          className={`px-2 py-0.5 rounded-full text-xs ${t.in_person_green === true ? 'bg-dg-green-50 text-dg-green-700' : 'bg-gray-100 text-gray-500'}`}
+                                          title="Entered by Impact Lab"
+                                        >
+                                          Green in-person: {t.in_person_green === true ? 'done' : 'not yet'}
+                                        </span>
+                                        <span
+                                          className={`px-2 py-0.5 rounded-full text-xs ${lmsCount(t) === 4 ? 'bg-dg-green-50 text-dg-green-700' : 'bg-gray-100 text-gray-500'}`}
+                                          title="Online modules completed out of 4"
+                                        >
+                                          Online LMS: {lmsCount(t)} / 4
+                                        </span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </td>
+                              <td className="py-2 pr-4 text-right tabular-nums">{cnt.enrolled}</td>
+                              <td className="py-2 text-right tabular-nums">{cnt.graduated}</td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                    <tfoot>
+                      <tr className="border-t border-gray-200 font-semibold text-gray-900">
+                        <td className="py-2 pr-4">Total</td>
+                        <td className="py-2 pr-4" />
+                        <td className="py-2 pr-4 text-right tabular-nums">{cohortTotals.registered}</td>
+                        <td className="py-2 text-right tabular-nums">{cohortTotals.graduated}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              )}
+            </div>
+
+          <details className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <summary className="cursor-pointer text-base font-semibold text-gray-900">Weekly progress and open items</summary>
+            <div className="space-y-6 mt-6">
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <div className="mb-4">
                 <h3 className="text-base font-semibold text-gray-900">Planned vs actual</h3>
@@ -588,26 +994,11 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                 </ul>
               )}
             </div>
+          </div>
+          </details>
           </>
         )}
 
-        {current && mode === 'progress' && (
-          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-center gap-3">
-            <span className="text-sm font-semibold text-gray-900">Centres where this cohort runs</span>
-            <ol className="w-full flex flex-wrap gap-2">
-              {centres
-                .filter(ce => (venues[current.id] ?? []).includes(ce.id))
-                .map(ce => (
-                  <li key={ce.id}>
-                    <Link to={`/centers/${ce.id}`} className="inline-block rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-dg-blue-700 hover:bg-white hover:border-dg-blue-300">{ce.name}</Link>
-                  </li>
-                ))}
-            </ol>
-            {(venues[current.id] ?? []).length === 0 && <p className="text-sm text-gray-500">No centre selected yet.</p>}
-          </div>
-        )}
-
-        {/* Cohort list (same pattern as the Greenpreneur input page) */}
         {mode === 'input' && cohorts.length > 0 && (
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
             <h2 className="text-base font-semibold text-gray-900">Cohorts</h2>
@@ -665,7 +1056,9 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
             return (
               <div key={c.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-6">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h2 className="text-base font-semibold text-gray-900">{c.name} · starts {monthLabel(c.start_month, 0)}</h2>
+                  <h2 className="text-base font-semibold text-gray-900">
+                    {c.name} · starts {monthLabel(c.start_month, 0)} · {c.enrolled} registered (from centres)
+                  </h2>
                   <div className="flex items-center gap-3">
                     <span className="text-sm text-gray-600 tabular-nums">{doneHere} / {totalItems} done</span>
                     {profile?.role === 'ggg' && (
@@ -723,6 +1116,89 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                       ))}
                   </ol>
                 </div>
+
+                {venueIds.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-gray-900">Centre details for this cohort</h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="text-left text-xs text-gray-500">
+                            <th className="py-2 pr-4 font-medium">Centre</th>
+                            <th className="py-2 pr-4 font-medium">Trainers running it</th>
+                            <th className="py-2 pr-4 font-medium text-right">Registered</th>
+                            <th className="py-2 font-medium text-right">Graduated</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {centres
+                            .filter(ce => venueIds.includes(ce.id))
+                            .map(ce => {
+                              const selectedTrainers = venueTrainers[`${c.id}|${ce.id}`] ?? [];
+                              const cnt = venueCounts[c.id]?.[ce.id] ?? { enrolled: 0, graduated: 0 };
+                              const options = allTrainers.filter(t => t.centre_id === ce.id);
+                              const numCell = 'w-24 px-2 py-1 text-sm text-right border border-gray-200 rounded-md tabular-nums focus:outline-none focus:ring-2 focus:ring-dg-green-500';
+                              return (
+                                <tr key={ce.id} className="border-t border-gray-100 align-top">
+                                  <td className="py-2 pr-4 text-gray-800">{ce.name}</td>
+                                  <td className="py-2 pr-4">
+                                    {options.length === 0 ? (
+                                      <span className="text-gray-400">No trainer registered for this centre</span>
+                                    ) : (
+                                      <div className="flex flex-wrap gap-x-4 gap-y-2">
+                                        {options.map(t => (
+                                          <label key={t.id} className="flex items-center gap-1.5 text-gray-700 cursor-pointer">
+                                            <input
+                                              type="checkbox"
+                                              checked={selectedTrainers.includes(t.id)}
+                                              disabled={!canEdit}
+                                              onChange={() => toggleVenueTrainer(c.id, ce.id, t.id)}
+                                              className="w-4 h-4 accent-dg-green-600"
+                                            />
+                                            {t.name}
+                                          </label>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="py-2 pr-4 text-right">
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      disabled={!canEdit}
+                                      value={cnt.enrolled}
+                                      onChange={e => setVenueCount(c.id, ce.id, { enrolled: Math.max(0, Math.floor(Number(e.target.value) || 0)) })}
+                                      className={numCell}
+                                    />
+                                  </td>
+                                  <td className="py-2 text-right">
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      disabled={!canEdit}
+                                      value={cnt.graduated}
+                                      onChange={e => setVenueCount(c.id, ce.id, { graduated: Math.max(0, Math.floor(Number(e.target.value) || 0)) })}
+                                      className={numCell}
+                                    />
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </table>
+                    </div>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={() => saveVenueDetails(c.id)}
+                        disabled={saving}
+                        className="px-4 py-2 bg-dg-blue-600 text-white rounded-lg hover:bg-dg-blue-700 disabled:opacity-60 transition-colors font-medium text-sm"
+                      >
+                        {saving ? 'Saving…' : 'Save centre details'}
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {[0, 1, 2, 3].map(m => (
                   <div key={m} className="space-y-3">
