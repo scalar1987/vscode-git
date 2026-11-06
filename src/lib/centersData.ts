@@ -137,8 +137,10 @@ export async function loadCenters(): Promise<any[]> {
         advanced_trainers: (advTrBy.get(row.id) ?? []).map(t => ({
           id: t.id,
           name: t.name,
-          in_person_completed: t.in_person_completed === true,
-          in_person_date: t.in_person_date ?? null,
+          in_person_ict: t.in_person_ict === true,
+          in_person_ict_date: t.in_person_ict_date ?? null,
+          in_person_green: t.in_person_green === true,
+          in_person_green_date: t.in_person_green_date ?? null,
           lms_ui_ux: t.lms_ui_ux === true,
           lms_ios: t.lms_ios === true,
           lms_android: t.lms_android === true,
