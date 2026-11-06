@@ -660,54 +660,54 @@
       "completed": false
     },
     {
-      "id": "basic-treichville_port-1",
+      "id": "basic-portbouet_port-1",
       "name": "",
-      "center_id": "treichville_port",
+      "center_id": "portbouet_port",
       "placeholder": false,
       "in_person_completed": null,
       "lms_completed": null,
       "completed": false
     },
     {
-      "id": "basic-treichville_port-2",
+      "id": "basic-portbouet_port-2",
       "name": "",
-      "center_id": "treichville_port",
+      "center_id": "portbouet_port",
       "placeholder": false,
       "in_person_completed": null,
       "lms_completed": null,
       "completed": false
     },
     {
-      "id": "basic-treichville_port-3",
+      "id": "basic-portbouet_port-3",
       "name": "",
-      "center_id": "treichville_port",
+      "center_id": "portbouet_port",
       "placeholder": false,
       "in_person_completed": null,
       "lms_completed": null,
       "completed": false
     },
     {
-      "id": "basic-treichville_mode-1",
+      "id": "basic-portbouet_mode-1",
       "name": "",
-      "center_id": "treichville_mode",
+      "center_id": "portbouet_mode",
       "placeholder": false,
       "in_person_completed": null,
       "lms_completed": null,
       "completed": false
     },
     {
-      "id": "basic-treichville_mode-2",
+      "id": "basic-portbouet_mode-2",
       "name": "",
-      "center_id": "treichville_mode",
+      "center_id": "portbouet_mode",
       "placeholder": false,
       "in_person_completed": null,
       "lms_completed": null,
       "completed": false
     },
     {
-      "id": "basic-treichville_mode-3",
+      "id": "basic-portbouet_mode-3",
       "name": "",
-      "center_id": "treichville_mode",
+      "center_id": "portbouet_mode",
       "placeholder": false,
       "in_person_completed": null,
       "lms_completed": null,
@@ -741,27 +741,27 @@
       "completed": false
     },
     {
-      "id": "basic-yopougon_tech-1",
+      "id": "basic-marcory_ceti-1",
       "name": "",
-      "center_id": "yopougon_tech",
+      "center_id": "marcory_ceti",
       "placeholder": false,
       "in_person_completed": null,
       "lms_completed": null,
       "completed": false
     },
     {
-      "id": "basic-yopougon_tech-2",
+      "id": "basic-marcory_ceti-2",
       "name": "",
-      "center_id": "yopougon_tech",
+      "center_id": "marcory_ceti",
       "placeholder": false,
       "in_person_completed": null,
       "lms_completed": null,
       "completed": false
     },
     {
-      "id": "basic-yopougon_tech-3",
+      "id": "basic-marcory_ceti-3",
       "name": "",
-      "center_id": "yopougon_tech",
+      "center_id": "marcory_ceti",
       "placeholder": false,
       "in_person_completed": null,
       "lms_completed": null,

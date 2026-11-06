@@ -6773,8 +6773,8 @@
     "name": "Lycée Moderne de Bingerville",
     "type": "School",
     "coordinates": [
-      5.409969,
-      -3.993435
+      5.359286787720478,
+      -3.887575256764294
     ],
     "region": "Abidjan (Bingerville)",
     "status": "Works in progress / finishing",
@@ -8106,14 +8106,14 @@
     }
   },
   {
-    "id": "treichville_port",
+    "id": "portbouet_port",
     "name": "Collège Moderne de Port-Bouët Cité du Port",
     "type": "School",
     "coordinates": [
       5.288729,
       -4.006437
     ],
-    "region": "Abidjan (Treichville)",
+    "region": "Abidjan (Port-Bouët)",
     "status": "Works completed – awaiting provisional acceptance",
     "phase": "Phase II",
     "students": 700,
@@ -8440,14 +8440,14 @@
     }
   },
   {
-    "id": "treichville_mode",
+    "id": "portbouet_mode",
     "name": "Lycée Professionnel des Métiers de la Mode et du Social de Port-Bouët",
     "type": "School",
     "coordinates": [
       5.25199,
       -3.958199
     ],
-    "region": "Abidjan (Treichville)",
+    "region": "Abidjan (Port-Bouët)",
     "status": "Works in progress / finishing",
     "phase": "Phase II",
     "students": 1644,
@@ -9109,14 +9109,14 @@
     }
   },
   {
-    "id": "yopougon_tech",
+    "id": "marcory_ceti",
     "name": "Centre d'Enseignement Technique Industriel (CETI) de Marcory",
     "type": "School",
     "coordinates": [
       5.291365,
       -3.98596
     ],
-    "region": "Abidjan (Yopougon)",
+    "region": "Abidjan (Marcory)",
     "status": "Works completed – awaiting provisional acceptance",
     "phase": "Phase II",
     "students": 1099,
