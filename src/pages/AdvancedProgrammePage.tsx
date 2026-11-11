@@ -5,6 +5,7 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, X
 import { supabase } from '../lib/centersData';
 import { canEditSection, getProfile, getSession, isApproved, onAuthChange, type Profile } from '../lib/auth';
 import { AdvancedInputForm } from './CenterDetailPage';
+import { ReviewChip, commentOf, loadReviews, stateOf, type ReviewInfo } from '../lib/reviews';
 
 // Each cohort runs ICT (DigiFemmes) and Green Business together, over 4 months.
 type Track = 'ict' | 'green';
@@ -223,6 +224,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const [centreOpen, setCentreOpen] = useState(false);
   const [centreTrainers, setCentreTrainers] = useState<any[]>([]);
   const [centreLoaded, setCentreLoaded] = useState(false);
+  const [reviews, setReviews] = useState<Map<string, ReviewInfo>>(new Map());
   const canIctHere = isApproved(profile) && canEditSection(profile, centreSel, 'advanced_ict');
   const canGreenHere = isApproved(profile) && canEditSection(profile, centreSel, 'advanced_green');
 
@@ -274,6 +276,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
       tmap[k] = [...(tmap[k] ?? []), r.trainer_id];
     });
     setVenueTrainers(tmap);
+    setReviews(await loadReviews());
     const list = (c.data ?? []) as Cohort[];
     setCohorts(list);
     setSelected(prev => (prev && list.some(x => x.id === prev) ? prev : list[0]?.id ?? ''));
@@ -588,12 +591,14 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">{mode === 'input' ? 'Advanced programme: data input' : 'Advanced programme: progress'}</h1>
-          <Link
-            to={mode === 'input' ? '/advanced-programme' : '/advanced-programme/input'}
-            className="ml-auto px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
-          >
-            {mode === 'input' ? 'Progress' : 'Data input'}
-          </Link>
+          <div className="ml-auto flex items-center gap-2">
+            <Link
+              to={mode === 'input' ? '/advanced-programme' : '/advanced-programme/input'}
+              className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
+            >
+              {mode === 'input' ? 'Progress' : 'Data input'}
+            </Link>
+          </div>
         </div>
 
         {/* Centre trainers (ToT) input, then the cohort list */}
@@ -656,6 +661,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                   canGreen={canGreenHere}
                   trainers={centreTrainers}
                   advancedByYear={{}}
+                  reviews={reviews}
                 />
               </>
             )}
@@ -1140,7 +1146,15 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                               const numCell = 'w-24 px-2 py-1 text-sm text-right border border-gray-200 rounded-md tabular-nums focus:outline-none focus:ring-2 focus:ring-dg-green-500';
                               return (
                                 <tr key={ce.id} className="border-t border-gray-100 align-top">
-                                  <td className="py-2 pr-4 text-gray-800">{ce.name}</td>
+                                  <td className="py-2 pr-4 text-gray-800">
+                                    <div className="flex flex-col items-start gap-1">
+                                      <span>{ce.name}</span>
+                                      <ReviewChip
+                                        state={stateOf(reviews, 'advanced_cohort_centres', `${c.id}|${ce.id}`)}
+                                        comment={commentOf(reviews, 'advanced_cohort_centres', `${c.id}|${ce.id}`)}
+                                      />
+                                    </div>
+                                  </td>
                                   <td className="py-2 pr-4">
                                     {options.length === 0 ? (
                                       <span className="text-gray-400">No trainer registered for this centre</span>

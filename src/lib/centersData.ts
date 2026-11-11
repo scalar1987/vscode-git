@@ -20,7 +20,10 @@ export interface TotRecord {
   lms_excel: boolean;
   lms_ppt: boolean;
   lms_green: boolean;
-  in_person_date: string | null;
+  in_person_ict?: boolean;
+  in_person_green?: boolean;
+  in_person_ict_date?: string | null;
+  in_person_green_date?: string | null;
   completed: boolean;
 }
 
@@ -202,7 +205,7 @@ export async function loadTotRecords(): Promise<TotRecord[]> {
     try {
       const { data, error } = await supabase
         .from('tot_trainees')
-        .select('centre_id, position, name, in_person_completed, lms_completed, lms_word, lms_excel, lms_ppt, lms_green, in_person_date')
+        .select('centre_id, position, name, in_person_completed, in_person_ict, in_person_green, in_person_ict_date, in_person_green_date, lms_completed, lms_word, lms_excel, lms_ppt, lms_green')
         .order('centre_id')
         .order('position');
       if (!error && data) {
@@ -217,7 +220,10 @@ export async function loadTotRecords(): Promise<TotRecord[]> {
           lms_excel: r.lms_excel === true,
           lms_ppt: r.lms_ppt === true,
           lms_green: r.lms_green === true,
-          in_person_date: r.in_person_date ?? null,
+          in_person_ict: r.in_person_ict === true,
+          in_person_green: r.in_person_green === true,
+          in_person_ict_date: r.in_person_ict_date ?? null,
+          in_person_green_date: r.in_person_green_date ?? null,
           completed: r.in_person_completed === true && r.lms_completed === true,
         }));
       }

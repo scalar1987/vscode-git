@@ -37,7 +37,7 @@ const inputCls =
 export function GreenpreneurInputPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [centres, setCentres] = useState<CentreLite[]>([]);
-  const [data, setData] = useState<GpData>({ cohorts: [], progress: [], centreIds: [], pitch: [] });
+  const [data, setData] = useState<GpData>({ cohorts: [], progress: [], centreIds: [], pitch: [], editions: [] });
   // Checklist state for every cohort, keyed by cohort id, so all checklists can be shown at once
   const [checks, setChecks] = useState<Record<string, ChecklistState>>({});
   const [newCohort, setNewCohort] = useState({ track: 'training' as GpTrack, name: '', start: '', end: '', enrolled: '' });
@@ -45,15 +45,43 @@ export function GreenpreneurInputPage() {
   const [busy, setBusy] = useState(false);
   const [centreQuery, setCentreQuery] = useState('');
   const [pitchForm, setPitchForm] = useState({
-    edition: String(new Date().getFullYear()),
+    edition: '',
     category: 'Operating entrepreneurs' as PitchCategory,
     rank: '1',
     laureate: '',
     prize: '',
   });
 
+  const [newEdition, setNewEdition] = useState({ name: '', held_on: '' });
+
+  const createEdition = async () => {
+    if (!supabase || !canEdit) return;
+    const num = Math.max(0, ...data.editions.map(e => e.edition)) + 1; // numbered 1, 2, 3 in order
+    setBusy(true);
+    const { error } = await supabase.from('greenpreneur_pitch_editions').insert({
+      edition: num,
+      name: newEdition.name.trim() || null,
+      held_on: newEdition.held_on || null,
+    });
+    setBusy(false);
+    if (error) return setMsg(`Could not create competition: ${error.message}`);
+    setNewEdition({ name: '', held_on: '' });
+    setPitchForm(f => ({ ...f, edition: String(num) }));
+    setMsg(`Created pitch competition ${num}`);
+    await reload();
+  };
+
+  const deleteEdition = async (edition: number) => {
+    if (!supabase || !isGgg) return;
+    const { data: removed, error } = await supabase.from('greenpreneur_pitch_editions').delete().eq('edition', edition).select('edition');
+    if (error || !removed || removed.length === 0) return setMsg(error ? `Could not delete: ${error.message}` : 'Could not delete: permission denied.');
+    setMsg(`Deleted competition ${edition}`);
+    await reload();
+  };
+
   const addPitch = async () => {
     if (!supabase || !canEdit) return;
+    if (!pitchForm.edition) return setMsg('Create a pitch competition first, then add results to it.');
     if (!pitchForm.laureate.trim()) return setMsg('Enter the laureate name.');
     setBusy(true);
     const { error } = await supabase.from('greenpreneur_pitch_results').insert({
@@ -69,6 +97,8 @@ export function GreenpreneurInputPage() {
     setMsg('Pitch result added');
     await reload();
   };
+
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const deletePitch = async (id: string) => {
     if (!supabase || !canEdit) return;
@@ -155,7 +185,6 @@ export function GreenpreneurInputPage() {
 
   const deleteCohort = async (c: GpCohort) => {
     if (!supabase || !isGgg) return;
-    if (!window.confirm(`Delete "${c.name}" and its checklist?`)) return;
     const { data: removed, error } = await supabase.from('greenpreneur_cohorts').delete().eq('id', c.id).select('id');
     if (error || !removed || removed.length === 0) return setMsg(error ? `Could not delete: ${error.message}` : 'Could not delete: permission denied.');
     setMsg(`Deleted "${c.name}"`);
@@ -260,9 +289,9 @@ export function GreenpreneurInputPage() {
               <input type="date" value={newCohort.start} onChange={e => setNewCohort({ ...newCohort, start: e.target.value })} className={inputCls} disabled={!canEdit} />
             </label>
             <label className="text-sm text-gray-700">
-              End
-              <input type="date" value={newCohort.end} onChange={e => setNewCohort({ ...newCohort, end: e.target.value })} className={inputCls} disabled={!canEdit} />
-            </label>
+                End
+                <input type="date" value={newCohort.end} onChange={e => setNewCohort({ ...newCohort, end: e.target.value })} className={inputCls} disabled={!canEdit} />
+              </label>
             <label className="text-sm text-gray-700">
               Registered
               <input
@@ -326,14 +355,33 @@ export function GreenpreneurInputPage() {
                         </td>
                         <td className="py-2.5 px-3 text-right tabular-nums text-gray-700 border-b border-gray-100">{done} / {total}</td>
                         <td className="py-2.5 px-3 text-right border-b border-gray-100 whitespace-nowrap">
-                          {isGgg && (
+                          {isGgg && confirmDeleteId !== c.id && (
                             <button
                               type="button"
-                              onClick={() => deleteCohort(c)}
+                              onClick={() => setConfirmDeleteId(c.id)}
                               className="px-3 py-1.5 rounded-md border border-red-200 text-red-700 hover:bg-red-50 text-xs font-medium"
                             >
                               Delete
                             </button>
+                          )}
+                          {isGgg && confirmDeleteId === c.id && (
+                            <span className="inline-flex items-center gap-2 text-xs">
+                              <span className="text-gray-700">Delete this cohort?</span>
+                              <button
+                                type="button"
+                                onClick={() => { setConfirmDeleteId(null); deleteCohort(c); }}
+                                className="px-3 py-1.5 rounded-md bg-red-600 text-white hover:bg-red-700 font-medium"
+                              >
+                                Yes, delete
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="px-3 py-1.5 rounded-md border border-gray-300 hover:bg-gray-50"
+                              >
+                                Cancel
+                              </button>
+                            </span>
                           )}
                         </td>
                       </tr>
@@ -436,19 +484,106 @@ export function GreenpreneurInputPage() {
           );
         })}
 
-        {/* Pitch competition results (programme-wide, per edition) */}
+        {/* Pitch competition: programme-wide, held once a year (3 editions in total) */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-5">
           <h2 className="text-base font-semibold text-gray-900">Pitch competition</h2>
+
+          {/* Create a competition (held once a year, 3 editions in total), then add its results below */}
+          {canEdit && (
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="text-sm text-gray-700">
+                Competition name
+                <input
+                  type="text"
+                  value={newEdition.name}
+                  onChange={e => setNewEdition({ ...newEdition, name: e.target.value })}
+                  placeholder="e.g. Pitch Competition 2026"
+                  className={`${inputCls} w-72`}
+                />
+              </label>
+              <label className="text-sm text-gray-700">
+                Date held
+                <input
+                  type="date"
+                  value={newEdition.held_on}
+                  onChange={e => setNewEdition({ ...newEdition, held_on: e.target.value })}
+                  className={inputCls}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={createEdition}
+                disabled={busy}
+                className="px-4 py-2 rounded-lg text-gray-900 text-sm font-semibold hover:bg-gray-100 disabled:opacity-60"
+              >
+                + Add competition
+              </button>
+            </div>
+          )}
+
+          {/* Competitions created so far; a mistaken one can be deleted (its results go with it) */}
+          {data.editions.length > 0 && (
+            <ul className="space-y-2">
+              {data.editions.map(ed => {
+                const key = `edition-${ed.edition}`;
+                return (
+                  <li key={key} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-lg border border-gray-200">
+                    <span className="text-sm text-gray-900">
+                      <span className="font-semibold tabular-nums">{ed.edition}</span>
+                      {ed.name ? ` · ${ed.name}` : ''}
+                      {ed.held_on ? ` · ${ed.held_on}` : ''}
+                    </span>
+                    {isGgg && confirmDeleteId !== key && (
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDeleteId(key)}
+                        className="px-3 py-1.5 rounded-md border border-red-200 text-red-700 hover:bg-red-50 text-xs font-medium"
+                      >
+                        Delete
+                      </button>
+                    )}
+                    {isGgg && confirmDeleteId === key && (
+                      <span className="inline-flex items-center gap-2 text-xs">
+                        <span className="text-gray-700">Delete this competition and its results?</span>
+                        <button
+                          type="button"
+                          onClick={() => { setConfirmDeleteId(null); deleteEdition(ed.edition); }}
+                          className="px-3 py-1.5 rounded-md bg-red-600 text-white hover:bg-red-700 font-medium"
+                        >
+                          Yes, delete
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDeleteId(null)}
+                          className="px-3 py-1.5 rounded-md border border-gray-300 hover:bg-gray-50"
+                        >
+                          Cancel
+                        </button>
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          {data.editions.length > 0 && (
           <div className="flex flex-wrap items-end gap-3">
             <label className="text-sm text-gray-700">
-              Edition
-              <input
-                type="number"
+              Competition
+              <select
                 value={pitchForm.edition}
                 onChange={e => setPitchForm({ ...pitchForm, edition: e.target.value })}
-                disabled={!canEdit}
-                className={inputCls}
-              />
+                disabled={!canEdit || data.editions.length === 0}
+                className={`${inputCls} w-72`}
+              >
+                {data.editions.length === 0 && <option value="">No competitions yet</option>}
+                {data.editions.map(ed => (
+                  <option key={ed.edition} value={String(ed.edition)}>
+                    {ed.edition}{ed.name ? ` · ${ed.name}` : ''}{ed.held_on ? ` · ${ed.held_on}` : ''}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="text-sm text-gray-700">
               Category
@@ -505,6 +640,7 @@ export function GreenpreneurInputPage() {
               + Add result
             </button>
           </div>
+          )}
 
           {data.pitch.length === 0 ? (
             <p className="text-sm text-gray-500">No pitch competition results yet.</p>
@@ -513,7 +649,7 @@ export function GreenpreneurInputPage() {
               <table className="w-full min-w-[640px] text-sm">
                 <thead>
                   <tr className="text-xs text-gray-500 border-b border-gray-200">
-                    <th className="py-2 px-3 text-left font-medium">Edition</th>
+                    <th className="py-2 px-3 text-left font-medium">Competition</th>
                     <th className="py-2 px-3 text-left font-medium">Category</th>
                     <th className="py-2 px-3 text-right font-medium">Placing</th>
                     <th className="py-2 px-3 text-left font-medium">Laureate</th>
@@ -524,7 +660,7 @@ export function GreenpreneurInputPage() {
                 <tbody>
                   {data.pitch.map(r => (
                     <tr key={r.id}>
-                      <td className="py-2.5 px-3 text-gray-900 border-b border-gray-100 tabular-nums">{r.edition}</td>
+                      <td className="py-2.5 px-3 text-gray-900 border-b border-gray-100 tabular-nums">{data.editions.find(e => e.edition === r.edition)?.name ?? `Edition ${r.edition}`}</td>
                       <td className="py-2.5 px-3 text-gray-700 border-b border-gray-100">{r.category}</td>
                       <td className="py-2.5 px-3 text-right tabular-nums text-gray-700 border-b border-gray-100">{r.rank_no}</td>
                       <td className="py-2.5 px-3 text-gray-900 border-b border-gray-100">{r.laureate}</td>

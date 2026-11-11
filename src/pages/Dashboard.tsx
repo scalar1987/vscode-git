@@ -9,6 +9,7 @@ import { TrainingFlowSection, ViewToggle, type FlowRow, type View } from '../com
 import { useKPIData } from '../hooks/useKPIData';
 import type { CenterStatus } from '../types/center';
 import { loadCenters } from '../lib/centersData';
+import { ApprovalsCard } from '../components/dashboard/ApprovalsCard';
 import {
   HeroSection,
   KPICard,
@@ -259,6 +260,8 @@ export function Dashboard() {
           </motion.p>
         </motion.div>
       </section>
+
+      <ApprovalsCard />
 
       {/* Programme tabs stay at the top of the screen while scrolling */}
       <div className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-gray-200 px-4 md:px-6 lg:px-8 pt-2">
