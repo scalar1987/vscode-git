@@ -104,15 +104,36 @@ export function commentOf(reviews: Map<string, ReviewInfo>, table: ReviewTable, 
 }
 
 // Small status chip shown next to an input row
-export function ReviewChip({ state, comment, label }: { state: ReviewState; comment?: string | null; label?: string }) {
+export function ReviewChip({ state, comment, label, notStarted }: { state: ReviewState; comment?: string | null; label?: string; notStarted?: boolean }) {
+  // Nothing entered yet: shown as not started, not as waiting for review
+  const text = notStarted ? 'Not started' : STATE_LABEL[state];
+  const style = notStarted ? 'bg-white text-gray-400 border border-gray-200' : STATE_STYLE[state];
   return (
     <span className="inline-flex flex-col items-start gap-1">
-      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATE_STYLE[state]}`}>
-        {label ? `${label}: ` : ''}{STATE_LABEL[state]}
+      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${style}`}>
+        {label ? `${label}: ` : ''}{text}
       </span>
       {comment && (state === 'changes_requested' || state === 'rejected') && (
         <span className="text-xs text-gray-700 max-w-xs">GGGI: {comment}</span>
       )}
     </span>
   );
+}
+
+// A unit is in the review queue once something has been entered for it (or it was already reviewed).
+// Units with nothing entered yet are "not started" and are not counted as pending.
+export function unitHasData(table: ReviewTable, row: Record<string, any>, track: Track): boolean {
+  if (table === 'tot_trainees') {
+    return track === 'ict'
+      ? !!(row.in_person_ict || row.lms_word || row.lms_excel || row.lms_ppt)
+      : !!(row.in_person_green || row.lms_green);
+  }
+  if (table === 'advanced_trainers') {
+    return track === 'ict'
+      ? !!(row.in_person_ict || row.lms_ui_ux || row.lms_ios || row.lms_android)
+      : !!(row.in_person_green || row.lms_green_business);
+  }
+  if (table === 'advanced_cohort_centres') return (row.enrolled ?? 0) > 0 || (row.graduated ?? 0) > 0;
+  if (table === 'greenpreneur_cohorts') return (row.enrolled ?? 0) > 0;
+  return true;
 }

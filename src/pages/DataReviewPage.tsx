@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/centersData';
 import { onAuthChange } from '../lib/auth';
 import {
-  STATE_LABEL, STATE_STYLE, TRACKS_OF, PROGRAMME_OF, canReviewUnit, loadMyScopes, loadReviews, unitKey,
+  STATE_LABEL, STATE_STYLE, TRACKS_OF, PROGRAMME_OF, canReviewUnit, loadMyScopes, loadReviews, unitKey, unitHasData,
   type Programme, type ReviewInfo, type ReviewState, type ReviewTable, type Track,
 } from '../lib/reviews';
 
@@ -48,9 +48,9 @@ export function DataReviewPage() {
     ] = await Promise.all([
       db.from('centres').select('id, name, status, updated_at'),
       db.from('advanced_cohorts').select('id, name'),
-      db.from('advanced_trainers').select('id, centre_id, name, updated_at'),
+      db.from('advanced_trainers').select('id, centre_id, name, updated_at, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business'),
       db.from('advanced_cohort_centres').select('cohort_id, centre_id, enrolled, graduated'),
-      db.from('tot_trainees').select('centre_id, position, name, updated_at'),
+      db.from('tot_trainees').select('centre_id, position, name, updated_at, in_person_ict, in_person_green, lms_word, lms_excel, lms_ppt, lms_green'),
       db.from('centre_training_basic').select('centre_id, year, enrolled, passed, updated_at'),
       db.from('centre_basic_modules').select('centre_id, module, passed, updated_at'),
       db.from('greenpreneur_cohorts').select('id, name, track, enrolled, created_at'),
@@ -64,9 +64,11 @@ export function DataReviewPage() {
     const rows: Item[] = [];
     const push = (
       table: ReviewTable, key: string, section: string, title: string, detail: string, updatedAt: string | null,
-      track: Track = 'all',
+      track: Track = 'all', started = true,
     ) => {
       const r: ReviewInfo | undefined = reviews.get(unitKey(table, key, track));
+      // Nothing entered yet and never reviewed: not started, so not in the queue
+      if (!started && !r) return;
       rows.push({
         table, key, track, programme: PROGRAMME_OF[table], section, title, detail, updatedAt,
         status: r?.status ?? 'pending', comment: r?.comment ?? null,
@@ -74,17 +76,17 @@ export function DataReviewPage() {
     };
 
     (trainers.data ?? []).forEach((r: any) => {
-      push('advanced_trainers', r.id, 'Advanced trainer ToT', `${r.name} · ICT`, centre(r.centre_id), r.updated_at, 'ict');
-      push('advanced_trainers', r.id, 'Advanced trainer ToT', `${r.name} · Green`, centre(r.centre_id), r.updated_at, 'green');
+      push('advanced_trainers', r.id, 'Advanced trainer ToT', `${r.name} · ICT`, centre(r.centre_id), r.updated_at, 'ict', unitHasData('advanced_trainers', r, 'ict'));
+      push('advanced_trainers', r.id, 'Advanced trainer ToT', `${r.name} · Green`, centre(r.centre_id), r.updated_at, 'green', unitHasData('advanced_trainers', r, 'green'));
     });
     (cohortCentres.data ?? []).forEach((r: any) =>
       push('advanced_cohort_centres', `${r.cohort_id}|${r.centre_id}`, 'Advanced student counts',
         `${cohortName.get(r.cohort_id) ?? r.cohort_id} · ${centre(r.centre_id)}`,
-        `Registered ${r.enrolled ?? 0} · Graduated ${r.graduated ?? 0}`, r.updated_at));
+        `Registered ${r.enrolled ?? 0} · Graduated ${r.graduated ?? 0}`, r.updated_at, 'all', unitHasData('advanced_cohort_centres', r, 'all')));
     (totTrainees.data ?? []).forEach((r: any) => {
       const name = r.name ? r.name : `Trainer ${r.position}`;
-      push('tot_trainees', `${r.centre_id}|${r.position}`, 'Basic ToT', `${name} · ICT`, centre(r.centre_id), r.updated_at, 'ict');
-      push('tot_trainees', `${r.centre_id}|${r.position}`, 'Basic ToT', `${name} · Green`, centre(r.centre_id), r.updated_at, 'green');
+      push('tot_trainees', `${r.centre_id}|${r.position}`, 'Basic ToT', `${name} · ICT`, centre(r.centre_id), r.updated_at, 'ict', unitHasData('tot_trainees', r, 'ict'));
+      push('tot_trainees', `${r.centre_id}|${r.position}`, 'Basic ToT', `${name} · Green`, centre(r.centre_id), r.updated_at, 'green', unitHasData('tot_trainees', r, 'green'));
     });
     (basicTraining.data ?? []).forEach((r: any) =>
       push('centre_training_basic', `${r.centre_id}|${r.year}`, 'Basic student training',
@@ -96,7 +98,7 @@ export function DataReviewPage() {
       push('centres', r.id, 'Centre status', r.name, `Status: ${r.status ?? '-'}`, r.updated_at));
     (gpCohorts.data ?? []).forEach((r: any) =>
       push('greenpreneur_cohorts', r.id, 'Greenpreneur cohort', r.name,
-        `${r.track === 'irp' ? 'Investment Readiness' : '6-week training'} · registered ${r.enrolled ?? 0}`, r.created_at));
+        `${r.track === 'irp' ? 'Investment Readiness' : '6-week training'} · registered ${r.enrolled ?? 0}`, r.created_at, 'all', unitHasData('greenpreneur_cohorts', r, 'all')));
     (gpPitch.data ?? []).forEach((r: any) =>
       push('greenpreneur_pitch_results', r.id, 'Greenpreneur pitch', `Edition ${r.edition} · ${r.category} · rank ${r.rank_no}`,
         `${r.laureate} · USD ${r.prize_usd ?? 0}`, r.created_at));

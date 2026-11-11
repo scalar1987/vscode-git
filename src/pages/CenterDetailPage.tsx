@@ -200,11 +200,13 @@ function ToTInputForm({
                     <>
                       <ReviewChip
                         label="ICT"
+                        notStarted={!(entries[index].in_person_ict || entries[index].lms.word || entries[index].lms.excel || entries[index].lms.ppt)}
                         state={stateOf(reviews, 'tot_trainees', `${centreId}|${index + 1}`, 'ict')}
                         comment={commentOf(reviews, 'tot_trainees', `${centreId}|${index + 1}`, 'ict')}
                       />
                       <ReviewChip
                         label="Green"
+                        notStarted={!(entries[index].in_person_green || entries[index].lms.green)}
                         state={stateOf(reviews, 'tot_trainees', `${centreId}|${index + 1}`, 'green')}
                         comment={commentOf(reviews, 'tot_trainees', `${centreId}|${index + 1}`, 'green')}
                       />
@@ -859,11 +861,13 @@ export function AdvancedInputForm({
                   <>
                     <ReviewChip
                       label="ICT"
+                      notStarted={!(r.in_person_ict || r.lms.ui_ux || r.lms.ios || r.lms.android)}
                       state={stateOf(reviews, 'advanced_trainers', r.id, 'ict')}
                       comment={commentOf(reviews, 'advanced_trainers', r.id, 'ict')}
                     />
                     <ReviewChip
                       label="Green"
+                      notStarted={!(r.in_person_green || r.lms.green_business)}
                       state={stateOf(reviews, 'advanced_trainers', r.id, 'green')}
                       comment={commentOf(reviews, 'advanced_trainers', r.id, 'green')}
                     />
