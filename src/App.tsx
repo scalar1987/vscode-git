@@ -5,6 +5,7 @@ import { SmoothScroll } from './components/SmoothScroll'
 import { LoginPage } from './pages/LoginPage'
 import { SignUpPage } from './pages/SignUpPage'
 import { AdvancedProgrammePage } from './pages/AdvancedProgrammePage'
+import { DataReviewPage } from './pages/DataReviewPage'
 import { GreenpreneurInputPage } from './pages/GreenpreneurInputPage'
 import { GreenpreneurProgressPage } from './pages/GreenpreneurProgressPage'
 import { RequireAuth } from './components/RequireAuth'
@@ -20,6 +21,7 @@ function App() {
         <Route path="centers" element={<CentersOverviewPage />} />
         <Route path="advanced-programme" element={<AdvancedProgrammePage />} />
         <Route path="advanced-programme/input" element={<AdvancedProgrammePage mode="input" />} />
+        <Route path="data-review" element={<DataReviewPage />} />
         <Route path="greenpreneur-progress" element={<GreenpreneurProgressPage />} />
         <Route path="greenpreneur-input" element={<GreenpreneurInputPage />} />
         <Route path="centers/:id" element={<CenterDetailPage />} />

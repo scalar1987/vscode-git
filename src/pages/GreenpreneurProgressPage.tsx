@@ -16,7 +16,7 @@ import {
 
 // Programme-wide Greenpreneur progress: one tab per programme (6-week training / 3-week Investment Readiness)
 export function GreenpreneurProgressPage() {
-  const [data, setData] = useState<GpData>({ cohorts: [], progress: [], centreIds: [], pitch: [] });
+  const [data, setData] = useState<GpData>({ cohorts: [], progress: [], centreIds: [], pitch: [], editions: [] });
   const [centres, setCentres] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [track, setTrack] = useState<GpTrack>('training');

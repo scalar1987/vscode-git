@@ -86,26 +86,35 @@ export interface PitchResult {
   prize_usd: number;
 }
 
+export interface PitchEdition {
+  edition: number;
+  name: string | null;
+  held_on: string | null;
+}
+
 export interface GpData {
   cohorts: GpCohort[];
   progress: GpProgress[];
   centreIds: string[];
   pitch: PitchResult[];
+  editions: PitchEdition[];
 }
 
 export async function loadGreenpreneurProgramme(): Promise<GpData> {
-  if (!supabase) return { cohorts: [], progress: [], centreIds: [], pitch: [] };
-  const [c, p, l, pr] = await Promise.all([
+  if (!supabase) return { cohorts: [], progress: [], centreIds: [], pitch: [], editions: [] };
+  const [c, p, l, pr, ed] = await Promise.all([
     supabase.from('greenpreneur_cohorts').select('id, track, name, start_date, end_date, enrolled').order('start_date', { ascending: true }),
     supabase.from('greenpreneur_cohort_progress').select('cohort_id, item_no, completed, completed_date, completed_at, sessions, note, mentors'),
     supabase.from('greenpreneur_centres').select('centre_id'),
     supabase.from('greenpreneur_pitch_results').select('id, edition, category, rank_no, laureate, prize_usd').order('edition', { ascending: false }).order('rank_no', { ascending: true }),
+    supabase.from('greenpreneur_pitch_editions').select('edition, name, held_on').order('edition', { ascending: false }),
   ]);
   return {
     cohorts: (c.data ?? []) as GpCohort[],
     progress: (p.data ?? []) as GpProgress[],
     centreIds: ((l.data ?? []) as Array<{ centre_id: string }>).map(r => r.centre_id),
     pitch: (pr.data ?? []) as PitchResult[],
+    editions: (ed.data ?? []) as PitchEdition[],
   };
 }
 

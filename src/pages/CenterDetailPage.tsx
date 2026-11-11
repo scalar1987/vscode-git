@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { loadCenters, loadTotRecords, supabase } from '../lib/centersData';
 import { canEditSection, getProfile, getSession, isApproved, onAuthChange, type Profile } from '../lib/auth';
+import { ReviewChip, commentOf, loadReviews, stateOf, type ReviewInfo } from '../lib/reviews';
 import { useState, useEffect, Fragment } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -58,8 +59,14 @@ const TRAINER_MODULES: Array<{ key: TrainerModule; label: string }> = [
   { key: 'green', label: 'Green Practices' },
 ];
 
-// One trainer's ToT: in-person (single flag) and online LMS (one flag per module)
-type TrainerTot = { in_person: boolean; in_person_date: string; lms: Record<TrainerModule, boolean> };
+// One trainer's ToT: in-person ICT (Betterworld), in-person Green (Impact Lab), and online LMS (one flag per module)
+type TrainerTot = {
+  in_person_ict: boolean;
+  in_person_ict_date: string;
+  in_person_green: boolean;
+  in_person_green_date: string;
+  lms: Record<TrainerModule, boolean>;
+};
 type TrainerWithToT = { name: string; phone: string; email: string };
 
 // Online LMS is complete only when all four modules are complete
@@ -70,19 +77,23 @@ function ToTInputForm({
   canSave,
   coordinators,
   records,
+  reviews,
 }: {
   centreId: string;
   canSave: boolean;
   coordinators: TrainerWithToT[];
   records: TotBasicRecord[];
+  reviews?: Map<string, ReviewInfo>;
 }) {
   // Start from the saved flags (matched by position within the centre)
   const [entries, setEntries] = useState<TrainerTot[]>(() =>
     coordinators.map((_, i) => {
       const r = records[i];
       return {
-        in_person: r?.in_person_completed === true,
-        in_person_date: r?.in_person_date ?? '',
+        in_person_ict: r?.in_person_ict === true,
+        in_person_ict_date: r?.in_person_ict_date ?? '',
+        in_person_green: r?.in_person_green === true,
+        in_person_green_date: r?.in_person_green_date ?? '',
         lms: {
           word: r?.lms_word === true,
           excel: r?.lms_excel === true,
@@ -105,8 +116,10 @@ function ToTInputForm({
       centre_id: centreId,
       position: i + 1,
       name: c.name,
-      in_person_completed: entries[i].in_person,
-      in_person_date: entries[i].in_person && entries[i].in_person_date ? entries[i].in_person_date : null,
+      in_person_ict: entries[i].in_person_ict,
+      in_person_ict_date: entries[i].in_person_ict && entries[i].in_person_ict_date ? entries[i].in_person_ict_date : null,
+      in_person_green: entries[i].in_person_green,
+      in_person_green_date: entries[i].in_person_green && entries[i].in_person_green_date ? entries[i].in_person_green_date : null,
       lms_word: entries[i].lms.word,
       lms_excel: entries[i].lms.excel,
       lms_ppt: entries[i].lms.ppt,
@@ -119,12 +132,12 @@ function ToTInputForm({
     setSaveMsg(error ? `Save failed: ${error.message}` : 'Saved to database');
   };
 
-  const setInPerson = (index: number, value: boolean) => {
-    setEntries(prev => prev.map((e, i) => (i === index ? { ...e, in_person: value } : e)));
+  const setInPerson = (index: number, track: 'ict' | 'green', value: boolean) => {
+    setEntries(prev => prev.map((e, i) => (i === index ? { ...e, [`in_person_${track}`]: value } : e)));
     setCopied(false);
   };
-  const setInPersonDate = (index: number, value: string) => {
-    setEntries(prev => prev.map((e, i) => (i === index ? { ...e, in_person_date: value } : e)));
+  const setInPersonDate = (index: number, track: 'ict' | 'green', value: string) => {
+    setEntries(prev => prev.map((e, i) => (i === index ? { ...e, [`in_person_${track}_date`]: value } : e)));
     setCopied(false);
   };
   const setModule = (index: number, key: TrainerModule, value: boolean) => {
@@ -133,14 +146,16 @@ function ToTInputForm({
   };
 
   const onlineDone = entries.filter(lmsComplete).length;
-  const inPersonDone = entries.filter(e => e.in_person).length;
+  const ictDone = entries.filter(e => e.in_person_ict).length;
+  const greenDone = entries.filter(e => e.in_person_green).length;
 
   const copyJson = async () => {
     const payload = coordinators.map((c, i) => ({
       name: c.name,
       phone: c.phone,
       email: c.email,
-      in_person: entries[i].in_person,
+      in_person_ict: entries[i].in_person_ict,
+      in_person_green: entries[i].in_person_green,
       lms: entries[i].lms,
       lms_complete: lmsComplete(entries[i]),
     }));
@@ -167,7 +182,10 @@ function ToTInputForm({
               Online LMS {onlineDone}/{coordinators.length}
             </span>
             <span className="px-3 py-1 rounded-full bg-dg-green-50 text-dg-green-700">
-              In-person {inPersonDone}/{coordinators.length}
+              In-person ICT {ictDone}/{coordinators.length}
+            </span>
+            <span className="px-3 py-1 rounded-full bg-dg-green-50 text-dg-green-700">
+              In-person Green {greenDone}/{coordinators.length}
             </span>
           </div>
         </div>
@@ -176,7 +194,23 @@ function ToTInputForm({
           {coordinators.map((trainer, index) => (
             <div key={`${trainer.name}-${index}`} className="p-4 rounded-lg border border-gray-200">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                <p className="font-semibold text-gray-900">#{index + 1} {trainer.name}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-semibold text-gray-900">#{index + 1} {trainer.name}</p>
+                  {reviews && (
+                    <>
+                      <ReviewChip
+                        label="ICT"
+                        state={stateOf(reviews, 'tot_trainees', `${centreId}|${index + 1}`, 'ict')}
+                        comment={commentOf(reviews, 'tot_trainees', `${centreId}|${index + 1}`, 'ict')}
+                      />
+                      <ReviewChip
+                        label="Green"
+                        state={stateOf(reviews, 'tot_trainees', `${centreId}|${index + 1}`, 'green')}
+                        comment={commentOf(reviews, 'tot_trainees', `${centreId}|${index + 1}`, 'green')}
+                      />
+                    </>
+                  )}
+                </div>
                 <span
                   className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     lmsComplete(entries[index]) ? 'bg-dg-blue-100 text-dg-blue-700' : 'bg-gray-100 text-gray-500'
@@ -186,29 +220,36 @@ function ToTInputForm({
                 </span>
               </div>
 
-              <label className="flex items-center gap-2 text-sm text-gray-700 mb-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={entries[index].in_person}
-                  disabled={!canSave}
-                  onChange={e => setInPerson(index, e.target.checked)}
-                  className="w-4 h-4 accent-dg-green-600"
-                />
-                <Users className="w-4 h-4 text-dg-green-600" />
-                In-person training completed
-              </label>
-              {entries[index].in_person && (
-                <label className="flex items-center gap-2 text-sm text-gray-700 mb-3">
-                  In-person date
-                  <input
-                    type="date"
-                    disabled={!canSave}
-                    value={entries[index].in_person_date}
-                    onChange={e => setInPersonDate(index, e.target.value)}
-                    className="px-2 py-1 text-sm border border-gray-300 rounded-md disabled:bg-gray-100"
-                  />
-                </label>
-              )}
+              {(['ict', 'green'] as const).map(track => {
+                const done = entries[index][`in_person_${track}`];
+                return (
+                  <div key={track} className="flex flex-wrap items-center gap-4 text-sm text-gray-700 mb-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={done}
+                        disabled={!canSave}
+                        onChange={e => setInPerson(index, track, e.target.checked)}
+                        className="w-4 h-4 accent-dg-green-600"
+                      />
+                      <Users className="w-4 h-4 text-dg-green-600" />
+                      {track === 'ict' ? 'ICT in-person (Betterworld)' : 'Green in-person (Impact Lab)'}
+                    </label>
+                    {done && (
+                      <label className="flex items-center gap-2">
+                        Date
+                        <input
+                          type="date"
+                          disabled={!canSave}
+                          value={entries[index][`in_person_${track}_date`]}
+                          onChange={e => setInPersonDate(index, track, e.target.value)}
+                          className="px-2 py-1 text-sm border border-gray-300 rounded-md disabled:bg-gray-100"
+                        />
+                      </label>
+                    )}
+                  </div>
+                );
+              })}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 pl-1">
                 {TRAINER_MODULES.map(m => (
@@ -682,6 +723,7 @@ export function AdvancedInputForm({
   canGreen = false,
   trainers,
   advancedByYear,
+  reviews,
 }: {
   mode: 'trainers' | 'students';
   centreId: string;
@@ -690,6 +732,7 @@ export function AdvancedInputForm({
   canGreen?: boolean;
   trainers: any[];
   advancedByYear: Record<string, { enrolled?: number; passed?: number }>;
+  reviews?: Map<string, ReviewInfo>;
 }) {
   const [rows, setRows] = useState<AdvancedTrainerRow[]>(() =>
     trainers.map(t => ({
@@ -812,6 +855,20 @@ export function AdvancedInputForm({
                   onChange={e => updateRow(r.id, { name: e.target.value })}
                   className="flex-1 min-w-[200px] px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-dg-green-500 disabled:bg-gray-50"
                 />
+                {reviews && (
+                  <>
+                    <ReviewChip
+                      label="ICT"
+                      state={stateOf(reviews, 'advanced_trainers', r.id, 'ict')}
+                      comment={commentOf(reviews, 'advanced_trainers', r.id, 'ict')}
+                    />
+                    <ReviewChip
+                      label="Green"
+                      state={stateOf(reviews, 'advanced_trainers', r.id, 'green')}
+                      comment={commentOf(reviews, 'advanced_trainers', r.id, 'green')}
+                    />
+                  </>
+                )}
                 {isFull && (
                   <button
                     type="button"
@@ -1220,12 +1277,15 @@ interface TotBasicRecord {
   center_id: string;
   name: string;
   in_person_completed: boolean | null;
+  in_person_ict?: boolean;
+  in_person_green?: boolean;
+  in_person_ict_date?: string | null;
+  in_person_green_date?: string | null;
   lms_completed: boolean | null;
   lms_word?: boolean;
   lms_excel?: boolean;
   lms_ppt?: boolean;
   lms_green?: boolean;
-  in_person_date?: string | null;
 }
 
 type TotState = 'completed' | 'partial' | 'none';
@@ -1501,6 +1561,7 @@ export function CenterDetailPage() {
   const [inputSection, setInputSection] = useState<InputSection>('tot');
   // Basic ToT records per coordinator (index-matched to center_coordinators)
   const [totBasic, setTotBasic] = useState<TotBasicRecord[]>([]);
+  const [reviews, setReviews] = useState<Map<string, ReviewInfo>>(new Map());
   // Signed-in profile decides whether Data Input is shown for this centre
   const [profile, setProfile] = useState<Profile | null>(null);
 
@@ -1530,6 +1591,7 @@ export function CenterDetailPage() {
     loadTotRecords()
       .then(records => setTotBasic(records))
       .catch(() => setTotBasic([]));
+    loadReviews().then(setReviews).catch(() => setReviews(new Map()));
   }, []);
 
   useEffect(() => {
@@ -1876,6 +1938,7 @@ export function CenterDetailPage() {
                 canSave={canTot}
                 coordinators={center.center_coordinators as TrainerWithToT[]}
                 records={totBasic.filter(r => r.center_id === center.id)}
+                reviews={reviews}
               />
             ) : (
               <EmptyInputNotice message="No trainers registered for this center" />
