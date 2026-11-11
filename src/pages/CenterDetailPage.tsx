@@ -1690,6 +1690,11 @@ export function CenterDetailPage() {
                     {center.region}
                   </span>
                 </div>
+                {center.note && (
+                  <p className="mt-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 max-w-2xl">
+                    <span className="font-semibold">Note: </span>{center.note}
+                  </p>
+                )}
               </div>
             </div>
           </div>

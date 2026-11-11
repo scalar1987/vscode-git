@@ -65,30 +65,26 @@ export function ApprovalsCard() {
 
   if (!scopes || scopes.length === 0 || !waiting) return null;
   const total = waiting.Advanced + waiting.Basic + waiting.Greenpreneur + waiting.Infrastructure;
+  // Nothing waiting and nothing sent back: no band at all
+  if (total === 0 && sentBack === 0) return null;
 
   return (
-    <section className="px-4 md:px-6 lg:px-8 pt-6">
-      <div className="max-w-7xl mx-auto bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-center gap-6">
-        <div className="flex items-center gap-3">
-          <ClipboardCheck className="w-6 h-6 text-dg-green-600" />
-          <div>
-            <p className="text-sm font-semibold text-gray-900">Approvals (GGGI)</p>
-            <p className="text-xs text-gray-500">{total} waiting in your scope · {sentBack} sent back to partners</p>
-          </div>
+    <section className="px-4 md:px-6 lg:px-8 pt-4">
+      <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl bg-dg-green-50/60 px-4 py-2.5 text-sm">
+        <div className="flex items-center gap-2">
+          <ClipboardCheck className="w-4 h-4 text-dg-green-600" />
+          <span className="font-medium text-gray-800">Approvals (GGGI)</span>
+          <span className="text-xs text-gray-500">{total} waiting in your scope · {sentBack} sent back to partners</span>
         </div>
-        <div className="flex flex-wrap gap-6 text-sm">
-          {(['Advanced', 'Basic', 'Greenpreneur', 'Infrastructure'] as const).map(p => (
-            <div key={p}>
-              <p className="text-xs text-gray-500">{p}</p>
-              <p className="text-lg font-semibold tabular-nums text-gray-900">{waiting[p]}</p>
-            </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+          {(['Infrastructure', 'Basic', 'Advanced', 'Greenpreneur'] as const).map(p => (
+            <span key={p}>
+              {p} <span className="font-semibold tabular-nums text-gray-900">{waiting[p]}</span>
+            </span>
           ))}
         </div>
-        <Link
-          to="/data-review"
-          className="ml-auto px-4 py-2 rounded-lg bg-dg-green-600 text-white text-sm font-medium hover:bg-dg-green-700"
-        >
-          Open approvals
+        <Link to="/data-review" className="ml-auto text-sm font-medium text-dg-green-700 hover:underline">
+          Review →
         </Link>
       </div>
     </section>

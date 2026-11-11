@@ -35,6 +35,7 @@ interface CentreRow {
   phase: string;
   status: string;
   target_basic_ict: number;
+  note: string | null;
 }
 
 interface InfraRow {
@@ -135,6 +136,7 @@ export async function loadCenters(): Promise<any[]> {
         phase: row.phase,
         status: row.status,
         target_basic_ict: row.target_basic_ict,
+        note: row.note ?? b.note,
         center_coordinators: (coordsBy.get(row.id) ?? []).map(c => ({ name: c.name, phone: c.phone ?? '', email: c.email ?? '' })),
         greenpreneur: gpBy.get(row.id) && Object.keys(gpBy.get(row.id)!).length ? gpBy.get(row.id) : b.greenpreneur,
         advanced_trainers: (advTrBy.get(row.id) ?? []).map(t => ({
