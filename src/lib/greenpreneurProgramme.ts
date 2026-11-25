@@ -113,7 +113,8 @@ export async function loadGreenpreneurProgramme(): Promise<GpData> {
     cohorts: (c.data ?? []) as GpCohort[],
     progress: (p.data ?? []) as GpProgress[],
     centreIds: ((l.data ?? []) as Array<{ centre_id: string }>).map(r => r.centre_id),
-    pitch: (pr.data ?? []) as PitchResult[],
+    // prize_usd is numeric(12,2) in the database; convert so sums add numbers, not strings
+    pitch: ((pr.data ?? []) as any[]).map(r => ({ ...r, prize_usd: Number(r.prize_usd) })) as PitchResult[],
     editions: (ed.data ?? []) as PitchEdition[],
   };
 }
