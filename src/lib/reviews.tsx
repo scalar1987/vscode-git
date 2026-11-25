@@ -71,6 +71,13 @@ export async function loadMyScopes(): Promise<string[]> {
 
 export const unitKey = (table: ReviewTable, key: string, track: Track = 'all') => `${table}|${key}|${track}`;
 
+// Baseline: data last changed on or before this moment is not put in the review queue.
+// Only changes made after it are reviewed. (Units with no timestamp count as baseline.)
+export const REVIEW_BASELINE_AT = '2026-11-25T23:59:59Z';
+export function isBaselineUnit(changedAt: string | null | undefined): boolean {
+  return !changedAt || new Date(changedAt).getTime() <= new Date(REVIEW_BASELINE_AT).getTime();
+}
+
 export async function loadReviews(): Promise<Map<string, ReviewInfo>> {
   const map = new Map<string, ReviewInfo>();
   if (!supabase) return map;

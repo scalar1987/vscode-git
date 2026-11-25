@@ -4,13 +4,27 @@ import { ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/centersData';
 import { onAuthChange } from '../lib/auth';
 import {
-  STATE_LABEL, STATE_STYLE, TRACKS_OF, PROGRAMME_OF, canReviewUnit, loadMyScopes, loadReviews, unitKey, unitHasData,
+  STATE_LABEL, STATE_STYLE, TRACKS_OF, PROGRAMME_OF, canReviewUnit, loadMyScopes, loadReviews, unitKey, unitHasData, isBaselineUnit,
   type Programme, type ReviewInfo, type ReviewState, type ReviewTable, type Track,
 } from '../lib/reviews';
 
 // GGGI approval page. Each approver sees and acts only on the units in their scope.
 
-type Filter = 'pending' | 'all';
+type Filter = 'pending' | 'changes_requested' | 'approved' | 'rejected' | 'all';
+
+const FILTER_LABEL: Record<Filter, string> = {
+  pending: 'Pending review',
+  changes_requested: 'Changes requested',
+  approved: 'Approved',
+  rejected: 'Rejected',
+  all: 'All items',
+};
+
+// Shared chip styles: the selected chip is solid so the current choice is visible at a glance
+const chipCls = (active: boolean) =>
+  `px-3 py-1.5 rounded-full text-sm border transition-colors ${
+    active ? 'bg-gray-900 border-gray-900 text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
+  }`;
 
 interface Item {
   table: ReviewTable;
@@ -107,11 +121,11 @@ export function DataReviewPage() {
       db.from('centres').select('id, name, status, updated_at'),
       db.from('advanced_cohorts').select('id, name'),
       db.from('advanced_trainers').select('id, centre_id, name, updated_at, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business'),
-      db.from('advanced_cohort_centres').select('cohort_id, centre_id, enrolled, graduated'),
+      db.from('advanced_cohort_centres').select('cohort_id, centre_id, enrolled, graduated, updated_at'),
       db.from('tot_trainees').select('centre_id, position, name, updated_at, in_person_ict, in_person_green, lms_word, lms_excel, lms_ppt, lms_green'),
       db.from('centre_training_basic').select('centre_id, year, enrolled, passed, updated_at'),
       db.from('centre_basic_modules').select('centre_id, module, passed, updated_at'),
-      db.from('greenpreneur_cohorts').select('id, name, track, enrolled, created_at'),
+      db.from('greenpreneur_cohorts').select('id, name, track, enrolled, created_at, updated_at'),
       db.from('greenpreneur_pitch_results').select('id, edition, category, rank_no, laureate, prize_usd, created_at'),
       loadReviews(),
     ]);
@@ -127,6 +141,8 @@ export function DataReviewPage() {
       const r: ReviewInfo | undefined = reviews.get(unitKey(table, key, track));
       // Nothing entered yet and never reviewed: not started, so not in the queue
       if (!started && !r) return;
+      // Entered before the review baseline and never reviewed: not in the queue
+      if (!r && isBaselineUnit(updatedAt)) return;
       rows.push({
         table, key, track, programme: PROGRAMME_OF[table], section, title, detail, updatedAt,
         status: r?.status ?? 'pending', comment: r?.comment ?? null,
@@ -156,7 +172,7 @@ export function DataReviewPage() {
       push('centres', r.id, 'Centre status', r.name, `Status: ${r.status ?? '-'}`, r.updated_at));
     (gpCohorts.data ?? []).forEach((r: any) =>
       push('greenpreneur_cohorts', r.id, 'Greenpreneur cohort', r.name,
-        `${r.track === 'irp' ? 'Investment Readiness' : '6-week training'} · registered ${r.enrolled ?? 0}`, r.created_at, 'all', unitHasData('greenpreneur_cohorts', r, 'all')));
+        `${r.track === 'irp' ? 'Investment Readiness' : '6-week training'} · registered ${r.enrolled ?? 0}`, r.updated_at ?? r.created_at, 'all', unitHasData('greenpreneur_cohorts', r, 'all')));
     (gpPitch.data ?? []).forEach((r: any) =>
       push('greenpreneur_pitch_results', r.id, 'Greenpreneur pitch', `Edition ${r.edition} · ${r.category} · rank ${r.rank_no}`,
         `${r.laureate} · USD ${r.prize_usd ?? 0}`, r.created_at));
@@ -180,20 +196,41 @@ export function DataReviewPage() {
     [items, scopes],
   );
 
-  const visible = useMemo(
-    () =>
-      mine.filter(i =>
-        (filter === 'all' || i.status === 'pending' || i.status === 'changes_requested') &&
-        (programmeFilter === 'All' || i.programme === programmeFilter),
-      ),
-    [mine, filter, programmeFilter],
-  );
+  const [reviewQuery, setReviewQuery] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const visible = useMemo(() => {
+    const q = reviewQuery.trim().toLowerCase();
+    return mine.filter(i =>
+      (filter === 'all' || i.status === filter) &&
+      (programmeFilter === 'All' || i.programme === programmeFilter) &&
+      (!q || [i.title, i.detail, i.section].join(' ').toLowerCase().includes(q)),
+    );
+  }, [mine, filter, programmeFilter, reviewQuery]);
 
   const counts = useMemo(() => {
     const c: Record<ReviewState, number> = { pending: 0, approved: 0, rejected: 0, changes_requested: 0 };
     mine.forEach(i => (c[i.status] += 1));
     return c;
   }, [mine]);
+
+  // Decision log: every decision in scope, joined to the item's current label
+  const [tab, setTab] = useState<'review' | 'log'>('review');
+  const [logDecision, setLogDecision] = useState<'all' | ScopeHistoryEntry['action']>('all');
+  const [logQuery, setLogQuery] = useState('');
+  const itemOf = useMemo(() => new Map(items.map(i => [unitKey(i.table, i.key, i.track), i])), [items]);
+  const logRows = useMemo(() => {
+    const q = logQuery.trim().toLowerCase();
+    return scopeHistory
+      .map(h => ({ h, item: itemOf.get(unitKey(h.table_name, h.record_key, h.track as Track)) }))
+      .filter(({ h, item }) => {
+        if (logDecision !== 'all' && h.action !== logDecision) return false;
+        if (q) {
+          const hay = [item?.title, item?.detail, item?.section, h.actor_email, h.comment, h.record_key].join(' ').toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+  }, [scopeHistory, itemOf, logDecision, logQuery]);
 
   const decide = async (item: Item, status: 'approved' | 'rejected' | 'changes_requested') => {
     if (!supabase) return;
@@ -289,6 +326,150 @@ export function DataReviewPage() {
     );
   }
 
+  const tabBar = (
+    <div className="flex items-center gap-2">
+      {(['review', 'log'] as const).map(t => (
+        <button
+          key={t}
+          type="button"
+          onClick={() => setTab(t)}
+          className={`px-3 py-1.5 rounded-lg text-sm border ${tab === t ? 'bg-white border-dg-green-500 text-gray-900' : 'bg-white border-gray-200 text-gray-600'}`}
+        >
+          {t === 'review' ? 'Review' : `Decision log (${scopeHistory.length})`}
+        </button>
+      ))}
+    </div>
+  );
+
+  if (tab === 'log') {
+    const decisionLabel: Record<ScopeHistoryEntry['action'], string> = {
+      approved: 'Approved',
+      rejected: 'Rejected',
+      changes_requested: 'Changes requested',
+      reset_by_edit: 'Entered / changed',
+    };
+    const decisionStyle: Record<ScopeHistoryEntry['action'], string> = {
+      approved: STATE_STYLE.approved,
+      rejected: STATE_STYLE.rejected,
+      changes_requested: STATE_STYLE.changes_requested,
+      reset_by_edit: 'bg-gray-100 text-gray-700',
+    };
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>
+        <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link to="/" className="p-2 rounded-lg hover:bg-gray-100 text-gray-600" aria-label="Back to dashboard">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-900">Approvals</h1>
+            <div className="ml-auto">{tabBar}</div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setFiltersOpen(o => !o)}
+            className="md:hidden self-start px-3 py-1.5 rounded-lg text-sm border border-gray-200 bg-white text-gray-700"
+          >
+            {filtersOpen ? 'Hide filters' : 'Filters'}
+          </button>
+          <div className={`${filtersOpen ? 'flex' : 'hidden'} md:flex flex-col gap-3`}>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs uppercase tracking-wide text-gray-400 mr-1">Decision</span>
+              {(['all', 'approved', 'rejected', 'changes_requested', 'reset_by_edit'] as const).map(d => {
+                const n = d === 'all' ? scopeHistory.length : scopeHistory.filter(h => h.action === d).length;
+                return (
+                  <button key={d} type="button" onClick={() => setLogDecision(d)} aria-pressed={logDecision === d} className={chipCls(logDecision === d)}>
+                    {d === 'all' ? 'All' : decisionLabel[d]} <span className="tabular-nums opacity-70">{n}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[220px] max-w-md">
+                <input
+                  type="search"
+                  value={logQuery}
+                  onChange={e => setLogQuery(e.target.value)}
+                  placeholder="Search name, centre, person, comment"
+                  className="w-full px-3 py-1.5 pr-8 text-sm border border-gray-200 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+                />
+                {logQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setLogQuery('')}
+                    aria-label="Clear search"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              {(logDecision !== 'all' || logQuery) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLogDecision('all');
+                    setLogQuery('');
+                  }}
+                  className="text-sm text-dg-green-700 hover:underline"
+                >
+                  Reset filters
+                </button>
+              )}
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-500">{logRows.length} of {scopeHistory.length} entries</p>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+            <table className="w-full min-w-[860px] text-sm">
+              <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+                <tr>
+                  <th className="px-4 py-2.5 font-medium">When</th>
+                  <th className="px-4 py-2.5 font-medium">Decision</th>
+                  <th className="px-4 py-2.5 font-medium">Programme · section</th>
+                  <th className="px-4 py-2.5 font-medium">Item</th>
+                  <th className="px-4 py-2.5 font-medium">By</th>
+                  <th className="px-4 py-2.5 font-medium">Comment</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {logRows.map(({ h, item }, idx) => (
+                  <tr key={`${h.acted_at}-${idx}`} className="align-top">
+                    <td className="px-4 py-2.5 whitespace-nowrap text-gray-600 tabular-nums">{fmt(h.acted_at)}</td>
+                    <td className="px-4 py-2.5">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${decisionStyle[h.action]}`}>
+                        {decisionLabel[h.action]}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5 text-gray-700">
+                      {item ? `${item.programme} · ${item.section}` : (SECTION_OF[h.table_name] ?? h.table_name)}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <p className="font-medium text-gray-900">
+                        {item ? item.title : 'Item no longer in the database'}
+                        {TRACK_NAME[h.track as Track] && !item?.title.endsWith(TRACK_NAME[h.track as Track]) ? ` · ${TRACK_NAME[h.track as Track]}` : ''}
+                      </p>
+                      {item?.detail && <p className="text-xs text-gray-500">{item.detail}</p>}
+                      {!item && <p className="text-xs text-gray-400 break-all">{h.record_key}</p>}
+                    </td>
+                    <td className="px-4 py-2.5 text-gray-700 break-all">{h.actor_email ?? '-'}</td>
+                    <td className="px-4 py-2.5 text-gray-700">{h.comment ?? ''}</td>
+                  </tr>
+                ))}
+                {logRows.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">No entries match these filters.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>
       <div className="max-w-5xl mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-6">
@@ -297,49 +478,98 @@ export function DataReviewPage() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Approvals</h1>
+          <div className="ml-auto">{tabBar}</div>
         </div>
 
         {scopes !== null && scopes.length === 0 && (
           <p className="text-sm text-gray-600">You have no approval scope. Ask GGGI to assign one.</p>
         )}
 
+        {/* Status cards double as the status filter: click one to show only that status */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {(['pending', 'changes_requested', 'approved', 'rejected'] as ReviewState[]).map(s => (
-            <div key={s} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-              <p className="text-xs uppercase tracking-wide text-gray-500">{STATE_LABEL[s]}</p>
-              <p className="mt-2 text-3xl font-semibold tabular-nums text-gray-900">{counts[s]}</p>
-            </div>
-          ))}
+          {(['pending', 'changes_requested', 'approved', 'rejected'] as const).map(s => {
+            const active = filter === s;
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setFilter(active ? 'all' : s)}
+                aria-pressed={active}
+                className={`text-left bg-white rounded-xl p-5 shadow-sm border transition-all ${
+                  active ? 'border-dg-green-500 ring-2 ring-dg-green-500 -translate-y-0.5' : 'border-gray-100 hover:border-gray-300'
+                }`}
+              >
+                <p className="text-xs uppercase tracking-wide text-gray-500">{STATE_LABEL[s]}</p>
+                <p className="mt-2 text-3xl font-semibold tabular-nums text-gray-900">{counts[s]}</p>
+                <p className={`mt-1 text-xs ${active ? 'text-dg-green-700 font-medium' : 'text-gray-400'}`}>
+                  {active ? 'Showing · click to clear' : 'Click to show'}
+                </p>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {(['pending', 'all'] as Filter[]).map(f => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 rounded-lg text-sm border ${filter === f ? 'bg-white border-dg-green-500 text-gray-900' : 'bg-white border-gray-200 text-gray-600'}`}
-            >
-              {f === 'pending' ? 'Needs review' : 'All items'}
-            </button>
-          ))}
-          <span className="mx-2 h-5 w-px bg-gray-200" />
-          {(['All', 'Basic', 'Advanced', 'Greenpreneur', 'Infrastructure'] as const).map(p => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setProgrammeFilter(p)}
-              className={`px-3 py-1.5 rounded-lg text-sm border ${programmeFilter === p ? 'bg-white border-dg-green-500 text-gray-900' : 'bg-white border-gray-200 text-gray-600'}`}
-            >
-              {p}
-            </button>
-          ))}
-          {msg && <span className="ml-3 text-sm text-gray-700">{msg}</span>}
+        <button
+          type="button"
+          onClick={() => setFiltersOpen(o => !o)}
+          className="md:hidden self-start px-3 py-1.5 rounded-full text-sm border border-gray-200 bg-white text-gray-700"
+        >
+          {filtersOpen ? 'Hide filters' : 'Filters'}
+        </button>
+        <div className={`${filtersOpen ? 'flex' : 'hidden'} md:flex flex-col gap-3`}>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs uppercase tracking-wide text-gray-400 mr-1">Programme</span>
+            {(['All', 'Basic', 'Advanced', 'Greenpreneur', 'Infrastructure'] as const).map(p => (
+              <button key={p} type="button" onClick={() => setProgrammeFilter(p)} className={chipCls(programmeFilter === p)}>
+                {p}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[220px] max-w-md">
+              <input
+                type="search"
+                value={reviewQuery}
+                onChange={e => setReviewQuery(e.target.value)}
+                placeholder="Search name or centre"
+                className="w-full px-3 py-1.5 pr-8 text-sm border border-gray-200 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+              />
+              {reviewQuery && (
+                <button
+                  type="button"
+                  onClick={() => setReviewQuery('')}
+                  aria-label="Clear search"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            {(filter !== 'pending' || programmeFilter !== 'All' || reviewQuery) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFilter('pending');
+                  setProgrammeFilter('All');
+                  setReviewQuery('');
+                }}
+                className="text-sm text-dg-green-700 hover:underline"
+              >
+                Reset filters
+              </button>
+            )}
+          </div>
+          <p className="text-sm text-gray-500">
+            Showing <span className="font-medium text-gray-900">{visible.length}</span> · {FILTER_LABEL[filter]}
+            {programmeFilter !== 'All' ? ` · ${programmeFilter}` : ''}
+            {reviewQuery ? ` · "${reviewQuery}"` : ''}
+          </p>
         </div>
+        {msg && <span className="text-sm text-gray-700">{msg}</span>}
 
         <div className="space-y-3">
           {!loaded && <p className="text-sm text-gray-500">Loading…</p>}
-          {loaded && visible.length === 0 && <p className="text-sm text-gray-500">Nothing waiting for review in your scope.</p>}
+          {loaded && visible.length === 0 && <p className="text-sm text-gray-500">Nothing in this view for your scope.</p>}
           {visible.map(item => {
             const k = unitKey(item.table, item.key, item.track);
             return (
