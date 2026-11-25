@@ -3,7 +3,7 @@ import { supabase } from './centersData';
 
 export type Role = 'pending' | 'ggg' | 'partner' | 'coordinator';
 
-export type Section = 'tot' | 'infra' | 'greenpreneur' | 'training' | 'advanced' | 'advanced_tot' | 'advanced_ict' | 'advanced_green';
+export type Section = 'tot' | 'tot_ict' | 'tot_green' | 'infra' | 'greenpreneur' | 'training' | 'advanced' | 'advanced_tot' | 'advanced_ict' | 'advanced_green';
 
 export interface Profile {
   role: Role;
@@ -17,7 +17,8 @@ export function canEditSection(profile: Profile | null, centreId: string, sectio
   if (!profile) return false;
   if (profile.role === 'ggg') return true;
   if (profile.role === 'partner') return profile.section_access.includes(section);
-  if (profile.role === 'coordinator') return profile.centre_id === centreId && (section === 'infra' || section === 'tot' || section === 'training' || section === 'advanced' || section === 'advanced_tot' || section === 'advanced_ict' || section === 'advanced_green');
+  // Basic trainers (coordinators) enter student training for their own centre only
+  if (profile.role === 'coordinator') return profile.centre_id === centreId && section === 'training';
   return false;
 }
 
@@ -65,6 +66,20 @@ export async function signUp(input: {
     },
   });
   return error ? error.message : null;
+}
+
+/** Greenpreneur programme pages: GGGI, or a partner whose organisation has the Greenpreneur section. */
+export function canSeeGreenpreneur(profile: Profile | null): boolean {
+  if (!profile) return false;
+  if (profile.role === 'ggg') return true;
+  return profile.role === 'partner' && profile.section_access.includes('greenpreneur');
+}
+
+/** Advanced programme data input: GGGI, or a partner with any advanced section. */
+export function canSeeAdvancedInput(profile: Profile | null): boolean {
+  if (!profile) return false;
+  if (profile.role === 'ggg') return true;
+  return profile.role === 'partner' && profile.section_access.some(s => s.startsWith('advanced'));
 }
 
 /** Approved = may see Data Inputs (write rights are enforced in the database). */

@@ -7,10 +7,13 @@ export function AuthButton() {
   const navigate = useNavigate();
   const [email, setEmail] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [org, setOrg] = useState<string | null>(null);
 
   const refresh = async () => {
     const session = await getSession();
     setEmail(session?.user.email ?? null);
+    // Organisation chosen at sign-up is kept in the account's metadata
+    setOrg(((session?.user.user_metadata as { org?: string } | undefined)?.org ?? null) || null);
     setProfile(session ? await getProfile() : null);
   };
 
@@ -30,7 +33,13 @@ export function AuthButton() {
     );
   }
 
-  const roleLabel = profile ? (profile.role === 'ggg' ? 'GGGI' : profile.role === 'partner' ? 'Partner' : 'Trainer') : 'No role';
+  const roleLabel = profile
+    ? profile.role === 'ggg'
+      ? 'GGGI'
+      : profile.role === 'partner'
+        ? org ? `Partner (${org})` : 'Partner'
+        : 'Trainer'
+    : 'No role';
 
   return (
     <div className="flex items-center gap-2">
