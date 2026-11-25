@@ -28,8 +28,57 @@ interface Item {
 const TRACK_NAME: Record<Track, string> = { all: '', ict: 'ICT', green: 'Green' };
 const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString() : '-');
 
+// One row per partner submission (from public.my_submissions), with the unit's current review result
+interface MySubmission {
+  id: number;
+  table_name: ReviewTable;
+  record_key: string;
+  track: Track;
+  submitted_at: string;
+  change_text: string | null;
+  status: ReviewState;
+  comment: string | null;
+  reviewed_at: string | null;
+}
+
+// One entry per review decision on a unit (from public.review_decisions via my_review_history)
+interface HistoryEntry {
+  table_name: ReviewTable;
+  record_key: string;
+  track: Track;
+  action: 'approved' | 'rejected' | 'changes_requested' | 'reset_by_edit';
+  comment: string | null;
+  acted_at: string;
+}
+
+// Approver view: decisions on every unit in their scope, with who made them
+interface ScopeHistoryEntry extends HistoryEntry {
+  actor_email: string | null;
+}
+
+const HISTORY_LABEL: Record<HistoryEntry['action'], string> = {
+  approved: 'Approved by GGGI',
+  rejected: 'Rejected by GGGI',
+  changes_requested: 'Changes requested by GGGI',
+  reset_by_edit: 'Entered or changed by you (back to pending)',
+};
+
+const SECTION_OF: Partial<Record<ReviewTable, string>> = {
+  advanced_trainers: 'Advanced trainer ToT',
+  advanced_cohort_centres: 'Advanced student counts',
+  tot_trainees: 'Basic ToT',
+  centre_training_basic: 'Basic student training',
+  centre_basic_modules: 'Basic student training',
+  greenpreneur_cohorts: 'Greenpreneur cohort',
+  greenpreneur_pitch_results: 'Greenpreneur pitch',
+  centres: 'Centre status',
+};
+
 export function DataReviewPage() {
   const [scopes, setScopes] = useState<string[] | null>(null);
+  const [mySubs, setMySubs] = useState<MySubmission[]>([]);
+  const [myHistory, setMyHistory] = useState<HistoryEntry[]>([]);
+  const [scopeHistory, setScopeHistory] = useState<ScopeHistoryEntry[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [filter, setFilter] = useState<Filter>('pending');
   const [programmeFilter, setProgrammeFilter] = useState<Programme | 'All'>('All');
@@ -41,7 +90,16 @@ export function DataReviewPage() {
   const load = async () => {
     if (!supabase) return;
     const db = supabase;
-    setScopes(await loadMyScopes());
+    const s = await loadMyScopes();
+    setScopes(s);
+    if (s.length === 0) {
+      // Partner (submitter) view: their own submissions and the current review result
+      const [subs, hist] = await Promise.all([db.rpc('my_submissions'), db.rpc('my_review_history')]);
+      setMySubs((subs.data ?? []) as MySubmission[]);
+      setMyHistory((hist.data ?? []) as HistoryEntry[]);
+      setLoaded(true);
+      return;
+    }
     const [
       centres, advCohorts, trainers, cohortCentres, totTrainees, basicTraining, basicModules,
       gpCohorts, gpPitch, reviews,
@@ -102,6 +160,9 @@ export function DataReviewPage() {
     (gpPitch.data ?? []).forEach((r: any) =>
       push('greenpreneur_pitch_results', r.id, 'Greenpreneur pitch', `Edition ${r.edition} · ${r.category} · rank ${r.rank_no}`,
         `${r.laureate} · USD ${r.prize_usd ?? 0}`, r.created_at));
+
+    const scopeHist = await db.rpc('review_history_in_scope');
+    setScopeHistory((scopeHist.data ?? []) as ScopeHistoryEntry[]);
 
     // Keep only units this approver can act on; unit tracks are declared in TRACKS_OF
     setItems(rows.filter(i => TRACKS_OF[i.table].includes(i.track)));
@@ -164,6 +225,69 @@ export function DataReviewPage() {
     await load();
     setMsg('Saved');
   };
+
+  // Partners (no approver scope) see what they submitted and how GGGI has reviewed it
+  if (scopes !== null && scopes.length === 0) {
+    const pendingCount = mySubs.filter(s => s.status === 'pending').length;
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>
+        <div className="max-w-5xl mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-6">
+          <div className="flex items-center gap-3">
+            <Link to="/" className="p-2 rounded-lg hover:bg-gray-100 text-gray-600" aria-label="Back to dashboard">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <h1 className="text-2xl font-bold text-gray-900">My submissions</h1>
+          </div>
+          <p className="text-sm text-gray-600">
+            Every change you entered, with its review status. {pendingCount} waiting for GGGI review.
+            Changing a record again sends it back to pending.
+          </p>
+          {!loaded && <p className="text-sm text-gray-500">Loading…</p>}
+          {loaded && mySubs.length === 0 && <p className="text-sm text-gray-500">You have not submitted any data yet.</p>}
+          <div className="space-y-3">
+            {mySubs.map(s => (
+              <div key={s.id} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-500">
+                      {SECTION_OF[s.table_name] ?? s.table_name}{TRACK_NAME[s.track] ? ` · ${TRACK_NAME[s.track]}` : ''}
+                    </p>
+                    <p className="text-sm text-gray-800">{s.change_text ?? 'Entered data'}</p>
+                    <p className="text-xs text-gray-400 mt-1">Submitted {fmt(s.submitted_at)}</p>
+                    {s.reviewed_at && <p className="text-xs text-gray-400">Last review {fmt(s.reviewed_at)}</p>}
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${STATE_STYLE[s.status]}`}>
+                    {STATE_LABEL[s.status]}
+                  </span>
+                </div>
+                {s.comment && (s.status === 'changes_requested' || s.status === 'rejected') && (
+                  <p className="mt-3 text-sm text-gray-700 bg-gray-50 rounded-md p-3">GGGI comment: {s.comment}</p>
+                )}
+                {(() => {
+                  const unit = myHistory.filter(h => h.table_name === s.table_name && h.record_key === s.record_key && h.track === s.track);
+                  if (unit.length === 0) return null;
+                  return (
+                    <details className="mt-3 text-sm">
+                      <summary className="cursor-pointer text-gray-600 hover:text-gray-900">History ({unit.length})</summary>
+                      <ol className="mt-2 space-y-1.5 border-l-2 border-gray-100 pl-3">
+                        {unit.map((h, i) => (
+                          <li key={`${h.acted_at}-${i}`} className="text-gray-700">
+                            <span className="text-xs text-gray-400 mr-2">{fmt(h.acted_at)}</span>
+                            {HISTORY_LABEL[h.action]}
+                            {h.comment && <span className="text-gray-600"> — {h.comment}</span>}
+                          </li>
+                        ))}
+                      </ol>
+                    </details>
+                  );
+                })()}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>
@@ -236,6 +360,26 @@ export function DataReviewPage() {
                 {item.comment && (
                   <p className="mt-3 text-sm text-gray-700 bg-gray-50 rounded-md p-3">Comment: {item.comment}</p>
                 )}
+                {(() => {
+                  const unit = scopeHistory.filter(h => h.table_name === item.table && h.record_key === item.key && h.track === item.track);
+                  if (unit.length === 0) return null;
+                  return (
+                    <details className="mt-3 text-sm">
+                      <summary className="cursor-pointer text-gray-600 hover:text-gray-900">History ({unit.length})</summary>
+                      <ol className="mt-2 space-y-1.5 border-l-2 border-gray-100 pl-3">
+                        {unit.map((h, i) => (
+                          <li key={`${h.acted_at}-${i}`} className="text-gray-700">
+                            <span className="text-xs text-gray-400 mr-2">{fmt(h.acted_at)}</span>
+                            {h.action === 'reset_by_edit'
+                              ? `Entered or changed by ${h.actor_email ?? 'partner'} (back to pending)`
+                              : `${HISTORY_LABEL[h.action]}${h.actor_email ? ` by ${h.actor_email}` : ''}`}
+                            {h.comment && <span className="text-gray-600"> — {h.comment}</span>}
+                          </li>
+                        ))}
+                      </ol>
+                    </details>
+                  );
+                })()}
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   <input
                     type="text"

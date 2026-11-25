@@ -14,6 +14,7 @@ export function ApprovalsCard() {
   const [scopes, setScopes] = useState<string[] | null>(null);
   const [waiting, setWaiting] = useState<Record<Programme, number> | null>(null);
   const [sentBack, setSentBack] = useState(0);
+  const [partnerCounts, setPartnerCounts] = useState<{ pending: number; changes: number; total: number } | null>(null);
 
   useEffect(() => {
     if (!supabase) return;
@@ -21,7 +22,17 @@ export function ApprovalsCard() {
     const run = async () => {
       const s = await loadMyScopes();
       setScopes(s);
-      if (s.length === 0) return;
+      if (s.length === 0) {
+        // Partner: summary of their own submissions, linking to "My submissions"
+        const { data } = await db.rpc('my_submissions');
+        const rows = (data ?? []) as Array<{ status: string }>;
+        setPartnerCounts({
+          pending: rows.filter(r => r.status === 'pending').length,
+          changes: rows.filter(r => r.status === 'changes_requested' || r.status === 'rejected').length,
+          total: rows.length,
+        });
+        return;
+      }
       const [tables, reviewed] = await Promise.all([
         Promise.all(TABLES.map(t => db.from(t).select('*').then(r => [t, (r.data ?? []) as any[]] as const))),
         db.from('data_reviews').select('table_name, record_key, track, status'),
@@ -62,6 +73,26 @@ export function ApprovalsCard() {
     run();
     return onAuthChange(run);
   }, []);
+
+  if (scopes && scopes.length === 0) {
+    if (!partnerCounts || partnerCounts.total === 0) return null;
+    return (
+      <section className="px-4 md:px-6 lg:px-8 pt-4">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl bg-dg-green-50/60 px-4 py-2.5 text-sm">
+          <div className="flex items-center gap-2">
+            <ClipboardCheck className="w-4 h-4 text-dg-green-600" />
+            <span className="font-medium text-gray-800">My submissions</span>
+            <span className="text-xs text-gray-500">
+              {partnerCounts.pending} waiting for GGGI review · {partnerCounts.changes} sent back to you
+            </span>
+          </div>
+          <Link to="/data-review" className="ml-auto text-sm font-medium text-dg-green-700 hover:underline">
+            View history →
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   if (!scopes || scopes.length === 0 || !waiting) return null;
   const total = waiting.Advanced + waiting.Basic + waiting.Greenpreneur + waiting.Infrastructure;

@@ -42,6 +42,8 @@ export function GreenpreneurInputPage() {
   const [checks, setChecks] = useState<Record<string, ChecklistState>>({});
   const [newCohort, setNewCohort] = useState({ track: 'training' as GpTrack, name: '', start: '', end: '', enrolled: '' });
   const [msg, setMsg] = useState<string | null>(null);
+  // Pitch competition feedback is shown next to the pitch form, where the user is working
+  const [pitchMsg, setPitchMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [centreQuery, setCentreQuery] = useState('');
   const [pitchForm, setPitchForm] = useState({
@@ -54,35 +56,38 @@ export function GreenpreneurInputPage() {
 
   const [newEdition, setNewEdition] = useState({ name: '', held_on: '' });
 
+  // A competition is identified by its year (the database allows 2000–2100), e.g. 2026
   const createEdition = async () => {
     if (!supabase || !canEdit) return;
-    const num = Math.max(0, ...data.editions.map(e => e.edition)) + 1; // numbered 1, 2, 3 in order
+    const year = newEdition.held_on ? Number(newEdition.held_on.slice(0, 4)) : new Date().getFullYear();
+    if (!Number.isInteger(year) || year < 2000 || year > 2100) return setPitchMsg('Pick a valid date for the competition.');
+    if (data.editions.some(e => e.edition === year)) return setPitchMsg(`A pitch competition for ${year} already exists.`);
     setBusy(true);
     const { error } = await supabase.from('greenpreneur_pitch_editions').insert({
-      edition: num,
+      edition: year,
       name: newEdition.name.trim() || null,
       held_on: newEdition.held_on || null,
     });
     setBusy(false);
-    if (error) return setMsg(`Could not create competition: ${error.message}`);
+    if (error) return setPitchMsg(`Could not create competition: ${error.message}`);
     setNewEdition({ name: '', held_on: '' });
-    setPitchForm(f => ({ ...f, edition: String(num) }));
-    setMsg(`Created pitch competition ${num}`);
+    setPitchForm(f => ({ ...f, edition: String(year) }));
+    setPitchMsg(`Created pitch competition ${year}`);
     await reload();
   };
 
   const deleteEdition = async (edition: number) => {
     if (!supabase || !isGgg) return;
     const { data: removed, error } = await supabase.from('greenpreneur_pitch_editions').delete().eq('edition', edition).select('edition');
-    if (error || !removed || removed.length === 0) return setMsg(error ? `Could not delete: ${error.message}` : 'Could not delete: permission denied.');
-    setMsg(`Deleted competition ${edition}`);
+    if (error || !removed || removed.length === 0) return setPitchMsg(error ? `Could not delete: ${error.message}` : 'Could not delete: permission denied.');
+    setPitchMsg(`Deleted competition ${edition}`);
     await reload();
   };
 
   const addPitch = async () => {
     if (!supabase || !canEdit) return;
-    if (!pitchForm.edition) return setMsg('Create a pitch competition first, then add results to it.');
-    if (!pitchForm.laureate.trim()) return setMsg('Enter the laureate name.');
+    if (!pitchForm.edition) return setPitchMsg('Create a pitch competition first, then add results to it.');
+    if (!pitchForm.laureate.trim()) return setPitchMsg('Enter the laureate name.');
     setBusy(true);
     const { error } = await supabase.from('greenpreneur_pitch_results').insert({
       edition: Number(pitchForm.edition),
@@ -92,9 +97,9 @@ export function GreenpreneurInputPage() {
       prize_usd: Number(pitchForm.prize) || 0,
     });
     setBusy(false);
-    if (error) return setMsg(`Could not add result: ${error.message}`);
+    if (error) return setPitchMsg(`Could not add result: ${error.message}`);
     setPitchForm({ ...pitchForm, rank: '1', laureate: '', prize: '' });
-    setMsg('Pitch result added');
+    setPitchMsg('Pitch result added');
     await reload();
   };
 
@@ -103,7 +108,7 @@ export function GreenpreneurInputPage() {
   const deletePitch = async (id: string) => {
     if (!supabase || !canEdit) return;
     const { error } = await supabase.from('greenpreneur_pitch_results').delete().eq('id', id);
-    setMsg(error ? `Could not delete: ${error.message}` : 'Deleted');
+    setPitchMsg(error ? `Could not delete: ${error.message}` : 'Deleted');
     await reload();
   };
 
@@ -625,6 +630,7 @@ export function GreenpreneurInputPage() {
               <input
                 type="number"
                 min={0}
+                step="0.01"
                 value={pitchForm.prize}
                 onChange={e => setPitchForm({ ...pitchForm, prize: e.target.value })}
                 disabled={!canEdit}
@@ -642,6 +648,15 @@ export function GreenpreneurInputPage() {
           </div>
           )}
 
+          {pitchMsg && <p className="mt-2 text-sm text-gray-700">{pitchMsg}</p>}
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-gray-900">
+              Saved results ({data.pitch.length} across {data.editions.length} competition{data.editions.length === 1 ? '' : 's'})
+            </h3>
+            <Link to="/greenpreneur-progress" className="text-sm text-dg-blue-700 hover:underline">
+              View on progress page →
+            </Link>
+          </div>
           {data.pitch.length === 0 ? (
             <p className="text-sm text-gray-500">No pitch competition results yet.</p>
           ) : (
