@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { loadCenters, supabase } from '../lib/centersData';
-import { getProfile, getSession, onAuthChange, type Profile } from '../lib/auth';
+import { canSeeGreenpreneur, getProfile, getSession, onAuthChange, type Profile } from '../lib/auth';
 import {
   GP_EXTRAS,
   GP_ITEMS,
@@ -242,6 +242,21 @@ export function GreenpreneurInputPage() {
         },
       };
     });
+
+  // Only GGGI and the Greenpreneur partner can open this page
+  if (profile && !canSeeGreenpreneur(profile)) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>
+        <div className="max-w-3xl mx-auto px-4 md:px-6 py-16">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
+            <ArrowLeft className="w-4 h-4" /> Back to dashboard
+          </Link>
+          <h1 className="mt-6 text-2xl font-bold text-gray-900">Greenpreneur data input</h1>
+          <p className="mt-3 text-sm text-gray-600">Your organisation does not have access to Greenpreneur data input.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>

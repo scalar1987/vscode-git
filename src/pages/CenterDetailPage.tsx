@@ -1585,7 +1585,9 @@ export function CenterDetailPage() {
 
   // Per-section rights (mirrors the database policies)
   const centreKey = id ?? '';
-  const canTot = isApproved(profile) && canEditSection(profile, centreKey, 'tot');
+  // Basic ToT is entered per track (ICT or Green); a partner may have either
+  const canTot =
+    isApproved(profile) && (canEditSection(profile, centreKey, 'tot_ict') || canEditSection(profile, centreKey, 'tot_green'));
   const canInfra = isApproved(profile) && canEditSection(profile, centreKey, 'infra');
   const canTraining = isApproved(profile) && canEditSection(profile, centreKey, 'training');
   const canInput = canTot || canInfra || canTraining;

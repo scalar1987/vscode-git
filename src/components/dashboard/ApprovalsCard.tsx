@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ClipboardCheck } from 'lucide-react';
 import { supabase } from '../../lib/centersData';
 import { onAuthChange } from '../../lib/auth';
-import { loadMyScopes, PROGRAMME_OF, TRACKS_OF, canReviewUnit, unitHasData, type Programme, type ReviewTable } from '../../lib/reviews';
+import { loadMyScopes, PROGRAMME_OF, TRACKS_OF, canReviewUnit, unitHasData, isBaselineUnit, type Programme, type ReviewTable } from '../../lib/reviews';
 
 // Shown to GGGI approvers only: units waiting for review in their scope, per programme.
 // Units = records x tracks. A unit waits when it has no review row; a partner edit deletes the review row.
@@ -62,7 +62,7 @@ export function ApprovalsCard() {
           TRACKS_OF[t].forEach(track => {
             if (!canReviewUnit(s, t, track)) return;
             if (!unitHasData(t, r, track)) return;
-            if (reviewedKeys.has(`${t}|${keyOf(t, r)}|${track}`)) return;
+            if (isBaselineUnit(r.updated_at ?? r.created_at)) return;            if (reviewedKeys.has(`${t}|${keyOf(t, r)}|${track}`)) return;
             counts[PROGRAMME_OF[t]] += 1;
           });
         });

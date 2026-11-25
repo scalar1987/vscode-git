@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { supabase } from '../lib/centersData';
-import { canEditSection, getProfile, getSession, isApproved, onAuthChange, type Profile } from '../lib/auth';
+import { canEditSection, canSeeAdvancedInput, getProfile, getSession, isApproved, onAuthChange, type Profile } from '../lib/auth';
 import { AdvancedInputForm } from './CenterDetailPage';
 import { ReviewChip, commentOf, loadReviews, stateOf, type ReviewInfo } from '../lib/reviews';
 
@@ -594,6 +594,21 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
     setSaving(false);
     setSaveMsg(error ? `Save failed: ${error.message}` : 'Saved');
   };
+
+  // Data input is limited to GGGI and the advanced-programme partners; progress stays open to all signed-in users
+  if (mode === 'input' && profile && !canSeeAdvancedInput(profile)) {
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>
+        <div className="max-w-3xl mx-auto px-4 md:px-6 py-16">
+          <Link to="/advanced-programme" className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
+            <ArrowLeft className="w-4 h-4" /> Back to progress
+          </Link>
+          <h1 className="mt-6 text-2xl font-bold text-gray-900">Advanced programme data input</h1>
+          <p className="mt-3 text-sm text-gray-600">Your organisation does not have access to advanced programme data input.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#FAFAF7' }}>
