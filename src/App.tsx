@@ -4,6 +4,7 @@ import { Dashboard, PlaceholderPage, CenterDetailPage, CentersOverviewPage } fro
 import { SmoothScroll } from './components/SmoothScroll'
 import { LoginPage } from './pages/LoginPage'
 import { SignUpPage } from './pages/SignUpPage'
+import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { AdvancedProgrammePage } from './pages/AdvancedProgrammePage'
 import { DataReviewPage } from './pages/DataReviewPage'
 import { GreenpreneurInputPage } from './pages/GreenpreneurInputPage'
@@ -16,6 +17,7 @@ function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/" element={<RequireAuth><Layout /></RequireAuth>}>
         <Route index element={<Dashboard />} />
         <Route path="centers" element={<CentersOverviewPage />} />
