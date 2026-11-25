@@ -44,6 +44,22 @@ export async function signIn(email: string, password: string): Promise<string | 
   return error ? error.message : null;
 }
 
+/** Sends a reset link to the email. The link opens /reset-password in this app. */
+export async function requestPasswordReset(email: string): Promise<string | null> {
+  if (!supabase) return 'Supabase is not configured';
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  });
+  return error ? error.message : null;
+}
+
+/** Sets a new password for the account opened from a reset link. */
+export async function setNewPassword(password: string): Promise<string | null> {
+  if (!supabase) return 'Supabase is not configured';
+  const { error } = await supabase.auth.updateUser({ password });
+  return error ? error.message : null;
+}
+
 /** Sign-up: the account starts as 'pending' until an admin approves it. */
 export async function signUp(input: {
   email: string;
