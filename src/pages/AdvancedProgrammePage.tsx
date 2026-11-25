@@ -224,6 +224,10 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const [centreOpen, setCentreOpen] = useState(false);
   const [centreTrainers, setCentreTrainers] = useState<any[]>([]);
   const [centreLoaded, setCentreLoaded] = useState(false);
+  // Trainer name search: picks the trainer's centre and highlights their row
+  const [trainerQuery, setTrainerQuery] = useState('');
+  const [trainerOpen, setTrainerOpen] = useState(false);
+  const [highlightTrainerId, setHighlightTrainerId] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Map<string, ReviewInfo>>(new Map());
   const canIctHere = isApproved(profile) && canEditSection(profile, centreSel, 'advanced_ict');
   const canGreenHere = isApproved(profile) && canEditSection(profile, centreSel, 'advanced_green');
@@ -242,6 +246,13 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
       });
   }, [centreSel]);
 
+  // After a trainer is picked, scroll to their row once the centre's trainers have loaded
+  useEffect(() => {
+    if (!highlightTrainerId || !centreLoaded) return;
+    const el = document.getElementById(`adv-trainer-${highlightTrainerId}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [highlightTrainerId, centreLoaded]);
+
   useEffect(() => {
     const loadProfile = () => {
       getSession().then(s => (s ? getProfile() : null)).then(p => setProfile(p));
@@ -257,7 +268,8 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
       supabase.from('advanced_cohort_progress').select('cohort_id, track, month_no, item_no, completed, completed_date, completed_at'),
       supabase.from('centres').select('id, name').order('sort_order'),
       supabase.from('advanced_cohort_centres').select('cohort_id, centre_id, enrolled, graduated'),
-      supabase.from('advanced_trainers').select('id, centre_id, name, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business').order('name'),
+      // Progress counts use approved values only (advanced_trainers_live)
+      supabase.from('advanced_trainers_live').select('id, centre_id, name, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business').order('name'),
       supabase.from('advanced_cohort_trainers').select('cohort_id, centre_id, trainer_id'),
     ]);
     setCentres((ce.data ?? []) as Array<{ id: string; name: string }>);
@@ -608,6 +620,51 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
               <h2 className="text-base font-semibold text-gray-900">Centre trainers and programmes</h2>
               <p className="text-sm text-gray-600">Choose a centre to enter its trainers' ToT status and its programme counts.</p>
             </div>
+            <div className="flex flex-wrap gap-3">
+            <div className="relative min-w-[280px] max-w-md">
+              <input
+                type="text"
+                value={trainerOpen ? trainerQuery : ''}
+                placeholder="Search trainer name"
+                onFocus={() => {
+                  setTrainerOpen(true);
+                  setTrainerQuery('');
+                }}
+                onChange={e => {
+                  setTrainerQuery(e.target.value);
+                  setTrainerOpen(true);
+                }}
+                onBlur={() => setTrainerOpen(false)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+              />
+              {trainerOpen && (
+                <ul className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg">
+                  {allTrainers
+                    .filter(t => t.name.toLowerCase().includes(trainerQuery.trim().toLowerCase()))
+                    .map(t => (
+                      <li key={t.id}>
+                        <button
+                          type="button"
+                          onMouseDown={e => e.preventDefault()}
+                          onClick={() => {
+                            setCentreSel(t.centre_id);
+                            setHighlightTrainerId(t.id);
+                            setTrainerOpen(false);
+                            setTrainerQuery('');
+                          }}
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 text-gray-800"
+                        >
+                          {t.name}
+                          <span className="ml-2 text-xs text-gray-500">{centres.find(c => c.id === t.centre_id)?.name ?? ''}</span>
+                        </button>
+                      </li>
+                    ))}
+                  {allTrainers.every(t => !t.name.toLowerCase().includes(trainerQuery.trim().toLowerCase())) && (
+                    <li className="px-3 py-2 text-sm text-gray-500">No trainer found</li>
+                  )}
+                </ul>
+              )}
+            </div>
             <div className="relative min-w-[280px] max-w-md">
               <input
                 type="text"
@@ -650,11 +707,13 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                 </ul>
               )}
             </div>
+            </div>
             {centreSel && centreLoaded && (
               <>
                 <AdvancedInputForm
                   key={`trainers-${centreSel}`}
                   mode="trainers"
+                  highlightId={highlightTrainerId}
                   centreId={centreSel}
                   canSave={canIctHere || canGreenHere}
                   canIct={canIctHere}

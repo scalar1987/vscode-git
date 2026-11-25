@@ -83,7 +83,8 @@ export async function loadCenters(): Promise<any[]> {
       supabase.from('centre_greenpreneur').select('centre_id, data'),
       supabase.from('centre_training_basic').select('centre_id, year, enrolled, passed'),
       supabase.from('centre_basic_modules').select('centre_id, module, passed'),
-      supabase.from('advanced_trainers').select('*').order('name'),
+      // Approved values only for centre pages (see advanced_trainers_live)
+      supabase.from('advanced_trainers_live').select('*').order('name'),
       supabase.from('centre_training_advanced').select('centre_id, year, enrolled, passed'),
     ]);
     if (centresRes.error || infraRes.error || coordRes.error || gpRes.error || trRes.error || modRes.error) {
@@ -205,29 +206,40 @@ export async function loadCenters(): Promise<any[]> {
 export async function loadTotRecords(): Promise<TotRecord[]> {
   if (supabase) {
     try {
-      const { data, error } = await supabase
-        .from('tot_trainees')
-        .select('centre_id, position, name, in_person_completed, in_person_ict, in_person_green, in_person_ict_date, in_person_green_date, lms_completed, lms_word, lms_excel, lms_ppt, lms_green')
-        .order('centre_id')
-        .order('position');
-      if (!error && data) {
-        return data.map((r: any) => ({
-          id: `basic-${r.centre_id}-${r.position}`,
-          name: r.name,
-          center_id: r.centre_id,
-          placeholder: false,
-          in_person_completed: r.in_person_completed,
-          lms_completed: r.lms_completed,
-          lms_word: r.lms_word === true,
-          lms_excel: r.lms_excel === true,
-          lms_ppt: r.lms_ppt === true,
-          lms_green: r.lms_green === true,
-          in_person_ict: r.in_person_ict === true,
-          in_person_green: r.in_person_green === true,
-          in_person_ict_date: r.in_person_ict_date ?? null,
-          in_person_green_date: r.in_person_green_date ?? null,
-          completed: r.in_person_completed === true && r.lms_completed === true,
-        }));
+      const [base, live] = await Promise.all([
+        supabase
+          .from('tot_trainees')
+          .select('centre_id, position, name, in_person_ict, in_person_green, in_person_ict_date, in_person_green_date, lms_word, lms_excel, lms_ppt, lms_green')
+          .order('centre_id')
+          .order('position'),
+        // Completion as shown on centre pages: counts only approved entries (see tot_trainees_live)
+        supabase.from('tot_trainees_live').select('centre_id, position, in_person_completed, lms_completed'),
+      ]);
+      if (!base.error && base.data && !live.error) {
+        const liveBy = new Map((live.data ?? []).map((r: any) => [`${r.centre_id}|${r.position}`, r]));
+        return base.data.map((r: any) => {
+          const l = liveBy.get(`${r.centre_id}|${r.position}`);
+          const inPerson = l?.in_person_completed === true;
+          const lms = l?.lms_completed === true;
+          return {
+            id: `basic-${r.centre_id}-${r.position}`,
+            name: r.name,
+            center_id: r.centre_id,
+            placeholder: false,
+            in_person_completed: inPerson,
+            lms_completed: lms,
+            // Entered values (pending or approved), used by the input form
+            lms_word: r.lms_word === true,
+            lms_excel: r.lms_excel === true,
+            lms_ppt: r.lms_ppt === true,
+            lms_green: r.lms_green === true,
+            in_person_ict: r.in_person_ict === true,
+            in_person_green: r.in_person_green === true,
+            in_person_ict_date: r.in_person_ict_date ?? null,
+            in_person_green_date: r.in_person_green_date ?? null,
+            completed: inPerson && lms,
+          };
+        });
       }
     } catch {
       // fall through to the static file

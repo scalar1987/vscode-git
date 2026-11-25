@@ -726,6 +726,7 @@ export function AdvancedInputForm({
   trainers,
   advancedByYear,
   reviews,
+  highlightId = null,
 }: {
   mode: 'trainers' | 'students';
   centreId: string;
@@ -735,6 +736,7 @@ export function AdvancedInputForm({
   trainers: any[];
   advancedByYear: Record<string, { enrolled?: number; passed?: number }>;
   reviews?: Map<string, ReviewInfo>;
+  highlightId?: string | null;
 }) {
   const [rows, setRows] = useState<AdvancedTrainerRow[]>(() =>
     trainers.map(t => ({
@@ -846,7 +848,11 @@ export function AdvancedInputForm({
 
         <div className="space-y-4">
           {rows.map((r, index) => (
-            <div key={r.id} className="p-4 rounded-lg border border-gray-200">
+            <div
+              key={r.id}
+              id={`adv-trainer-${r.id}`}
+              className={`p-4 rounded-lg border ${highlightId === r.id ? 'border-dg-green-500 ring-2 ring-dg-green-200' : 'border-gray-200'}`}
+            >
               <div className="flex flex-wrap items-center gap-3 mb-3">
                 <span className="text-xs text-gray-500">#{index + 1}</span>
                 <input
