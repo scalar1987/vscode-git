@@ -88,15 +88,21 @@ export function GreenpreneurProgressPage() {
   const pct = (d: number, t: number) => (t > 0 ? Math.round((d / t) * 100) : 0);
 
   // Pitch competition: results grouped by edition (newest first), rows in category and placing order
+  // Every competition created in data input, even before its results are entered
   const pitchEditions = useMemo(() => {
-    const years = [...new Set(data.pitch.map(r => r.edition))].sort((a, b) => b - a);
+    const years = [...new Set([...data.editions.map(e => e.edition), ...data.pitch.map(r => r.edition)])].sort((a, b) => b - a);
     return years.map(year => {
       const rows = data.pitch
         .filter(r => r.edition === year)
         .sort((a, b) => PITCH_CATEGORIES.indexOf(a.category) - PITCH_CATEGORIES.indexOf(b.category) || a.rank_no - b.rank_no);
-      return { year, rows, total: rows.reduce((s, r) => s + r.prize_usd, 0) };
+      return {
+        year,
+        name: data.editions.find(e => e.edition === year)?.name ?? null,
+        rows,
+        total: rows.reduce((s, r) => s + r.prize_usd, 0),
+      };
     });
-  }, [data.pitch]);
+  }, [data.pitch, data.editions]);
   const pitchTotal = data.pitch.reduce((s, r) => s + r.prize_usd, 0);
 
   const tabCls = (active: boolean) =>
@@ -205,15 +211,20 @@ export function GreenpreneurProgressPage() {
 
                 {pitchEditions.length === 0 ? (
                   <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-                    <p className="text-sm text-gray-500">No pitch competition results yet.</p>
+                    <p className="text-sm text-gray-500">No pitch competitions yet. Add one in Data input.</p>
                   </div>
                 ) : (
                   pitchEditions.map(ed => (
                     <div key={ed.year} className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                       <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
-                        <h2 className="text-base font-semibold text-gray-900">{ed.year} edition</h2>
+                        <h2 className="text-base font-semibold text-gray-900">
+                          {ed.year} edition{ed.name ? ` · ${ed.name}` : ''}
+                        </h2>
                         <span className="text-sm text-gray-600 tabular-nums">Total ${ed.total.toLocaleString()}</span>
                       </div>
+                      {ed.rows.length === 0 ? (
+                        <p className="text-sm text-gray-500">No results entered yet.</p>
+                      ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full min-w-[560px] text-sm">
                           <thead>
@@ -236,6 +247,7 @@ export function GreenpreneurProgressPage() {
                           </tbody>
                         </table>
                       </div>
+                      )}
                     </div>
                   ))
                 )}
