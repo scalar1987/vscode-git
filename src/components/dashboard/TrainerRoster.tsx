@@ -75,6 +75,15 @@ export function TrainerRoster({
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  // Rows show a one-line summary; opened rows show the full form
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const toggleRow = (id: string) =>
+    setExpanded(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   const centreName = useMemo(() => new Map(centres.map(c => [c.id, c.name])), [centres]);
 
@@ -302,12 +311,58 @@ export function TrainerRoster({
             const isNew = newIds.includes(t.id);
             const changed = changedIds.has(t.id);
             const free = centres.filter(c => !links.includes(c.id));
+            const ictDone = [t.in_person_ict, t.lms_ui_ux, t.lms_ios, t.lms_android].filter(Boolean).length;
+            const greenDone = [t.in_person_green, t.lms_green_business].filter(Boolean).length;
+            const open = isNew || changed || expanded.has(t.id);
+            const ictState = stateOf(reviews, 'advanced_trainers', t.id, 'ict');
+            const greenState = stateOf(reviews, 'advanced_trainers', t.id, 'green');
+            const sentBack = [ictState, greenState].some(s => s === 'rejected' || s === 'changes_requested');
+
+            if (!open) {
+              // Collapsed: one line per trainer
+              return (
+                <li key={t.id} className={`rounded-lg border border-gray-200 ${t.active ? '' : 'opacity-70'}`}>
+                  <button
+                    type="button"
+                    onClick={() => toggleRow(t.id)}
+                    className="w-full grid items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-gray-50 rounded-lg"
+                    style={{ gridTemplateColumns: 'minmax(160px, 1.3fr) minmax(140px, 1.5fr) 4.5rem 4.5rem 7.5rem 1rem' }}
+                  >
+                    <span className="font-medium text-gray-900 truncate">{t.name}</span>
+                    <span className="text-xs text-gray-600 truncate" title={links.map(c => centreName.get(c) ?? c).join(', ')}>
+                      {links.length ? links.map(c => centreName.get(c) ?? c).join(', ') : <span className="text-amber-700">No centre yet</span>}
+                    </span>
+                    <span className={`text-xs tabular-nums ${ictDone === 4 ? 'text-dg-green-700 font-semibold' : 'text-gray-600'}`}>ICT {ictDone}/4</span>
+                    <span className={`text-xs tabular-nums ${greenDone === 2 ? 'text-dg-green-700 font-semibold' : 'text-gray-600'}`}>Green {greenDone}/2</span>
+                    <span
+                      className={`justify-self-start px-2 py-0.5 rounded-full text-xs font-semibold ${
+                        sentBack ? 'bg-red-50 text-red-700' : isDone(t) ? 'bg-dg-green-50 text-dg-green-700' : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {sentBack ? 'Sent back' : isDone(t) ? 'ToT complete' : 'In progress'}
+                    </span>
+                    <span className="text-gray-400">▸</span>
+                  </button>
+                </li>
+              );
+            }
+
             return (
               <li
                 key={t.id}
                 className={`p-4 rounded-lg border ${changed ? 'border-dg-blue-300 bg-dg-blue-50/30' : 'border-gray-200'} ${t.active ? '' : 'opacity-70'}`}
               >
                 <div className="flex flex-wrap items-center gap-3">
+                  {!isNew && !changed && (
+                    <button
+                      type="button"
+                      onClick={() => toggleRow(t.id)}
+                      aria-label="Collapse"
+                      className="text-gray-400 hover:text-gray-700 rotate-90"
+                    >
+                      ▸
+                    </button>
+                  )}
                   {canManage && t.active ? (
                     <input
                       type="text"
@@ -324,13 +379,13 @@ export function TrainerRoster({
                       <ReviewChip
                         label="ICT"
                         notStarted={!(t.in_person_ict || t.lms_ui_ux || t.lms_ios || t.lms_android)}
-                        state={stateOf(reviews, 'advanced_trainers', t.id, 'ict')}
+                        state={ictState}
                         comment={commentOf(reviews, 'advanced_trainers', t.id, 'ict')}
                       />
                       <ReviewChip
                         label="Green"
                         notStarted={!(t.in_person_green || t.lms_green_business)}
-                        state={stateOf(reviews, 'advanced_trainers', t.id, 'green')}
+                        state={greenState}
                         comment={commentOf(reviews, 'advanced_trainers', t.id, 'green')}
                       />
                     </>

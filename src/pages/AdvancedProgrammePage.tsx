@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { supabase } from '../lib/centersData';
@@ -237,6 +237,17 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const [deleting, setDeleting] = useState(false);
 
   const canEdit = !!profile && (profile.role === 'ggg' || (profile.role === 'partner' && profile.section_access.includes('advanced')));
+
+  // Data input tabs: Trainers (ToT) for everyone with input access; Cohorts for DigiFemme and GGGI only.
+  // DigiFemme and GGGI open on Cohorts; Betterworld and Impact Lab only see Trainers.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const inputTab: 'trainers' | 'cohorts' = canEdit && searchParams.get('tab') !== 'trainers' ? 'cohorts' : 'trainers';
+  const setInputTab = (tab: 'trainers' | 'cohorts') => setSearchParams({ tab }, { replace: true });
+  const showTrainers = mode === 'input' && !!profile && inputTab === 'trainers';
+  const showCohorts = mode === 'input' && !!profile && inputTab === 'cohorts';
+  // Cohorts tab: one cohort open at a time
+  const [openCohortId, setOpenCohortId] = useState('');
+  const openId = cohorts.some(c => c.id === openCohortId) ? openCohortId : cohorts[0]?.id ?? '';
 
   const [reviews, setReviews] = useState<Map<string, ReviewInfo>>(new Map());
   // Centres each trainer works at (a trainer can work at several centres)
@@ -641,6 +652,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
     setNewEnd('');
     await loadAll();
     setSelected(data.id);
+    setOpenCohortId(data.id);
     setSaveMsg('Cohort added');
   };
 
@@ -740,8 +752,30 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
           </div>
         </div>
 
+        {mode === 'input' && profile && (
+          <div className="flex gap-1 border-b border-gray-200" role="tablist">
+            {([
+              ['trainers', 'Trainers (ToT)'],
+              ...(canEdit ? [['cohorts', 'Cohorts'] as const] : []),
+            ] as const).map(([tab, label]) => (
+              <button
+                key={tab}
+                type="button"
+                role="tab"
+                aria-selected={inputTab === tab}
+                onClick={() => setInputTab(tab)}
+                className={`px-4 py-2 -mb-px text-sm font-medium border-b-2 transition-colors ${
+                  inputTab === tab ? 'border-dg-green-600 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Evidence for advanced ToT: one link per partner organisation */}
-        {mode === 'input' && (
+        {showTrainers && (
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-4">
             <div>
               <h2 className="text-base font-semibold text-gray-900">Advanced ToT evidence</h2>
@@ -785,10 +819,10 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
         )}
 
         {/* Advanced trainers: one list for the programme, each trainer assigned to one or more centres */}
-        {mode === 'input' && (
+        {showTrainers && (
           <TrainerRoster profile={profile} centres={centres} reviews={reviews} onSaved={() => loadAll()} />
         )}
-        {mode === 'input' && canEdit && (
+        {showCohorts && (
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-end gap-3">
             <label className="text-sm text-gray-700">
               Cohort name
@@ -1135,9 +1169,10 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
           </>
         )}
 
-        {mode === 'input' && cohorts.length > 0 && (
+        {showCohorts && cohorts.length > 0 && (
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
             <h2 className="text-base font-semibold text-gray-900">Cohorts</h2>
+            <p className="text-sm text-gray-600">Choose a cohort to enter its centres, counts and checklist.</p>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[480px] text-sm">
                 <thead>
@@ -1155,16 +1190,27 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                         n + CURRICULUM[track].reduce((k, items, m) => k + items.filter((label, i) => isFinished(label, rows[itemKey(c.id, track, m + 1, i)])).length, 0),
                       0,
                     );
+                    const isOpen = c.id === openId;
                     return (
-                      <tr key={c.id}>
-                        <td className="py-2.5 px-3 font-medium text-gray-900 border-b border-gray-100">{c.name}</td>
+                      <tr
+                        key={c.id}
+                        onClick={() => setOpenCohortId(c.id)}
+                        className={`cursor-pointer ${isOpen ? 'bg-dg-green-50' : 'hover:bg-gray-50'}`}
+                      >
+                        <td className="py-2.5 px-3 font-medium text-gray-900 border-b border-gray-100">
+                          {c.name}
+                          {c.end_date && c.end_date < todayIso() && <span className="ml-2 text-xs font-normal text-gray-500">ended</span>}
+                        </td>
                         <td className="py-2.5 px-3 text-gray-700 border-b border-gray-100">{monthLabel(c.start_month, 0)}</td>
                         <td className="py-2.5 px-3 text-right tabular-nums text-gray-700 border-b border-gray-100">{done} / {totalItems}</td>
                         <td className="py-2.5 px-3 text-right border-b border-gray-100 whitespace-nowrap">
+                          <span className={`mr-3 text-xs font-medium ${isOpen ? 'text-dg-green-700' : 'text-dg-blue-700'}`}>
+                            {isOpen ? 'Open below' : 'Open'}
+                          </span>
                           {profile?.role === 'ggg' && (
                             <button
                               type="button"
-                              onClick={() => { setSelected(c.id); setDeleteName(''); setDeleteOpen(true); }}
+                              onClick={e => { e.stopPropagation(); setSelected(c.id); setDeleteName(''); setDeleteOpen(true); }}
                               className="px-3 py-1.5 rounded-md border border-red-200 text-red-700 hover:bg-red-50 text-xs font-medium"
                             >
                               Delete
@@ -1180,9 +1226,9 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
           </div>
         )}
 
-        {/* Input: every cohort's checklist is shown at once, in the order of the list above */}
-        {mode === 'input' &&
-          cohorts.map(c => {
+        {/* Input: the cohort chosen in the list above */}
+        {showCohorts &&
+          cohorts.filter(c => c.id === openId).map(c => {
             const doneHere = (['ict', 'green'] as Track[]).reduce(
               (n, track) =>
                 n + CURRICULUM[track].reduce((k, items, m) => k + items.filter((label, i) => isFinished(label, rows[itemKey(c.id, track, m + 1, i)])).length, 0),
@@ -1382,10 +1428,29 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                   </div>
                 )}
 
-                {[0, 1, 2, 3].map(m => (
-                  <div key={m} className="space-y-3">
-                    <h3 className="text-sm font-semibold text-gray-900">{monthLabel(c.start_month, m)}</h3>
-                    <div className="space-y-2">
+                {[0, 1, 2, 3].map(m => {
+                  // Months fold away; the cohort's current month starts open (the first month before it starts)
+                  const nowIdx = (() => {
+                    const [y, mo] = c.start_month.split('-').map(Number);
+                    const d = new Date();
+                    return d.getFullYear() * 12 + d.getMonth() - (y * 12 + mo - 1);
+                  })();
+                  const items = CURRICULUM.ict[m];
+                  const doneM = items.filter((label, i) => isFinished(label, rows[itemKey(c.id, 'ict', m + 1, i)])).length;
+                  const missingDate = items.filter((label, i) => {
+                    const r = rows[itemKey(c.id, 'ict', m + 1, i)];
+                    return needsDate(label) && r?.completed && !r.completed_date;
+                  }).length;
+                  return (
+                  <details key={`${c.id}-${m}`} open={m === Math.max(0, nowIdx)} className="group rounded-lg border border-gray-200">
+                    <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3">
+                      <span className="text-gray-400 transition-transform group-open:rotate-90">▸</span>
+                      <span className="text-sm font-semibold text-gray-900">{monthLabel(c.start_month, m)}</span>
+                      {m === nowIdx && <span className="px-2 py-0.5 rounded-full text-xs bg-dg-blue-50 text-dg-blue-700">this month</span>}
+                      {missingDate > 0 && <span className="text-xs text-amber-700">{missingDate} date{missingDate > 1 ? 's' : ''} missing</span>}
+                      <span className="ml-auto text-sm text-gray-600 tabular-nums">{doneM} / {items.length}</span>
+                    </summary>
+                    <div className="space-y-2 px-4 pb-4">
                       {CURRICULUM.ict[m].map((label, i) => {
                         const r = rows[itemKey(c.id, 'ict', m + 1, i)];
                         const done = r?.completed === true;
@@ -1424,8 +1489,9 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                         );
                       })}
                     </div>
-                  </div>
-                ))}
+                  </details>
+                  );
+                })}
 
                 <div className="flex flex-wrap items-center gap-3">
                   <button
@@ -1442,9 +1508,6 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
             );
           })}
         {mode === 'input' && saveMsg && !msgFor && <p className="text-sm text-gray-700">{saveMsg}</p>}
-        {mode === 'input' && current && !canEdit && (
-          <p className="text-sm text-gray-500">Sign in with a DigiFemme or GGGI account to update progress.</p>
-        )}
         {deleteOpen && current && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
