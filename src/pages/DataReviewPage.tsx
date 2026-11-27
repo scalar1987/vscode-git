@@ -118,11 +118,11 @@ export function DataReviewPage() {
     }
     const [
       centres, advCohorts, trainers, cohortCentres, totTrainees, basicTraining, basicModules,
-      gpCohorts, gpPitch, reviews,
+      gpCohorts, gpPitch, reviews, trainerLinks,
     ] = await Promise.all([
       db.from('centres').select('id, name, status, updated_at'),
       db.from('advanced_cohorts').select('id, name, evidence_url'),
-      db.from('advanced_trainers').select('id, centre_id, name, updated_at, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business'),
+      db.from('advanced_trainers').select('id, name, active, updated_at, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business'),
       db.from('advanced_cohort_centres').select('cohort_id, centre_id, enrolled, graduated, updated_at'),
       db.from('tot_trainees').select('centre_id, position, name, updated_at, in_person_ict, in_person_green, lms_word, lms_excel, lms_ppt, lms_green'),
       db.from('centre_training_basic').select('centre_id, year, enrolled, passed, updated_at'),
@@ -130,6 +130,7 @@ export function DataReviewPage() {
       db.from('greenpreneur_cohorts').select('id, name, track, enrolled, created_at, updated_at, evidence_url'),
       db.from('greenpreneur_pitch_results').select('id, edition, category, rank_no, laureate, prize_usd, created_at'),
       loadReviews(),
+      db.from('advanced_trainer_centres').select('trainer_id, centre_id'),
     ]);
 
     const centreName = new Map((centres.data ?? []).map((c: any) => [c.id, c.name]));
@@ -151,9 +152,13 @@ export function DataReviewPage() {
       });
     };
 
-    (trainers.data ?? []).forEach((r: any) => {
-      push('advanced_trainers', r.id, 'Advanced trainer ToT', `${r.name} · ICT`, centre(r.centre_id), r.updated_at, 'ict', unitHasData('advanced_trainers', r, 'ict'));
-      push('advanced_trainers', r.id, 'Advanced trainer ToT', `${r.name} · Green`, centre(r.centre_id), r.updated_at, 'green', unitHasData('advanced_trainers', r, 'green'));
+    // A trainer can work at several centres; inactive trainers are not reviewed
+    const trainerCentres = new Map<string, string[]>();
+    (trainerLinks.data ?? []).forEach((l: any) => trainerCentres.set(l.trainer_id, [...(trainerCentres.get(l.trainer_id) ?? []), centre(l.centre_id)]));
+    (trainers.data ?? []).filter((r: any) => r.active !== false).forEach((r: any) => {
+      const where = (trainerCentres.get(r.id) ?? []).join(', ') || 'No centre yet';
+      push('advanced_trainers', r.id, 'Advanced trainer ToT', `${r.name} · ICT`, where, r.updated_at, 'ict', unitHasData('advanced_trainers', r, 'ict'));
+      push('advanced_trainers', r.id, 'Advanced trainer ToT', `${r.name} · Green`, where, r.updated_at, 'green', unitHasData('advanced_trainers', r, 'green'));
     });
     (cohortCentres.data ?? []).forEach((r: any) =>
       push('advanced_cohort_centres', `${r.cohort_id}|${r.centre_id}`, 'Advanced student counts',

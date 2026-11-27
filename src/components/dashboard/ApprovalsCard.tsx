@@ -59,6 +59,8 @@ export function ApprovalsCard() {
       const counts: Record<Programme, number> = { Advanced: 0, Basic: 0, Greenpreneur: 0, Infrastructure: 0 };
       tables.forEach(([t, rows]) => {
         rows.forEach(r => {
+          // Deactivated trainers are not waiting for review
+          if (t === 'advanced_trainers' && r.active === false) return;
           TRACKS_OF[t].forEach(track => {
             if (!canReviewUnit(s, t, track)) return;
             if (!unitHasData(t, r, track)) return;
