@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { supabase } from '../lib/centersData';
-import { canEditSection, canSeeAdvancedInput, getProfile, getSession, isApproved, onAuthChange, type Profile } from '../lib/auth';
+import { canSeeAdvancedInput, getProfile, getSession, onAuthChange, type Profile } from '../lib/auth';
 import { isEvidenceUrl } from '../lib/evidence';
-import { AdvancedInputForm } from './CenterDetailPage';
+import { TrainerRoster } from '../components/dashboard/TrainerRoster';
 import { ReviewChip, commentOf, loadReviews, stateOf, type ReviewInfo } from '../lib/reviews';
 
 // Each cohort runs ICT (DigiFemmes) and Green Business together, over 4 months.
@@ -137,7 +137,6 @@ interface Cohort {
 
 interface TrainerRow {
   id: string;
-  centre_id: string;
   name: string;
   in_person_ict: boolean | null;
   in_person_green: boolean | null;
@@ -231,46 +230,18 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const [orgEvidence, setOrgEvidence] = useState<Record<string, string | null>>({});
   const [orgDraft, setOrgDraft] = useState<Record<string, string>>({});
   const [myOrg, setMyOrg] = useState<string | null>(null);
+  // 1.3.3 as reported in the latest biannual report (same file as the main dashboard)
+  const [reportedTot, setReportedTot] = useState<{ value: number; date: string } | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteName, setDeleteName] = useState('');
   const [deleting, setDeleting] = useState(false);
 
   const canEdit = !!profile && (profile.role === 'ggg' || (profile.role === 'partner' && profile.section_access.includes('advanced')));
 
-  // Centre trainers (ToT) and programme counts, entered per centre
-  const [centreSel, setCentreSel] = useState('');
-  const [centreQuery, setCentreQuery] = useState('');
-  const [centreOpen, setCentreOpen] = useState(false);
-  const [centreTrainers, setCentreTrainers] = useState<any[]>([]);
-  const [centreLoaded, setCentreLoaded] = useState(false);
-  // Trainer name search: picks the trainer's centre and highlights their row
-  const [trainerQuery, setTrainerQuery] = useState('');
-  const [trainerOpen, setTrainerOpen] = useState(false);
-  const [highlightTrainerId, setHighlightTrainerId] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Map<string, ReviewInfo>>(new Map());
-  const canIctHere = isApproved(profile) && canEditSection(profile, centreSel, 'advanced_ict');
-  const canGreenHere = isApproved(profile) && canEditSection(profile, centreSel, 'advanced_green');
-
-  useEffect(() => {
-    if (!supabase || !centreSel) return;
-    setCentreLoaded(false);
-    supabase
-      .from('advanced_trainers')
-      .select('*')
-      .eq('centre_id', centreSel)
-      .order('name')
-      .then(t => {
-        setCentreTrainers(t.data ?? []);
-        setCentreLoaded(true);
-      });
-  }, [centreSel]);
-
-  // After a trainer is picked, scroll to their row once the centre's trainers have loaded
-  useEffect(() => {
-    if (!highlightTrainerId || !centreLoaded) return;
-    const el = document.getElementById(`adv-trainer-${highlightTrainerId}`);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [highlightTrainerId, centreLoaded]);
+  // Centres each trainer works at (a trainer can work at several centres)
+  const [trainerCentres, setTrainerCentres] = useState<Record<string, string[]>>({});
+  const trainersAt = (centreId: string) => allTrainers.filter(t => (trainerCentres[t.id] ?? []).includes(centreId));
 
   useEffect(() => {
     const loadProfile = () => {
@@ -285,16 +256,20 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
 
   const loadAll = async () => {
     if (!supabase) return;
-    const [c, p, ce, v, tr, ct, oe] = await Promise.all([
+    const [c, p, ce, v, tr, ct, oe, tc] = await Promise.all([
       supabase.from('advanced_cohorts').select('id, name, start_month, start_date, end_date, enrolled, evidence_url').order('start_month', { ascending: false }),
       supabase.from('advanced_cohort_progress').select('cohort_id, track, month_no, item_no, completed, completed_date, completed_at'),
       supabase.from('centres').select('id, name').order('sort_order'),
       supabase.from('advanced_cohort_centres').select('cohort_id, centre_id, enrolled, graduated'),
-      // Progress counts use approved values only (advanced_trainers_live)
-      supabase.from('advanced_trainers_live').select('id, centre_id, name, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business, ict_live, green_live').order('name'),
+      // Progress counts use approved values of active trainers only (advanced_trainers_live)
+      supabase.from('advanced_trainers_live').select('id, name, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business, ict_live, green_live').order('name'),
       supabase.from('advanced_cohort_trainers').select('cohort_id, centre_id, trainer_id'),
       supabase.from('org_evidence').select('org, evidence_url'),
+      supabase.from('advanced_trainer_centres').select('trainer_id, centre_id'),
     ]);
+    const tcmap: Record<string, string[]> = {};
+    (tc.data ?? []).forEach((r: any) => (tcmap[r.trainer_id] = [...(tcmap[r.trainer_id] ?? []), r.centre_id]));
+    setTrainerCentres(tcmap);
     setOrgEvidence(Object.fromEntries((oe.data ?? []).map((r: any) => [r.org, r.evidence_url ?? null])));
     setCentres((ce.data ?? []) as Array<{ id: string; name: string }>);
     const vmap: Record<string, string[]> = {};
@@ -350,6 +325,13 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
 
   useEffect(() => {
     loadAll();
+    fetch('/biannual_2026_06.json')
+      .then(r => r.json())
+      .then((d: { date?: string; indicators?: Array<{ id: string; cumulative: number }> }) => {
+        const row = d.indicators?.find(i => i.id === '1.3.3');
+        if (row) setReportedTot({ value: row.cumulative, date: d.date ?? '' });
+      })
+      .catch(() => setReportedTot(null));
   }, []);
 
   const current = cohorts.find(c => c.id === selected);
@@ -802,123 +784,9 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
           </div>
         )}
 
-        {/* Centre trainers (ToT) input, then the cohort list */}
+        {/* Advanced trainers: one list for the programme, each trainer assigned to one or more centres */}
         {mode === 'input' && (
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-6">
-            <div>
-              <h2 className="text-base font-semibold text-gray-900">Centre trainers and programmes</h2>
-              <p className="text-sm text-gray-600">Choose a centre to enter its trainers' ToT status and its programme counts.</p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-            <div className="relative min-w-[280px] max-w-md">
-              <input
-                type="text"
-                value={trainerOpen ? trainerQuery : ''}
-                placeholder="Search trainer name"
-                onFocus={() => {
-                  setTrainerOpen(true);
-                  setTrainerQuery('');
-                }}
-                onChange={e => {
-                  setTrainerQuery(e.target.value);
-                  setTrainerOpen(true);
-                }}
-                onBlur={() => setTrainerOpen(false)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-dg-green-500"
-              />
-              {trainerOpen && (
-                <ul className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg">
-                  {allTrainers
-                    .filter(t => t.name.toLowerCase().includes(trainerQuery.trim().toLowerCase()))
-                    .map(t => (
-                      <li key={t.id}>
-                        <button
-                          type="button"
-                          onMouseDown={e => e.preventDefault()}
-                          onClick={() => {
-                            setCentreSel(t.centre_id);
-                            setHighlightTrainerId(t.id);
-                            setTrainerOpen(false);
-                            setTrainerQuery('');
-                          }}
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 text-gray-800"
-                        >
-                          {t.name}
-                          <span className="ml-2 text-xs text-gray-500">{centres.find(c => c.id === t.centre_id)?.name ?? ''}</span>
-                        </button>
-                      </li>
-                    ))}
-                  {allTrainers.every(t => !t.name.toLowerCase().includes(trainerQuery.trim().toLowerCase())) && (
-                    <li className="px-3 py-2 text-sm text-gray-500">No trainer found</li>
-                  )}
-                </ul>
-              )}
-            </div>
-            <div className="relative min-w-[280px] max-w-md">
-              <input
-                type="text"
-                value={centreOpen ? centreQuery : (centres.find(c => c.id === centreSel)?.name ?? '')}
-                placeholder="Search centre name"
-                onFocus={() => {
-                  setCentreOpen(true);
-                  setCentreQuery('');
-                }}
-                onChange={e => {
-                  setCentreQuery(e.target.value);
-                  setCentreOpen(true);
-                }}
-                onBlur={() => setCentreOpen(false)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-dg-green-500"
-              />
-              {centreOpen && (
-                <ul className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-md shadow-lg">
-                  {centres
-                    .filter(c => c.name.toLowerCase().includes(centreQuery.trim().toLowerCase()))
-                    .map(c => (
-                      <li key={c.id}>
-                        <button
-                          type="button"
-                          onMouseDown={e => e.preventDefault()}
-                          onClick={() => {
-                            setCentreSel(c.id);
-                            setCentreOpen(false);
-                            setCentreQuery('');
-                          }}
-                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 ${c.id === centreSel ? 'text-dg-green-700 font-medium' : 'text-gray-800'}`}
-                        >
-                          {c.name}
-                        </button>
-                      </li>
-                    ))}
-                  {centres.every(c => !c.name.toLowerCase().includes(centreQuery.trim().toLowerCase())) && (
-                    <li className="px-3 py-2 text-sm text-gray-500">No centre found</li>
-                  )}
-                </ul>
-              )}
-            </div>
-            </div>
-            {centreSel && centreLoaded && (
-              <>
-                <AdvancedInputForm
-                  key={`trainers-${centreSel}`}
-                  mode="trainers"
-                  highlightId={highlightTrainerId}
-                  centreId={centreSel}
-                  canSave={canIctHere || canGreenHere}
-                  canIct={canIctHere}
-                  canGreen={canGreenHere}
-                  trainers={centreTrainers}
-                  advancedByYear={{}}
-                  reviews={reviews}
-                  // New, renamed or removed trainers show up at once in the cohort trainer lists and the search
-                  onSaved={() => loadAll()}
-                />
-              </>
-            )}
-            <p className="text-xs text-gray-500">
-              Students enrolled and passed by year are calculated automatically from the cohort centre details below.
-            </p>
-          </div>
+          <TrainerRoster profile={profile} centres={centres} reviews={reviews} onSaved={() => loadAll()} />
         )}
         {mode === 'input' && canEdit && (
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-end gap-3">
@@ -975,8 +843,12 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
             />
             <StatCard
               label="Trainers ToT complete · 1.3.3"
-              value={`${overview.trainersDone} / ${TRAINER_TARGET}`}
-              sub={`Logframe target ${TRAINER_TARGET} · ${overview.trainers} trainers listed so far`}
+              value={reportedTot ? `${reportedTot.value} / ${TRAINER_TARGET}` : `${overview.trainersDone} / ${TRAINER_TARGET}`}
+              sub={
+                reportedTot
+                  ? `Reported ${reportedTot.value} (biannual report ${reportedTot.date}) · Entered in dashboard ${overview.trainersDone} of ${overview.trainers} trainers`
+                  : `Logframe target ${TRAINER_TARGET} · ${overview.trainers} trainers listed so far`
+              }
             />
             <StatCard label="Cohorts" value={String(cohorts.length)} sub={`${cohorts.filter(c => c.end_date && c.end_date < todayIso()).length} ended`} />
           </div>
@@ -1089,7 +961,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                         .map(ce => {
                           // All trainers assigned to this centre; those running this cohort are marked
                           const runningIds = venueTrainers[`${current.id}|${ce.id}`] ?? [];
-                          const trainers = allTrainers.filter(t => t.centre_id === ce.id);
+                          const trainers = trainersAt(ce.id);
                           const cnt = venueCounts[current.id]?.[ce.id] ?? { enrolled: 0, graduated: 0 };
                           return (
                             <tr key={ce.id} className="border-t border-gray-100 align-top">
@@ -1110,9 +982,9 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                                         {(t.ict_live === false || t.green_live === false) && (
                                           <span
                                             className="px-2 py-0.5 rounded-full text-xs bg-dg-amber-100 text-dg-amber-700"
-                                            title="The latest partner update is shown here once GGGI approves it"
+                                            title="Waiting for GGGI approval, or sent back (rejected / changes requested). Counted once approved."
                                           >
-                                            Update not yet approved{t.ict_live === false && t.green_live === false ? '' : t.ict_live === false ? ' (ICT)' : ' (Green)'}
+                                            Not counted until approved{t.ict_live === false && t.green_live === false ? '' : t.ict_live === false ? ' (ICT)' : ' (Green)'}
                                           </span>
                                         )}
                                         <span className={`px-2 py-0.5 rounded-full text-xs ${trainerDone(t) ? 'bg-dg-green-50 text-dg-green-700' : 'bg-gray-100 text-gray-600'}`}>
@@ -1434,7 +1306,10 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                             .map(ce => {
                               const selectedTrainers = venueTrainers[`${c.id}|${ce.id}`] ?? [];
                               const cnt = venueCounts[c.id]?.[ce.id] ?? { enrolled: 0, graduated: 0 };
-                              const options = allTrainers.filter(t => t.centre_id === ce.id);
+                              // Trainers assigned to this centre, plus any already ticked for this cohort
+                              const options = allTrainers.filter(
+                                t => (trainerCentres[t.id] ?? []).includes(ce.id) || selectedTrainers.includes(t.id),
+                              );
                               const numCell = 'w-24 px-2 py-1 text-sm text-right border border-gray-200 rounded-md tabular-nums focus:outline-none focus:ring-2 focus:ring-dg-green-500';
                               return (
                                 <tr key={ce.id} className="border-t border-gray-100 align-top">
@@ -1449,7 +1324,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                                   </td>
                                   <td className="py-2 pr-4">
                                     {options.length === 0 ? (
-                                      <span className="text-gray-400">No trainer registered for this centre</span>
+                                      <span className="text-gray-400">No trainer assigned to this centre (assign one in Advanced trainers above)</span>
                                     ) : (
                                       <div className="flex flex-wrap gap-x-4 gap-y-2">
                                         {options.map(t => (

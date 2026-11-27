@@ -76,7 +76,7 @@ export async function loadCenters(): Promise<any[]> {
   if (!supabase) return base;
 
   try {
-    const [centresRes, infraRes, coordRes, gpRes, trRes, modRes, advTrRes, advStRes] = await Promise.all([
+    const [centresRes, infraRes, coordRes, gpRes, trRes, modRes, advTrRes, advStRes, advLinkRes] = await Promise.all([
       supabase.from('centres').select('*').order('sort_order'),
       supabase.from('centre_infrastructure').select('*'),
       supabase.from('centre_coordinators').select('*').order('position'),
@@ -86,6 +86,8 @@ export async function loadCenters(): Promise<any[]> {
       // Approved values only for centre pages (see advanced_trainers_live)
       supabase.from('advanced_trainers_live').select('*').order('name'),
       supabase.from('centre_training_advanced').select('centre_id, year, enrolled, passed'),
+      // A trainer can work at several centres
+      supabase.from('advanced_trainer_centres').select('trainer_id, centre_id'),
     ]);
     if (centresRes.error || infraRes.error || coordRes.error || gpRes.error || trRes.error || modRes.error) {
       throw new Error('supabase read failed');
@@ -106,7 +108,11 @@ export async function loadCenters(): Promise<any[]> {
       trainingBy.set(r.centre_id, t);
     });
     const advTrBy = new Map<string, any[]>();
-    (advTrRes.data ?? []).forEach((t: any) => advTrBy.set(t.centre_id, [...(advTrBy.get(t.centre_id) ?? []), t]));
+    const advTrById = new Map((advTrRes.data ?? []).map((t: any) => [t.id, t]));
+    (advLinkRes.data ?? []).forEach((l: any) => {
+      const t = advTrById.get(l.trainer_id); // inactive trainers are not in the live view
+      if (t) advTrBy.set(l.centre_id, [...(advTrBy.get(l.centre_id) ?? []), t]);
+    });
     const advStBy = new Map<string, any>();
     (advStRes.data ?? []).forEach((r: any) => {
       const a = advStBy.get(r.centre_id) ?? { by_year: {} as Record<string, { enrolled: number; passed: number }>, enrolled: 0, passed: 0 };
