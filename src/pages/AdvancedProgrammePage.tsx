@@ -230,8 +230,9 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const [orgEvidence, setOrgEvidence] = useState<Record<string, string | null>>({});
   const [orgDraft, setOrgDraft] = useState<Record<string, string>>({});
   const [myOrg, setMyOrg] = useState<string | null>(null);
-  // 1.3.3 as reported in the latest biannual report (same file as the main dashboard)
-  const [reportedTot, setReportedTot] = useState<{ value: number; date: string } | null>(null);
+  // 1.3.3, 1.3.4.1 and 1.3.4.2 as reported in the latest biannual report (same file as the main dashboard)
+  const [reported, setReported] = useState<{ date: string; values: Record<string, number> } | null>(null);
+  const reportedOf = (id: string) => reported?.values[id];
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteName, setDeleteName] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -252,7 +253,6 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const [reviews, setReviews] = useState<Map<string, ReviewInfo>>(new Map());
   // Centres each trainer works at (a trainer can work at several centres)
   const [trainerCentres, setTrainerCentres] = useState<Record<string, string[]>>({});
-  const trainersAt = (centreId: string) => allTrainers.filter(t => (trainerCentres[t.id] ?? []).includes(centreId));
 
   useEffect(() => {
     const loadProfile = () => {
@@ -339,10 +339,12 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
     fetch('/biannual_2026_06.json')
       .then(r => r.json())
       .then((d: { date?: string; indicators?: Array<{ id: string; cumulative: number }> }) => {
-        const row = d.indicators?.find(i => i.id === '1.3.3');
-        if (row) setReportedTot({ value: row.cumulative, date: d.date ?? '' });
+        const values = Object.fromEntries(
+          (d.indicators ?? []).filter(i => ['1.3.3', '1.3.4.1', '1.3.4.2'].includes(i.id)).map(i => [i.id, i.cumulative]),
+        );
+        setReported({ date: d.date ?? '', values });
       })
-      .catch(() => setReportedTot(null));
+      .catch(() => setReported(null));
   }, []);
 
   const current = cohorts.find(c => c.id === selected);
@@ -661,15 +663,20 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
     if (!supabase || !current) return;
     setMsgFor(null);
     setDeleting(true);
+    // Centres that lose this cohort: their students-by-year must be recalculated after the delete
+    const linked = venues[current.id] ?? [];
     const { data, error } = await supabase.from('advanced_cohorts').delete().eq('id', current.id).select('id');
+    if (error || !data || data.length === 0) {
+      setDeleting(false);
+      return setSaveMsg(error ? `Could not delete cohort: ${error.message}` : 'Could not delete cohort: permission denied.');
+    }
+    const yearErr = await syncCentreYears(linked);
     setDeleting(false);
-    if (error) return setSaveMsg(`Could not delete cohort: ${error.message}`);
-    if (!data || data.length === 0) return setSaveMsg('Could not delete cohort: permission denied.');
     const name = current.name;
     setDeleteOpen(false);
     setDeleteName('');
     await loadAll();
-    setSaveMsg(`Deleted "${name}"`);
+    setSaveMsg(yearErr ? `Deleted "${name}", but centre totals failed: ${yearErr.message}` : `Deleted "${name}"`);
   };
 
   const saveProgress = async (cohort: Cohort) => {
@@ -819,8 +826,11 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
         )}
 
         {/* Advanced trainers: one list for the programme, each trainer assigned to one or more centres */}
-        {showTrainers && (
-          <TrainerRoster profile={profile} centres={centres} reviews={reviews} onSaved={() => loadAll()} />
+        {/* Kept mounted while the Cohorts tab is open, so unsaved trainer edits are not lost when switching tabs */}
+        {mode === 'input' && profile && (
+          <div hidden={!showTrainers}>
+            <TrainerRoster profile={profile} centres={centres} reviews={reviews} onSaved={() => loadAll()} />
+          </div>
         )}
         {showCohorts && (
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-end gap-3">
@@ -867,20 +877,28 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               label="All cohorts · Registered 1.3.4.1"
-              value={String(overview.registered)}
-              sub={`Logframe target 900 · ${overview.centres} centres`}
+              value={reportedOf('1.3.4.1') !== undefined ? `${reportedOf('1.3.4.1')} / 900` : String(overview.registered)}
+              sub={
+                reportedOf('1.3.4.1') !== undefined
+                  ? `Reported ${reportedOf('1.3.4.1')} (biannual report ${reported?.date}) · Entered in dashboard ${overview.registered} across ${overview.centres} centres`
+                  : `Logframe target 900 · ${overview.centres} centres`
+              }
             />
             <StatCard
               label="All cohorts · Passed (graduated) 1.3.4.2"
-              value={String(overview.graduated)}
-              sub={`Logframe target 575 · ${pctOf(overview.graduated, overview.registered)}% of registered`}
+              value={reportedOf('1.3.4.2') !== undefined ? `${reportedOf('1.3.4.2')} / 575` : String(overview.graduated)}
+              sub={
+                reportedOf('1.3.4.2') !== undefined
+                  ? `Reported ${reportedOf('1.3.4.2')} (biannual report ${reported?.date}) · Entered in dashboard ${overview.graduated} (${pctOf(overview.graduated, overview.registered)}% of registered)`
+                  : `Logframe target 575 · ${pctOf(overview.graduated, overview.registered)}% of registered`
+              }
             />
             <StatCard
               label="Trainers ToT complete · 1.3.3"
-              value={reportedTot ? `${reportedTot.value} / ${TRAINER_TARGET}` : `${overview.trainersDone} / ${TRAINER_TARGET}`}
+              value={reportedOf('1.3.3') !== undefined ? `${reportedOf('1.3.3')} / ${TRAINER_TARGET}` : `${overview.trainersDone} / ${TRAINER_TARGET}`}
               sub={
-                reportedTot
-                  ? `Reported ${reportedTot.value} (biannual report ${reportedTot.date}) · Entered in dashboard ${overview.trainersDone} of ${overview.trainers} trainers`
+                reportedOf('1.3.3') !== undefined
+                  ? `Reported ${reportedOf('1.3.3')} (biannual report ${reported?.date}) · Entered in dashboard ${overview.trainersDone} of ${overview.trainers} trainers`
                   : `Logframe target ${TRAINER_TARGET} · ${overview.trainers} trainers listed so far`
               }
             />
@@ -995,7 +1013,10 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                         .map(ce => {
                           // All trainers assigned to this centre; those running this cohort are marked
                           const runningIds = venueTrainers[`${current.id}|${ce.id}`] ?? [];
-                          const trainers = trainersAt(ce.id);
+                          // Trainers assigned to this centre, plus anyone who ran this cohort here (same list as data input)
+                          const trainers = allTrainers.filter(
+                            t => (trainerCentres[t.id] ?? []).includes(ce.id) || runningIds.includes(t.id),
+                          );
                           const cnt = venueCounts[current.id]?.[ce.id] ?? { enrolled: 0, graduated: 0 };
                           return (
                             <tr key={ce.id} className="border-t border-gray-100 align-top">
