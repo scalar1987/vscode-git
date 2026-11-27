@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -190,15 +190,6 @@ const weekOf = (label: string) => {
   return m ? Number(m[1]) : 0;
 };
 
-function StatCard({ label, value, sub, tone = 'default' }: { label: string; value: string; sub?: string; tone?: 'default' | 'warn' }) {
-  return (
-    <div className={`rounded-xl p-5 shadow-sm border ${tone === 'warn' ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-100'}`}>
-      <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
-      <p className={`mt-2 text-3xl font-semibold tabular-nums ${tone === 'warn' ? 'text-amber-700' : 'text-gray-900'}`}>{value}</p>
-      {sub && <p className="mt-1 text-xs text-gray-500">{sub}</p>}
-    </div>
-  );
-}
 
 export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress' | 'input' }) {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -246,6 +237,12 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const setInputTab = (tab: 'trainers' | 'cohorts') => setSearchParams({ tab }, { replace: true });
   const showTrainers = mode === 'input' && !!profile && inputTab === 'trainers';
   const showCohorts = mode === 'input' && !!profile && inputTab === 'cohorts';
+  // Progress tabs: Overview (indicators), Cohorts (one cohort at a time), Trainers (ToT status of everyone)
+  const progressTab: 'overview' | 'cohorts' | 'trainers' =
+    (['overview', 'cohorts', 'trainers'] as const).find(t => t === searchParams.get('tab')) ?? 'overview';
+  const setProgressTab = (tab: 'overview' | 'cohorts' | 'trainers') => setSearchParams({ tab }, { replace: true });
+  const [openCentres, setOpenCentres] = useState<Set<string>>(new Set());
+  const [showByYear, setShowByYear] = useState(false);
   // Cohorts tab: one cohort open at a time
   const [openCohortId, setOpenCohortId] = useState('');
   const openId = cohorts.some(c => c.id === openCohortId) ? openCohortId : cohorts[0]?.id ?? '';
@@ -874,135 +871,247 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
         )}
 
         {mode === 'progress' && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              label="All cohorts · Registered 1.3.4.1"
-              value={reportedOf('1.3.4.1') !== undefined ? `${reportedOf('1.3.4.1')} / 900` : String(overview.registered)}
-              sub={
-                reportedOf('1.3.4.1') !== undefined
-                  ? `Reported ${reportedOf('1.3.4.1')} (biannual report ${reported?.date}) · Entered in dashboard ${overview.registered} across ${overview.centres} centres`
-                  : `Logframe target 900 · ${overview.centres} centres`
-              }
-            />
-            <StatCard
-              label="All cohorts · Passed (graduated) 1.3.4.2"
-              value={reportedOf('1.3.4.2') !== undefined ? `${reportedOf('1.3.4.2')} / 575` : String(overview.graduated)}
-              sub={
-                reportedOf('1.3.4.2') !== undefined
-                  ? `Reported ${reportedOf('1.3.4.2')} (biannual report ${reported?.date}) · Entered in dashboard ${overview.graduated} (${pctOf(overview.graduated, overview.registered)}% of registered)`
-                  : `Logframe target 575 · ${pctOf(overview.graduated, overview.registered)}% of registered`
-              }
-            />
-            <StatCard
-              label="Trainers ToT complete · 1.3.3"
-              value={reportedOf('1.3.3') !== undefined ? `${reportedOf('1.3.3')} / ${TRAINER_TARGET}` : `${overview.trainersDone} / ${TRAINER_TARGET}`}
-              sub={
-                reportedOf('1.3.3') !== undefined
-                  ? `Reported ${reportedOf('1.3.3')} (biannual report ${reported?.date}) · Entered in dashboard ${overview.trainersDone} of ${overview.trainers} trainers`
-                  : `Logframe target ${TRAINER_TARGET} · ${overview.trainers} trainers listed so far`
-              }
-            />
-            <StatCard label="Cohorts" value={String(cohorts.length)} sub={`${cohorts.filter(c => c.end_date && c.end_date < todayIso()).length} ended`} />
+          <div className="flex gap-1 border-b border-gray-200" role="tablist">
+            {([
+              ['overview', 'Overview'],
+              ['cohorts', 'Cohorts'],
+              ['trainers', 'Trainers'],
+            ] as const).map(([tab, label]) => (
+              <button
+                key={tab}
+                type="button"
+                role="tab"
+                aria-selected={progressTab === tab}
+                onClick={() => setProgressTab(tab)}
+                className={`px-4 py-2 -mb-px text-sm font-medium border-b-2 transition-colors ${
+                  progressTab === tab ? 'border-dg-green-600 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         )}
 
-        {mode === 'progress' && (
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-base font-semibold text-gray-900 mb-1">Students by year (all cohorts)</h3>
-            <p className="text-xs text-gray-500 mb-4">
-              Registered = logframe 1.3.4.1 (target 900) · Graduated = logframe 1.3.4.2, passed (target 575) · grouped by the year each cohort starts
-            </p>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-xs text-gray-500">
-                    <th className="py-2 pr-4 font-medium">Year</th>
-                    <th className="py-2 pr-4 font-medium text-right">Registered</th>
-                    <th className="py-2 font-medium text-right">Graduated</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(overview.byYear).map(([year, v]) => (
-                    <tr key={year} className="border-t border-gray-100">
-                      <td className="py-2 pr-4 text-gray-700">{year}</td>
-                      <td className="py-2 pr-4 text-right tabular-nums">{v.registered}</td>
-                      <td className="py-2 text-right tabular-nums">{v.graduated}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t border-gray-200 font-semibold text-gray-900">
-                    <td className="py-2 pr-4">Total</td>
-                    <td className="py-2 pr-4 text-right tabular-nums">{overview.registered}</td>
-                    <td className="py-2 text-right tabular-nums">{overview.graduated}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {mode === 'progress' && (
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-wrap items-center gap-3">
-          <label className="text-sm text-gray-700">
-            Cohort
-            <select
-              value={selected}
-              onChange={e => setSelected(e.target.value)}
-              className="ml-2 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white"
-              style={{ minWidth: 480 }}
-            >
-              {cohorts.length === 0 && <option value="">No cohorts yet</option>}
-              {cohorts.map(c => (
-                <option key={c.id} value={c.id}>
-                  {c.name} ({cohortStart(c)} ~ {c.end_date ?? 'end date TBD'}{c.end_date && c.end_date < todayIso() ? ' · ended' : ''})
-                </option>
-              ))}
-            </select>
-          </label>
-          {current && (
-            <span className="ml-auto text-sm text-gray-600 tabular-nums">
-              {doneCount} / {totalItems} done
-            </span>
-          )}
-        </div>
-        )}
-
-        {current && progressView && mode === 'progress' && (
+        {/* Overview: one card per logframe indicator */}
+        {mode === 'progress' && progressTab === 'overview' && (
           <>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard label="This cohort · Registered 1.3.4.1" value={String(cohortTotals.registered)} sub={`${(venues[current.id] ?? []).length} centres`} />
-              <StatCard
-                label="This cohort · Passed (graduated) 1.3.4.2"
-                value={String(cohortTotals.graduated)}
-                sub={`${pctOf(cohortTotals.graduated, cohortTotals.registered)}% of registered`}
-              />
-              <StatCard label="Overall progress" value={`${pctOf(doneCount, totalItems)}%`} sub={`${doneCount} of ${totalItems} items`} />
-              <StatCard
-                label="Outstanding"
-                value={String(progressView.outstanding.length)}
-                sub="earlier items still open"
-                tone={progressView.outstanding.length > 0 ? 'warn' : 'default'}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {([
+                ['1.3.3', 'Trainers with ToT complete', 'DigiFemme advanced ToT', overview.trainersDone, TRAINER_TARGET, `${overview.trainers} trainers listed · approved values only`],
+                ['1.3.4.1', 'Students registered', 'Advanced programme', overview.registered, 900, `${overview.centres} centres with cohorts`],
+                ['1.3.4.2', 'Students passed', 'Advanced programme (graduated)', overview.graduated, 575, `${pctOf(overview.graduated, overview.registered)}% of entered registered`],
+              ] as const).map(([id, label, sub, entered, target, note]) => {
+                const rep = reportedOf(id);
+                const shown = rep ?? entered;
+                const pct = pctOf(shown, target);
+                const behind = rep !== undefined && entered < rep;
+                return (
+                  <div key={id} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex flex-col">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-xs font-semibold text-gray-500">{id}</p>
+                        <h3 className="text-sm font-semibold text-gray-900">{label}</h3>
+                        <p className="text-xs text-gray-500">{sub}</p>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-dg-green-50 text-dg-green-700 tabular-nums">{pct}%</span>
+                    </div>
+                    <p className="mt-4 tabular-nums">
+                      <span className="text-3xl font-semibold text-gray-900">{shown}</span>
+                      <span className="text-base text-gray-500"> / {target}</span>
+                    </p>
+                    <p className="text-xs text-gray-500">{rep !== undefined ? `Reported · biannual report ${reported?.date ?? ''}` : 'Entered in this dashboard'}</p>
+                    <div className="mt-3 h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+                      <div className="h-2 rounded-full bg-dg-green-500" style={{ width: `${Math.min(100, pct)}%` }} />
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-gray-100 space-y-1 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Remaining to target</span>
+                        <span className="tabular-nums font-semibold text-gray-900">{Math.max(0, target - shown)}</span>
+                      </div>
+                      {rep !== undefined && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-600">Entered in dashboard</span>
+                          <span className={`tabular-nums font-semibold ${behind ? 'text-amber-700' : 'text-gray-900'}`}>{entered}</span>
+                        </div>
+                      )}
+                      <p className="text-xs text-gray-500">{note}</p>
+                      {behind && <p className="text-xs text-amber-700">Dashboard records are behind the reported value</p>}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-3">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
+                <span>
+                  {cohorts.length} cohort{cohorts.length === 1 ? '' : 's'} · {cohorts.filter(c => c.end_date && c.end_date < todayIso()).length} ended
+                </span>
+                <button type="button" onClick={() => setShowByYear(v => !v)} className="text-dg-blue-700 hover:underline">
+                  {showByYear ? 'Hide students by year' : 'Students by year ▸'}
+                </button>
+              </div>
+              {showByYear && (
+                <div className="overflow-x-auto">
+                  <p className="text-xs text-gray-500 mb-2">Entered in this dashboard, grouped by the year each cohort starts</p>
+                  <table className="w-full max-w-md text-sm">
+                    <thead>
+                      <tr className="text-left text-xs text-gray-500">
+                        <th className="py-2 pr-4 font-medium">Year</th>
+                        <th className="py-2 pr-4 font-medium text-right">Registered</th>
+                        <th className="py-2 font-medium text-right">Graduated</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(overview.byYear).map(([year, v]) => (
+                        <tr key={year} className="border-t border-gray-100">
+                          <td className="py-2 pr-4 text-gray-700">{year}</td>
+                          <td className="py-2 pr-4 text-right tabular-nums">{v.registered}</td>
+                          <td className="py-2 text-right tabular-nums">{v.graduated}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="border-t border-gray-200 font-semibold text-gray-900">
+                        <td className="py-2 pr-4">Total</td>
+                        <td className="py-2 pr-4 text-right tabular-nums">{overview.registered}</td>
+                        <td className="py-2 text-right tabular-nums">{overview.graduated}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Trainers: ToT status of every active trainer (approved values) */}
+        {mode === 'progress' && progressTab === 'trainers' && (() => {
+          const statusOf = (t: TrainerRow) => {
+            const sent = (['ict', 'green'] as const).some(tr => {
+              const s = stateOf(reviews, 'advanced_trainers', t.id, tr);
+              return s === 'rejected' || s === 'changes_requested';
+            });
+            if (sent) return { label: 'Sent back', cls: 'bg-red-50 text-red-700' };
+            if (t.ict_live === false || t.green_live === false) return { label: 'Awaiting approval', cls: 'bg-dg-amber-100 text-dg-amber-700' };
+            if (trainerDone(t)) return { label: 'ToT complete', cls: 'bg-dg-green-50 text-dg-green-700' };
+            return { label: 'In progress', cls: 'bg-gray-100 text-gray-600' };
+          };
+          const rowsT = allTrainers.map(t => ({ t, s: statusOf(t) }));
+          const count = (label: string) => rowsT.filter(r => r.s.label === label).length;
+          return (
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-4">
+              <div>
+                <h2 className="text-base font-semibold text-gray-900">Advanced trainers · ToT status (1.3.3)</h2>
+                <p className="text-sm text-gray-600">
+                  {count('ToT complete')} of {allTrainers.length} complete · {count('Awaiting approval')} awaiting approval · {count('Sent back')} sent back
+                </p>
+                <p className="text-xs text-gray-500">
+                  Approved values only. Complete = ICT and Green in-person plus all four online modules.
+                </p>
+              </div>
+              {allTrainers.length === 0 ? (
+                <p className="text-sm text-gray-500">No trainers yet.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[620px] text-sm">
+                    <thead>
+                      <tr className="text-left text-xs text-gray-500 border-b border-gray-200">
+                        <th className="py-2 pr-4 font-medium">Trainer</th>
+                        <th className="py-2 pr-4 font-medium">Centres</th>
+                        <th className="py-2 pr-4 font-medium text-right" title="In-person (Betterworld) plus UI/UX, iOS, Android">ICT</th>
+                        <th className="py-2 pr-4 font-medium text-right" title="In-person (Impact Lab) plus Green Business">Green</th>
+                        <th className="py-2 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rowsT.map(({ t, s }) => {
+                        const ict = [t.in_person_ict, t.lms_ui_ux, t.lms_ios, t.lms_android].filter(v => v === true).length;
+                        const green = [t.in_person_green, t.lms_green_business].filter(v => v === true).length;
+                        return (
+                          <tr key={t.id} className="border-b border-gray-100">
+                            <td className="py-2 pr-4 text-gray-900">{t.name}</td>
+                            <td className="py-2 pr-4 text-xs text-gray-600">
+                              {(trainerCentres[t.id] ?? []).map(cid => centres.find(c => c.id === cid)?.name ?? cid).join(', ') || '–'}
+                            </td>
+                            <td className={`py-2 pr-4 text-right tabular-nums ${ict === 4 ? 'text-dg-green-700 font-semibold' : 'text-gray-700'}`}>{ict}/4</td>
+                            <td className={`py-2 pr-4 text-right tabular-nums ${green === 2 ? 'text-dg-green-700 font-semibold' : 'text-gray-700'}`}>{green}/2</td>
+                            <td className="py-2">
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${s.cls}`}>{s.label}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* Cohorts: one cohort at a time */}
+        {mode === 'progress' && progressTab === 'cohorts' && (
+          <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="text-sm text-gray-700">
+                Cohort
+                <select
+                  value={selected}
+                  onChange={e => setSelected(e.target.value)}
+                  className="ml-2 px-3 py-2 text-sm border border-gray-300 rounded-md bg-white max-w-full"
+                  style={{ minWidth: 320 }}
+                >
+                  {cohorts.length === 0 && <option value="">No cohorts yet</option>}
+                  {cohorts.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({cohortStart(c)} ~ {c.end_date ?? 'end date TBD'}{c.end_date && c.end_date < todayIso() ? ' · ended' : ''})
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {current && progressView && (
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                <span className="text-gray-600">
+                  Registered <strong className="text-gray-900 tabular-nums">{cohortTotals.registered}</strong>
+                </span>
+                <span className="text-gray-600">
+                  Graduated <strong className="text-gray-900 tabular-nums">{cohortTotals.graduated}</strong>
+                  <span className="text-xs text-gray-500"> ({pctOf(cohortTotals.graduated, cohortTotals.registered)}%)</span>
+                </span>
+                <span className="text-gray-600">
+                  Checklist <strong className="text-gray-900 tabular-nums">{doneCount} / {totalItems}</strong>
+                  <span className="text-xs text-gray-500"> ({pctOf(doneCount, totalItems)}%)</span>
+                </span>
+                <span className={progressView.outstanding.length > 0 ? 'text-amber-700' : 'text-gray-600'}>
+                  Outstanding <strong className="tabular-nums">{progressView.outstanding.length}</strong>
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {current && progressView && mode === 'progress' && progressTab === 'cohorts' && (
+          <>
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <div className="mb-4">
-                <h3 className="text-base font-semibold text-gray-900">Centres and trainers in this cohort</h3>
+                <h3 className="text-base font-semibold text-gray-900">Centres in this cohort</h3>
                 <p className="text-xs text-gray-500">
                   {cohortStart(current)}{current.end_date ? ` ~ ${current.end_date}` : ''}
-                  {current.end_date && current.end_date < todayIso() ? ' · ended' : ' · running'}
+                  {current.end_date && current.end_date < todayIso() ? ' · ended' : ' · running'} · click a centre to see its trainers
                 </p>
               </div>
               {(venues[current.id] ?? []).length === 0 ? (
                 <p className="text-sm text-gray-500">No centre selected yet.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
+                  <table className="w-full min-w-[520px] text-sm">
                     <thead>
-                      <tr className="text-left text-xs text-gray-500">
+                      <tr className="text-left text-xs text-gray-500 border-b border-gray-200">
                         <th className="py-2 pr-4 font-medium">Centre</th>
-                        <th className="py-2 pr-4 font-medium">Trainers and ToT status</th>
+                        <th className="py-2 pr-4 font-medium">Trainers</th>
                         <th className="py-2 pr-4 font-medium text-right">Registered</th>
                         <th className="py-2 font-medium text-right">Graduated</th>
                       </tr>
@@ -1011,71 +1120,83 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                       {centres
                         .filter(ce => (venues[current.id] ?? []).includes(ce.id))
                         .map(ce => {
-                          // All trainers assigned to this centre; those running this cohort are marked
                           const runningIds = venueTrainers[`${current.id}|${ce.id}`] ?? [];
                           // Trainers assigned to this centre, plus anyone who ran this cohort here (same list as data input)
                           const trainers = allTrainers.filter(
                             t => (trainerCentres[t.id] ?? []).includes(ce.id) || runningIds.includes(t.id),
                           );
                           const cnt = venueCounts[current.id]?.[ce.id] ?? { enrolled: 0, graduated: 0 };
+                          const isOpen = openCentres.has(ce.id);
+                          const toggle = () =>
+                            setOpenCentres(prev => {
+                              const next = new Set(prev);
+                              if (next.has(ce.id)) next.delete(ce.id);
+                              else next.add(ce.id);
+                              return next;
+                            });
                           return (
-                            <tr key={ce.id} className="border-t border-gray-100 align-top">
-                              <td className="py-2 pr-4">
-                                <Link to={`/centers/${ce.id}`} className="text-dg-blue-700 hover:underline">{ce.name}</Link>
-                              </td>
-                              <td className="py-2 pr-4">
-                                {trainers.length === 0 ? (
-                                  <span className="text-gray-400">Not assigned yet</span>
-                                ) : (
-                                  <ul className="space-y-1">
-                                    {trainers.map(t => (
-                                      <li key={t.id} className="flex flex-wrap items-center gap-2">
-                                        <span className="text-gray-900">{t.name}</span>
-                                        {runningIds.includes(t.id) && (
-                                          <span className="px-2 py-0.5 rounded-full text-xs bg-dg-blue-50 text-dg-blue-700">this cohort</span>
-                                        )}
-                                        {(t.ict_live === false || t.green_live === false) && (
-                                          <span
-                                            className="px-2 py-0.5 rounded-full text-xs bg-dg-amber-100 text-dg-amber-700"
-                                            title="Waiting for GGGI approval, or sent back (rejected / changes requested). Counted once approved."
-                                          >
-                                            Not counted until approved{t.ict_live === false && t.green_live === false ? '' : t.ict_live === false ? ' (ICT)' : ' (Green)'}
-                                          </span>
-                                        )}
-                                        <span className={`px-2 py-0.5 rounded-full text-xs ${trainerDone(t) ? 'bg-dg-green-50 text-dg-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                                          {trainerDone(t) ? 'ToT complete' : 'ToT in progress'}
-                                        </span>
-                                        <span
-                                          className={`px-2 py-0.5 rounded-full text-xs ${t.in_person_ict === true ? 'bg-dg-green-50 text-dg-green-700' : 'bg-gray-100 text-gray-500'}`}
-                                          title="Entered by Betterworld"
-                                        >
-                                          ICT in-person: {t.in_person_ict === true ? 'done' : 'not yet'}
-                                        </span>
-                                        <span
-                                          className={`px-2 py-0.5 rounded-full text-xs ${t.in_person_green === true ? 'bg-dg-green-50 text-dg-green-700' : 'bg-gray-100 text-gray-500'}`}
-                                          title="Entered by Impact Lab"
-                                        >
-                                          Green in-person: {t.in_person_green === true ? 'done' : 'not yet'}
-                                        </span>
-                                        <span
-                                          className={`px-2 py-0.5 rounded-full text-xs ${lmsCount(t) === 4 ? 'bg-dg-green-50 text-dg-green-700' : 'bg-gray-100 text-gray-500'}`}
-                                          title="Online modules completed out of 4"
-                                        >
-                                          Online LMS: {lmsCount(t)} / 4
-                                        </span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                )}
-                              </td>
-                              <td className="py-2 pr-4 text-right tabular-nums">{cnt.enrolled}</td>
-                              <td className="py-2 text-right tabular-nums">{cnt.graduated}</td>
-                            </tr>
+                            <Fragment key={ce.id}>
+                              <tr onClick={toggle} className="border-b border-gray-100 cursor-pointer hover:bg-gray-50">
+                                <td className="py-2 pr-4">
+                                  <span className="text-gray-400 mr-2">{isOpen ? '▾' : '▸'}</span>
+                                  <Link to={`/centers/${ce.id}`} onClick={e => e.stopPropagation()} className="text-dg-blue-700 hover:underline">
+                                    {ce.name}
+                                  </Link>
+                                </td>
+                                <td className="py-2 pr-4 text-gray-700">
+                                  {trainers.length === 0 ? (
+                                    <span className="text-gray-400">Not assigned yet</span>
+                                  ) : (
+                                    <>
+                                      {trainers.length} trainer{trainers.length === 1 ? '' : 's'}
+                                      <span className="text-xs text-gray-500">
+                                        {' '}· {runningIds.length} ran this cohort · {trainers.filter(trainerDone).length} ToT complete
+                                      </span>
+                                    </>
+                                  )}
+                                </td>
+                                <td className="py-2 pr-4 text-right tabular-nums">{cnt.enrolled}</td>
+                                <td className="py-2 text-right tabular-nums">{cnt.graduated}</td>
+                              </tr>
+                              {isOpen && trainers.length > 0 && (
+                                <tr className="border-b border-gray-100 bg-gray-50/60">
+                                  <td colSpan={4} className="py-2 pl-8 pr-4">
+                                    <ul className="space-y-1">
+                                      {trainers.map(t => {
+                                        const ict = [t.in_person_ict, t.lms_ui_ux, t.lms_ios, t.lms_android].filter(v => v === true).length;
+                                        const green = [t.in_person_green, t.lms_green_business].filter(v => v === true).length;
+                                        return (
+                                          <li key={t.id} className="flex flex-wrap items-center gap-2 text-sm">
+                                            <span className="text-gray-900">{t.name}</span>
+                                            {runningIds.includes(t.id) && (
+                                              <span className="px-2 py-0.5 rounded-full text-xs bg-dg-blue-50 text-dg-blue-700">this cohort</span>
+                                            )}
+                                            <span className="text-xs text-gray-600 tabular-nums">ICT {ict}/4 · Green {green}/2</span>
+                                            {(t.ict_live === false || t.green_live === false) ? (
+                                              <span
+                                                className="px-2 py-0.5 rounded-full text-xs bg-dg-amber-100 text-dg-amber-700"
+                                                title="Waiting for GGGI approval, or sent back (rejected / changes requested). Counted once approved."
+                                              >
+                                                Not counted until approved{t.ict_live === false && t.green_live === false ? '' : t.ict_live === false ? ' (ICT)' : ' (Green)'}
+                                              </span>
+                                            ) : (
+                                              <span className={`px-2 py-0.5 rounded-full text-xs ${trainerDone(t) ? 'bg-dg-green-50 text-dg-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                {trainerDone(t) ? 'ToT complete' : 'ToT in progress'}
+                                              </span>
+                                            )}
+                                          </li>
+                                        );
+                                      })}
+                                    </ul>
+                                  </td>
+                                </tr>
+                              )}
+                            </Fragment>
                           );
                         })}
                     </tbody>
                     <tfoot>
-                      <tr className="border-t border-gray-200 font-semibold text-gray-900">
+                      <tr className="font-semibold text-gray-900">
                         <td className="py-2 pr-4">Total</td>
                         <td className="py-2 pr-4" />
                         <td className="py-2 pr-4 text-right tabular-nums">{cohortTotals.registered}</td>
