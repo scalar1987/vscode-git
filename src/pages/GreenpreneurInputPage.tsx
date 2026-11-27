@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { loadCenters, supabase } from '../lib/centersData';
 import { canSeeGreenpreneur, getProfile, getSession, onAuthChange, type Profile } from '../lib/auth';
+import { isEvidenceUrl } from '../lib/evidence';
 import {
   GP_EXTRAS,
   GP_ITEMS,
@@ -40,6 +41,7 @@ export function GreenpreneurInputPage() {
   const [data, setData] = useState<GpData>({ cohorts: [], progress: [], centreIds: [], pitch: [], editions: [] });
   // Checklist state for every cohort, keyed by cohort id, so all checklists can be shown at once
   const [checks, setChecks] = useState<Record<string, ChecklistState>>({});
+  const [evidenceDraft, setEvidenceDraft] = useState<Record<string, string>>({});
   const [newCohort, setNewCohort] = useState({ track: 'training' as GpTrack, name: '', start: '', end: '', enrolled: '' });
   const [msg, setMsg] = useState<string | null>(null);
   // Pitch competition feedback is shown next to the pitch form, where the user is working
@@ -196,8 +198,26 @@ export function GreenpreneurInputPage() {
     await reload();
   };
 
+  // Saves the evidence link of one cohort (required before its checklist can be saved)
+  const saveEvidence = async (c: GpCohort, value: string) => {
+    if (!supabase || !canEdit) return;
+    if (!isEvidenceUrl(value)) return setMsg('The evidence link must start with https://');
+    setBusy(true);
+    const { error } = await supabase.from('greenpreneur_cohorts').update({ evidence_url: value.trim() }).eq('id', c.id);
+    setBusy(false);
+    if (error) return setMsg(`Save failed: ${error.message}`);
+    setEvidenceDraft(prev => {
+      const next = { ...prev };
+      delete next[c.id];
+      return next;
+    });
+    setMsg('Evidence link saved');
+    await reload();
+  };
+
   const saveChecklist = async (c: GpCohort) => {
     if (!supabase || !canEdit) return;
+    if (!isEvidenceUrl(c.evidence_url)) return setMsg('Add the cohort evidence link (https://) before saving the checklist.');
     setBusy(true);
     const { data: { user } } = await supabase.auth.getUser();
     const now = new Date().toISOString();
@@ -422,6 +442,37 @@ export function GreenpreneurInputPage() {
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 className="text-base font-semibold text-gray-900">{c.name} · {TRACK_LABEL[c.track]} checklist</h2>
                 <span className="text-sm text-gray-600 tabular-nums">{done} / {GP_ITEMS[c.track].length} done</span>
+              </div>
+              <div className="mt-4 space-y-2">
+                <span className="text-sm font-semibold text-gray-900">Evidence link (required)</span>
+                <div className="flex flex-wrap items-center gap-3">
+                  <input
+                    type="url"
+                    disabled={!canEdit}
+                    value={evidenceDraft[c.id] ?? c.evidence_url ?? ''}
+                    onChange={e => setEvidenceDraft(prev => ({ ...prev, [c.id]: e.target.value }))}
+                    placeholder="https://… folder with the registration and completion proof"
+                    className="flex-1 min-w-[280px] px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+                  />
+                  {canEdit && evidenceDraft[c.id] !== undefined && (
+                    <button
+                      type="button"
+                      onClick={() => saveEvidence(c, evidenceDraft[c.id])}
+                      disabled={busy}
+                      className="px-3 py-2 rounded-lg bg-dg-blue-600 text-white text-sm font-medium hover:bg-dg-blue-700 disabled:opacity-60"
+                    >
+                      Save link
+                    </button>
+                  )}
+                  {!evidenceDraft[c.id] && isEvidenceUrl(c.evidence_url) && (
+                    <a href={c.evidence_url ?? undefined} target="_blank" rel="noreferrer" className="text-sm font-medium text-dg-green-700 hover:underline">
+                      Open folder ↗
+                    </a>
+                  )}
+                </div>
+                {!isEvidenceUrl(c.evidence_url) && (
+                  <p className="text-xs text-amber-700">No evidence link yet. Add one before saving this checklist.</p>
+                )}
               </div>
               <div className="mt-4 space-y-2">
                 {GP_ITEMS[c.track].map((label, i) => {

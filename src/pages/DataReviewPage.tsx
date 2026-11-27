@@ -94,6 +94,8 @@ export function DataReviewPage() {
   const [myHistory, setMyHistory] = useState<HistoryEntry[]>([]);
   const [scopeHistory, setScopeHistory] = useState<ScopeHistoryEntry[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  // Evidence folder link per advanced cohort (shown on its student-count items)
+  const [cohortLinks, setCohortLinks] = useState<Record<string, string | null>>({});
   const [filter, setFilter] = useState<Filter>('pending');
   const [programmeFilter, setProgrammeFilter] = useState<Programme | 'All'>('All');
   const [comments, setComments] = useState<Record<string, string>>({});
@@ -119,13 +121,13 @@ export function DataReviewPage() {
       gpCohorts, gpPitch, reviews,
     ] = await Promise.all([
       db.from('centres').select('id, name, status, updated_at'),
-      db.from('advanced_cohorts').select('id, name'),
+      db.from('advanced_cohorts').select('id, name, evidence_url'),
       db.from('advanced_trainers').select('id, centre_id, name, updated_at, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business'),
       db.from('advanced_cohort_centres').select('cohort_id, centre_id, enrolled, graduated, updated_at'),
       db.from('tot_trainees').select('centre_id, position, name, updated_at, in_person_ict, in_person_green, lms_word, lms_excel, lms_ppt, lms_green'),
       db.from('centre_training_basic').select('centre_id, year, enrolled, passed, updated_at'),
       db.from('centre_basic_modules').select('centre_id, module, passed, updated_at'),
-      db.from('greenpreneur_cohorts').select('id, name, track, enrolled, created_at, updated_at'),
+      db.from('greenpreneur_cohorts').select('id, name, track, enrolled, created_at, updated_at, evidence_url'),
       db.from('greenpreneur_pitch_results').select('id, edition, category, rank_no, laureate, prize_usd, created_at'),
       loadReviews(),
     ]);
@@ -182,6 +184,10 @@ export function DataReviewPage() {
 
     // Keep only units this approver can act on; unit tracks are declared in TRACKS_OF
     setItems(rows.filter(i => TRACKS_OF[i.table].includes(i.track)));
+    setCohortLinks(Object.fromEntries([
+      ...(advCohorts.data ?? []).map((c: any) => [c.id, c.evidence_url ?? null]),
+      ...(gpCohorts.data ?? []).map((c: any) => [c.id, c.evidence_url ?? null]),
+    ]));
     setLoaded(true);
   };
 
@@ -582,6 +588,17 @@ export function DataReviewPage() {
                     <p className="text-base font-semibold text-gray-900">{item.title}</p>
                     <p className="text-sm text-gray-600">{item.detail}</p>
                     <p className="text-xs text-gray-400 mt-1">Last changed {fmt(item.updatedAt)}</p>
+                    {(item.table === 'advanced_cohort_centres' || item.table === 'greenpreneur_cohorts') && (() => {
+                      // Advanced student counts are keyed "cohort|centre"; Greenpreneur cohorts are keyed by cohort id
+                      const link = cohortLinks[item.table === 'greenpreneur_cohorts' ? item.key : item.key.split('|')[0]];
+                      return link && /^https:\/\//i.test(link) ? (
+                        <a href={link} target="_blank" rel="noreferrer" className="inline-block mt-2 text-sm font-medium text-dg-green-700 hover:underline">
+                          Open evidence folder ↗
+                        </a>
+                      ) : (
+                        <p className="mt-2 text-xs text-amber-700">No evidence link on this cohort yet.</p>
+                      );
+                    })()}
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${STATE_STYLE[item.status]}`}>
                     {STATE_LABEL[item.status]}

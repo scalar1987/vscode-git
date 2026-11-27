@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { loadCenters, loadTotRecords, supabase } from '../lib/centersData';
 import { canEditSection, getProfile, getSession, isApproved, onAuthChange, type Profile } from '../lib/auth';
+import { isEvidenceUrl } from '../lib/evidence';
 import { ReviewChip, commentOf, loadReviews, stateOf, type ReviewInfo } from '../lib/reviews';
 import { useState, useEffect, Fragment } from 'react';
 import { motion } from 'framer-motion';
@@ -1562,6 +1563,96 @@ function EmptyInputNotice({ message }: { message: string }) {
   );
 }
 
+// Basic ToT evidence: one link per centre and track. Each partner sees and edits only its own track (GGGI sees both).
+const TOT_EVIDENCE_TRACKS = [
+  { key: 'ict', label: 'ICT evidence link (Betterworld)', section: 'tot_ict' },
+  { key: 'green', label: 'Green evidence link (Impact Lab)', section: 'tot_green' },
+] as const;
+
+function TotEvidenceFields({ centreId, profile }: { centreId: string; profile: Profile | null }) {
+  const [links, setLinks] = useState<Record<string, string | null>>({});
+  const [draft, setDraft] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const load = async () => {
+    if (!supabase) return;
+    const { data } = await supabase.from('centre_tot_evidence').select('track, evidence_url').eq('centre_id', centreId);
+    setLinks(Object.fromEntries((data ?? []).map((r: any) => [r.track, r.evidence_url ?? null])));
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [centreId]);
+
+  const save = async (track: string, value: string) => {
+    if (!supabase) return;
+    if (!isEvidenceUrl(value)) return setMsg('The evidence link must start with https://');
+    setBusy(true);
+    setMsg(null);
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase.from('centre_tot_evidence').upsert(
+      { centre_id: centreId, track, evidence_url: value.trim(), updated_at: new Date().toISOString(), updated_by: user?.id ?? null },
+      { onConflict: 'centre_id,track' },
+    );
+    setBusy(false);
+    if (error) return setMsg(`Save failed: ${error.message}`);
+    setDraft(prev => {
+      const next = { ...prev };
+      delete next[track];
+      return next;
+    });
+    setMsg('Evidence link saved');
+    await load();
+  };
+
+  const visible = TOT_EVIDENCE_TRACKS.filter(t => profile?.role === 'ggg' || canEditSection(profile, centreId, t.section));
+  if (visible.length === 0) return null;
+
+  return (
+    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-4 mb-6">
+      <h3 className="text-sm font-semibold text-gray-900">Basic ToT evidence</h3>
+      {visible.map(t => {
+        const mine = profile?.role === 'ggg' || canEditSection(profile, centreId, t.section);
+        const value = draft[t.key] ?? links[t.key] ?? '';
+        return (
+          <div key={t.key} className="space-y-2">
+            <span className="text-sm text-gray-700">{t.label}</span>
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                type="url"
+                disabled={!mine}
+                value={value}
+                onChange={e => setDraft(prev => ({ ...prev, [t.key]: e.target.value }))}
+                placeholder="https://… evidence folder for this centre"
+                className="flex-1 min-w-[280px] px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500 disabled:bg-gray-50"
+              />
+              {mine && draft[t.key] !== undefined && (
+                <button
+                  type="button"
+                  onClick={() => save(t.key, draft[t.key])}
+                  disabled={busy}
+                  className="px-3 py-2 rounded-lg bg-dg-blue-600 text-white text-sm font-medium hover:bg-dg-blue-700 disabled:opacity-60"
+                >
+                  Save link
+                </button>
+              )}
+              {!draft[t.key] && isEvidenceUrl(links[t.key]) && (
+                <a href={links[t.key] ?? undefined} target="_blank" rel="noreferrer" className="text-sm font-medium text-dg-green-700 hover:underline">
+                  Open folder ↗
+                </a>
+              )}
+            </div>
+            {!isEvidenceUrl(links[t.key]) && <p className="text-xs text-amber-700">No evidence link yet.</p>}
+          </div>
+        );
+      })}
+      {msg && <p className="text-sm text-gray-700">{msg}</p>}
+    </div>
+  );
+}
+
 export function CenterDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -1948,6 +2039,7 @@ export function CenterDetailPage() {
 
           {/* Forms stay mounted so unsaved input survives switching sections */}
           <div className={effectiveSection === 'tot' ? '' : 'hidden'}>
+            <TotEvidenceFields centreId={center.id} profile={profile} />
             {center.center_coordinators && center.center_coordinators.length > 0 ? (
               <ToTInputForm
                 key={totBasic.length}

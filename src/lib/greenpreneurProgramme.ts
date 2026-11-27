@@ -47,6 +47,7 @@ export interface GpCohort {
   start_date: string | null;
   end_date: string | null;
   enrolled: number;
+  evidence_url: string | null; // folder with the proof for this cohort (required before the checklist is saved)
 }
 
 // Extra fields for session-type items (keyed by track and item index)
@@ -103,7 +104,7 @@ export interface GpData {
 export async function loadGreenpreneurProgramme(): Promise<GpData> {
   if (!supabase) return { cohorts: [], progress: [], centreIds: [], pitch: [], editions: [] };
   const [c, p, l, pr, ed] = await Promise.all([
-    supabase.from('greenpreneur_cohorts').select('id, track, name, start_date, end_date, enrolled').order('start_date', { ascending: true }),
+    supabase.from('greenpreneur_cohorts').select('id, track, name, start_date, end_date, enrolled, evidence_url').order('start_date', { ascending: true }),
     supabase.from('greenpreneur_cohort_progress').select('cohort_id, item_no, completed, completed_date, completed_at, sessions, note, mentors'),
     supabase.from('greenpreneur_centres').select('centre_id'),
     supabase.from('greenpreneur_pitch_results').select('id, edition, category, rank_no, laureate, prize_usd').order('edition', { ascending: false }).order('rank_no', { ascending: true }),
