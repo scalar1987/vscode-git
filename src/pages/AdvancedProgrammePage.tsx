@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
@@ -145,6 +145,9 @@ interface TrainerRow {
   lms_ios: boolean | null;
   lms_android: boolean | null;
   lms_green_business: boolean | null;
+  // false when a partner's latest ICT / Green update is not approved yet (values above stay at the approved state)
+  ict_live?: boolean | null;
+  green_live?: boolean | null;
 }
 
 const LMS_KEYS = ['lms_ui_ux', 'lms_ios', 'lms_android', 'lms_green_business'] as const;
@@ -219,6 +222,11 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   });
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  // Where the message belongs: `${cohortId}|venue`, `${cohortId}|evidence`, `${cohortId}|checklist`, or null (page bottom)
+  const [msgFor, setMsgFor] = useState<string | null>(null);
+  // Cohorts with unsaved edits: a reload keeps the local values for these instead of overwriting them
+  const dirtyProgress = useRef(new Set<string>());
+  const dirtyVenue = useRef(new Set<string>());
   // Advanced ToT evidence links, one per partner organisation
   const [orgEvidence, setOrgEvidence] = useState<Record<string, string | null>>({});
   const [orgDraft, setOrgDraft] = useState<Record<string, string>>({});
@@ -283,7 +291,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
       supabase.from('centres').select('id, name').order('sort_order'),
       supabase.from('advanced_cohort_centres').select('cohort_id, centre_id, enrolled, graduated'),
       // Progress counts use approved values only (advanced_trainers_live)
-      supabase.from('advanced_trainers_live').select('id, centre_id, name, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business').order('name'),
+      supabase.from('advanced_trainers_live').select('id, centre_id, name, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business, ict_live, green_live').order('name'),
       supabase.from('advanced_cohort_trainers').select('cohort_id, centre_id, trainer_id'),
       supabase.from('org_evidence').select('org, evidence_url'),
     ]);
@@ -296,21 +304,48 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
       cmap[r.cohort_id] = { ...(cmap[r.cohort_id] ?? {}), [r.centre_id]: { enrolled: r.enrolled ?? 0, graduated: r.graduated ?? 0 } };
     });
     setVenues(vmap);
-    setVenueCounts(cmap);
-    setAllTrainers((tr.data ?? []) as TrainerRow[]);
+    // Unsaved counts of other cohorts survive the reload (only for centres still linked)
+    setVenueCounts(prev => {
+      const next = { ...cmap };
+      dirtyVenue.current.forEach(cid => {
+        if (!next[cid]) return;
+        next[cid] = Object.fromEntries(Object.entries(next[cid]).map(([ce, v]) => [ce, prev[cid]?.[ce] ?? v]));
+      });
+      return next;
+    });
+    const trainerList = (tr.data ?? []) as TrainerRow[];
+    const trainerIds = new Set(trainerList.map(t => t.id));
+    setAllTrainers(trainerList);
     const tmap: Record<string, string[]> = {};
     (ct.data ?? []).forEach((r: any) => {
       const k = `${r.cohort_id}|${r.centre_id}`;
       tmap[k] = [...(tmap[k] ?? []), r.trainer_id];
     });
-    setVenueTrainers(tmap);
+    setVenueTrainers(prev => {
+      const next = { ...tmap };
+      dirtyVenue.current.forEach(cid =>
+        (vmap[cid] ?? []).forEach(ce => {
+          const k = `${cid}|${ce}`;
+          // drop trainers that were removed meanwhile
+          if (prev[k]) next[k] = prev[k].filter(id => trainerIds.has(id));
+        }),
+      );
+      return next;
+    });
     setReviews(await loadReviews());
     const list = (c.data ?? []) as Cohort[];
     setCohorts(list);
     setSelected(prev => (prev && list.some(x => x.id === prev) ? prev : list[0]?.id ?? ''));
     const map: Record<string, ProgressRow> = {};
     (p.data ?? []).forEach((r: any) => (map[itemKey(r.cohort_id, r.track, r.month_no, r.item_no)] = r));
-    setRows(map);
+    // Unsaved checklist ticks survive the reload
+    setRows(prev => {
+      const next = { ...map };
+      Object.entries(prev).forEach(([k, r]) => {
+        if (dirtyProgress.current.has(r.cohort_id)) next[k] = r;
+      });
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -419,6 +454,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
 
   const setItem = (cohortId: string, track: Track, month: number, item: number, patch: Partial<ProgressRow>) => {
     const key = itemKey(cohortId, track, month, item);
+    dirtyProgress.current.add(cohortId);
     setRows(prev => {
       const cur = prev[key];
       return {
@@ -441,19 +477,26 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   // Ticking a centre saves straight away (no separate save step); only that centre's link changes
   const toggleVenue = async (cohortId: string, centreId: string) => {
     if (!supabase) return;
+    const db = supabase;
     const on = (venues[cohortId] ?? []).includes(centreId);
+    setMsgFor(`${cohortId}|venue`);
     setSaveMsg('Saving…');
     const res = on
-      ? await supabase.from('advanced_cohort_centres').delete().eq('cohort_id', cohortId).eq('centre_id', centreId)
-      : await supabase.from('advanced_cohort_centres').insert({ cohort_id: cohortId, centre_id: centreId });
+      ? await db.from('advanced_cohort_centres').delete().eq('cohort_id', cohortId).eq('centre_id', centreId)
+      : await db.from('advanced_cohort_centres').insert({ cohort_id: cohortId, centre_id: centreId });
     if (res.error) return setSaveMsg(`Save failed: ${res.error.message}`);
-    // Keep the centre's students-by-year in step with its cohorts (this centre is now linked or unlinked)
+    // Keep the cohort total (sum of its centres) and the centre's students-by-year in step with the new links
+    const { data: left } = await db.from('advanced_cohort_centres').select('enrolled').eq('cohort_id', cohortId);
+    const total = (left ?? []).reduce((n: number, r: any) => n + (r.enrolled ?? 0), 0);
+    const totalSave = await db.from('advanced_cohorts').update({ enrolled: total }).eq('id', cohortId);
     const yearErr = await syncCentreYears([centreId]);
     await loadAll();
-    setSaveMsg(yearErr ? `Saved, but students by year failed: ${yearErr.message}` : 'Saved');
+    const err = totalSave.error ?? yearErr;
+    setSaveMsg(err ? `Saved, but totals failed: ${err.message}` : 'Saved');
   };
 
-  const setVenueCount = (cohortId: string, centreId: string, patch: { enrolled?: number; graduated?: number }) =>
+  const setVenueCount = (cohortId: string, centreId: string, patch: { enrolled?: number; graduated?: number }) => {
+    dirtyVenue.current.add(cohortId);
     setVenueCounts(prev => {
       const cur = prev[cohortId]?.[centreId] ?? { enrolled: 0, graduated: 0 };
       return {
@@ -464,13 +507,16 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
         },
       };
     });
+  };
 
-  const toggleVenueTrainer = (cohortId: string, centreId: string, trainerId: string) =>
+  const toggleVenueTrainer = (cohortId: string, centreId: string, trainerId: string) => {
+    dirtyVenue.current.add(cohortId);
     setVenueTrainers(prev => {
       const k = `${cohortId}|${centreId}`;
       const cur = prev[k] ?? [];
       return { ...prev, [k]: cur.includes(trainerId) ? cur.filter(x => x !== trainerId) : [...cur, trainerId] };
     });
+  };
 
   // Students by year (2025-2027) per centre = sum over its cohorts, by the year each cohort starts.
   // Written to centre_training_advanced so the centre pages and national totals stay in step.
@@ -514,6 +560,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const saveVenueDetails = async (cohortId: string) => {
     if (!supabase) return;
     const cohort = cohorts.find(x => x.id === cohortId);
+    setMsgFor(`${cohortId}|venue`);
     if (!isEvidenceUrl(cohort?.evidence_url)) {
       return setSaveMsg('Add the cohort evidence link (https) before saving centre details.');
     }
@@ -542,13 +589,17 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
     const yearErr = await syncCentreYears(linked);
     setSaving(false);
     const err = updates.find(u => u.error)?.error ?? del.error ?? ins.error ?? totalSave.error ?? yearErr;
-    if (!err) await loadAll();
+    if (!err) {
+      dirtyVenue.current.delete(cohortId);
+      await loadAll();
+    }
     setSaveMsg(err ? `Save failed: ${err.message}` : 'Saved');
   };
 
   // Saves the evidence link of one cohort (required before its centre details can be saved)
   const saveEvidence = async (cohortId: string, value: string) => {
     if (!supabase) return;
+    setMsgFor(`${cohortId}|evidence`);
     if (!isEvidenceUrl(value)) return setSaveMsg('The evidence link must start with https://');
     setSaving(true);
     const { error } = await supabase.from('advanced_cohorts').update({ evidence_url: value.trim() }).eq('id', cohortId);
@@ -559,13 +610,15 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
       delete next[cohortId];
       return next;
     });
-    await loadAll();
+    // Update this cohort only, so unsaved counts and ticks elsewhere on the page are kept
+    setCohorts(prev => prev.map(x => (x.id === cohortId ? { ...x, evidence_url: value.trim() } : x)));
     setSaveMsg('Evidence link saved');
   };
 
   // Saves the advanced ToT evidence link of one partner organisation
   const saveOrgEvidence = async (org: string, value: string) => {
     if (!supabase) return;
+    setMsgFor(null);
     if (!isEvidenceUrl(value)) return setSaveMsg('The evidence link must start with https://');
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
@@ -586,6 +639,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
 
   const addCohort = async () => {
     if (!supabase) return;
+    setMsgFor(null);
     if (!newName.trim()) return setSaveMsg('Enter a cohort name.');
     setSaving(true);
     const { data, error } = await supabase
@@ -611,6 +665,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   // Deleting a cohort also removes its progress rows and venue links (ON DELETE CASCADE)
   const deleteCohort = async () => {
     if (!supabase || !current) return;
+    setMsgFor(null);
     setDeleting(true);
     const { data, error } = await supabase.from('advanced_cohorts').delete().eq('id', current.id).select('id');
     setDeleting(false);
@@ -625,6 +680,22 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
 
   const saveProgress = async (cohort: Cohort) => {
     if (!supabase) return;
+    setMsgFor(`${cohort.id}|checklist`);
+    // Dated items (ceremonies, coaching, job-readiness…) only count as done with a date: do not save them silently as not done
+    const missing: string[] = [];
+    (['ict', 'green'] as Track[]).forEach(track =>
+      CURRICULUM[track].forEach((items, m) =>
+        items.forEach((label, i) => {
+          const r = rows[itemKey(cohort.id, track, m + 1, i)];
+          if (needsDate(label) && r?.completed && !r.completed_date) missing.push(label);
+        }),
+      ),
+    );
+    if (missing.length) {
+      return setSaveMsg(
+        `Add the date for ${missing.length} ticked item${missing.length > 1 ? 's' : ''} before saving: ${missing.slice(0, 3).join('; ')}${missing.length > 3 ? ` and ${missing.length - 3} more` : ''}.`,
+      );
+    }
     setSaving(true);
     setSaveMsg(null);
     const { data: { user } } = await supabase.auth.getUser();
@@ -650,6 +721,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
     );
     const { error } = await supabase.from('advanced_cohort_progress').upsert(upserts);
     setSaving(false);
+    if (!error) dirtyProgress.current.delete(cohort.id);
     setSaveMsg(error ? `Save failed: ${error.message}` : 'Saved');
   };
 
@@ -838,6 +910,8 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                   trainers={centreTrainers}
                   advancedByYear={{}}
                   reviews={reviews}
+                  // New, renamed or removed trainers show up at once in the cohort trainer lists and the search
+                  onSaved={() => loadAll()}
                 />
               </>
             )}
@@ -1032,6 +1106,14 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                                         <span className="text-gray-900">{t.name}</span>
                                         {runningIds.includes(t.id) && (
                                           <span className="px-2 py-0.5 rounded-full text-xs bg-dg-blue-50 text-dg-blue-700">this cohort</span>
+                                        )}
+                                        {(t.ict_live === false || t.green_live === false) && (
+                                          <span
+                                            className="px-2 py-0.5 rounded-full text-xs bg-dg-amber-100 text-dg-amber-700"
+                                            title="The latest partner update is shown here once GGGI approves it"
+                                          >
+                                            Update not yet approved{t.ict_live === false && t.green_live === false ? '' : t.ict_live === false ? ' (ICT)' : ' (Green)'}
+                                          </span>
                                         )}
                                         <span className={`px-2 py-0.5 rounded-full text-xs ${trainerDone(t) ? 'bg-dg-green-50 text-dg-green-700' : 'bg-gray-100 text-gray-600'}`}>
                                           {trainerDone(t) ? 'ToT complete' : 'ToT in progress'}
@@ -1285,6 +1367,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                   {!isEvidenceUrl(c.evidence_url) && (
                     <p className="text-xs text-amber-700">No evidence link yet. Add one before saving the centre details below.</p>
                   )}
+                  {msgFor === `${c.id}|evidence` && saveMsg && <p className="text-sm text-gray-700">{saveMsg}</p>}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
@@ -1329,6 +1412,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                         </li>
                       ))}
                   </ol>
+                  {venueIds.length === 0 && msgFor === `${c.id}|venue` && saveMsg && <p className="w-full text-sm text-gray-700">{saveMsg}</p>}
                 </div>
 
                 {venueIds.length > 0 && (
@@ -1419,6 +1503,7 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                         {saving ? 'Saving…' : 'Save centre details'}
                       </button>
                     )}
+                    {msgFor === `${c.id}|venue` && saveMsg && <p className="text-sm text-gray-700">{saveMsg}</p>}
                   </div>
                 )}
 
@@ -1457,6 +1542,9 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                                 className="px-2 py-1 text-sm border border-gray-300 rounded-md disabled:bg-gray-100"
                               />
                             )}
+                            {needsDate(label) && done && !r?.completed_date && (
+                              <span className="text-xs text-amber-700">Add the date: it counts as done only with a date</span>
+                            )}
                           </div>
                         );
                       })}
@@ -1473,11 +1561,12 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                   >
                     {saving ? 'Saving…' : 'Save checklist'}
                   </button>
+                  {msgFor === `${c.id}|checklist` && saveMsg && <p className="text-sm text-gray-700">{saveMsg}</p>}
                 </div>
               </div>
             );
           })}
-        {mode === 'input' && saveMsg && <p className="text-sm text-gray-700">{saveMsg}</p>}
+        {mode === 'input' && saveMsg && !msgFor && <p className="text-sm text-gray-700">{saveMsg}</p>}
         {mode === 'input' && current && !canEdit && (
           <p className="text-sm text-gray-500">Sign in with a DigiFemme or GGGI account to update progress.</p>
         )}

@@ -728,7 +728,9 @@ export function AdvancedInputForm({
   advancedByYear,
   reviews,
   highlightId = null,
+  onSaved,
 }: {
+  onSaved?: () => void; // called after a successful save so the parent page can refresh
   mode: 'trainers' | 'students';
   centreId: string;
   canSave: boolean;
@@ -827,7 +829,10 @@ export function AdvancedInputForm({
       : [supabase.from('centre_training_advanced').upsert(yearRows)]);
     setSaving(false);
     const error = results.find(r => r.error)?.error;
-    if (!error) setRemovedIds([]);
+    if (!error) {
+      setRemovedIds([]);
+      onSaved?.();
+    }
     setSaveMsg(error ? `Save failed: ${error.message}` : 'Saved to database');
   };
 
