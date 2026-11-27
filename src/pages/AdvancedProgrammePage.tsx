@@ -4,6 +4,7 @@ import { ArrowLeft, Check } from 'lucide-react';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { supabase } from '../lib/centersData';
 import { canEditSection, canSeeAdvancedInput, getProfile, getSession, isApproved, onAuthChange, type Profile } from '../lib/auth';
+import { isEvidenceUrl } from '../lib/evidence';
 import { AdvancedInputForm } from './CenterDetailPage';
 import { ReviewChip, commentOf, loadReviews, stateOf, type ReviewInfo } from '../lib/reviews';
 
@@ -120,6 +121,9 @@ const CURRICULUM: Record<Track, string[][]> = {
 };
 
 
+// Partner organisations that each have an advanced ToT evidence link
+const ORG_ORDER = ['DigiFemme', 'Impact Lab', 'Betterworld'];
+
 interface Cohort {
   id: string;
   name: string;
@@ -127,7 +131,9 @@ interface Cohort {
   start_date: string | null; // YYYY-MM-DD
   end_date: string | null;
   enrolled: number;
+  evidence_url: string | null; // link to the folder with the proof for this cohort (required)
 }
+
 
 interface TrainerRow {
   id: string;
@@ -206,12 +212,17 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   const [venueTrainers, setVenueTrainers] = useState<Record<string, string[]>>({});
   const [newName, setNewName] = useState('');
   const [newEnd, setNewEnd] = useState('');
+  const [evidenceDraft, setEvidenceDraft] = useState<Record<string, string>>({});
   const [newStart, setNewStart] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   });
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  // Advanced ToT evidence links, one per partner organisation
+  const [orgEvidence, setOrgEvidence] = useState<Record<string, string | null>>({});
+  const [orgDraft, setOrgDraft] = useState<Record<string, string>>({});
+  const [myOrg, setMyOrg] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteName, setDeleteName] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -255,7 +266,10 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
 
   useEffect(() => {
     const loadProfile = () => {
-      getSession().then(s => (s ? getProfile() : null)).then(p => setProfile(p));
+      getSession().then(s => {
+        setMyOrg(((s?.user.user_metadata as { org?: string } | undefined)?.org) ?? null);
+        return s ? getProfile() : null;
+      }).then(p => setProfile(p));
     };
     loadProfile();
     return onAuthChange(loadProfile);
@@ -263,15 +277,17 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
 
   const loadAll = async () => {
     if (!supabase) return;
-    const [c, p, ce, v, tr, ct] = await Promise.all([
-      supabase.from('advanced_cohorts').select('id, name, start_month, start_date, end_date, enrolled').order('start_month', { ascending: false }),
+    const [c, p, ce, v, tr, ct, oe] = await Promise.all([
+      supabase.from('advanced_cohorts').select('id, name, start_month, start_date, end_date, enrolled, evidence_url').order('start_month', { ascending: false }),
       supabase.from('advanced_cohort_progress').select('cohort_id, track, month_no, item_no, completed, completed_date, completed_at'),
       supabase.from('centres').select('id, name').order('sort_order'),
       supabase.from('advanced_cohort_centres').select('cohort_id, centre_id, enrolled, graduated'),
       // Progress counts use approved values only (advanced_trainers_live)
       supabase.from('advanced_trainers_live').select('id, centre_id, name, in_person_ict, in_person_green, lms_ui_ux, lms_ios, lms_android, lms_green_business').order('name'),
       supabase.from('advanced_cohort_trainers').select('cohort_id, centre_id, trainer_id'),
+      supabase.from('org_evidence').select('org, evidence_url'),
     ]);
+    setOrgEvidence(Object.fromEntries((oe.data ?? []).map((r: any) => [r.org, r.evidence_url ?? null])));
     setCentres((ce.data ?? []) as Array<{ id: string; name: string }>);
     const vmap: Record<string, string[]> = {};
     const cmap: Record<string, Record<string, { enrolled: number; graduated: number }>> = {};
@@ -497,6 +513,10 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
   // Saves registered / graduated counts and the trainers for every centre linked to this cohort
   const saveVenueDetails = async (cohortId: string) => {
     if (!supabase) return;
+    const cohort = cohorts.find(x => x.id === cohortId);
+    if (!isEvidenceUrl(cohort?.evidence_url)) {
+      return setSaveMsg('Add the cohort evidence link (https) before saving centre details.');
+    }
     setSaving(true);
     setSaveMsg(null);
     const db = supabase;
@@ -524,6 +544,44 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
     const err = updates.find(u => u.error)?.error ?? del.error ?? ins.error ?? totalSave.error ?? yearErr;
     if (!err) await loadAll();
     setSaveMsg(err ? `Save failed: ${err.message}` : 'Saved');
+  };
+
+  // Saves the evidence link of one cohort (required before its centre details can be saved)
+  const saveEvidence = async (cohortId: string, value: string) => {
+    if (!supabase) return;
+    if (!isEvidenceUrl(value)) return setSaveMsg('The evidence link must start with https://');
+    setSaving(true);
+    const { error } = await supabase.from('advanced_cohorts').update({ evidence_url: value.trim() }).eq('id', cohortId);
+    setSaving(false);
+    if (error) return setSaveMsg(`Save failed: ${error.message}`);
+    setEvidenceDraft(prev => {
+      const next = { ...prev };
+      delete next[cohortId];
+      return next;
+    });
+    await loadAll();
+    setSaveMsg('Evidence link saved');
+  };
+
+  // Saves the advanced ToT evidence link of one partner organisation
+  const saveOrgEvidence = async (org: string, value: string) => {
+    if (!supabase) return;
+    if (!isEvidenceUrl(value)) return setSaveMsg('The evidence link must start with https://');
+    setSaving(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from('org_evidence')
+      .update({ evidence_url: value.trim(), updated_at: new Date().toISOString(), updated_by: user?.id ?? null })
+      .eq('org', org);
+    setSaving(false);
+    if (error) return setSaveMsg(`Save failed: ${error.message}`);
+    setOrgDraft(prev => {
+      const next = { ...prev };
+      delete next[org];
+      return next;
+    });
+    await loadAll();
+    setSaveMsg(`${org} evidence link saved`);
   };
 
   const addCohort = async () => {
@@ -627,6 +685,50 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
             </Link>
           </div>
         </div>
+
+        {/* Evidence for advanced ToT: one link per partner organisation */}
+        {mode === 'input' && (
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-4">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">Advanced ToT evidence</h2>
+              <p className="text-sm text-gray-600">One evidence folder link per partner organisation.</p>
+            </div>
+            {ORG_ORDER.filter(org => profile?.role === 'ggg' || myOrg === org).map(org => {
+              const mine = myOrg === org || profile?.role === 'ggg';
+              const value = orgDraft[org] ?? orgEvidence[org] ?? '';
+              return (
+                <div key={org} className="space-y-2">
+                  <span className="text-sm font-semibold text-gray-900">{org} evidence link</span>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <input
+                      type="url"
+                      disabled={!mine}
+                      value={value}
+                      onChange={e => setOrgDraft(prev => ({ ...prev, [org]: e.target.value }))}
+                      placeholder="https://… evidence folder"
+                      className="flex-1 min-w-[280px] px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500 disabled:bg-gray-50"
+                    />
+                    {mine && orgDraft[org] !== undefined && (
+                      <button
+                        type="button"
+                        onClick={() => saveOrgEvidence(org, orgDraft[org])}
+                        disabled={saving}
+                        className="px-3 py-2 rounded-lg bg-dg-blue-600 text-white text-sm font-medium hover:bg-dg-blue-700 disabled:opacity-60"
+                      >
+                        Save link
+                      </button>
+                    )}
+                    {!orgDraft[org] && isEvidenceUrl(orgEvidence[org]) && (
+                      <a href={orgEvidence[org] ?? undefined} target="_blank" rel="noreferrer" className="text-sm font-medium text-dg-green-700 hover:underline">
+                        Open folder ↗
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Centre trainers (ToT) input, then the cohort list */}
         {mode === 'input' && (
@@ -1151,6 +1253,38 @@ export function AdvancedProgrammePage({ mode = 'progress' }: { mode?: 'progress'
                       </button>
                     )}
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <span className="text-sm font-semibold text-gray-900">Evidence link (required)</span>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <input
+                      type="url"
+                      disabled={!canEdit}
+                      value={evidenceDraft[c.id] ?? c.evidence_url ?? ''}
+                      onChange={e => setEvidenceDraft(prev => ({ ...prev, [c.id]: e.target.value }))}
+                      placeholder="https://… folder with the registration and graduation proof"
+                      className="flex-1 min-w-[280px] px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500"
+                    />
+                    {canEdit && evidenceDraft[c.id] !== undefined && (
+                      <button
+                        type="button"
+                        onClick={() => saveEvidence(c.id, evidenceDraft[c.id])}
+                        disabled={saving}
+                        className="px-3 py-2 rounded-lg bg-dg-blue-600 text-white text-sm font-medium hover:bg-dg-blue-700 disabled:opacity-60"
+                      >
+                        Save link
+                      </button>
+                    )}
+                    {!evidenceDraft[c.id] && isEvidenceUrl(c.evidence_url) && (
+                      <a href={c.evidence_url ?? undefined} target="_blank" rel="noreferrer" className="text-sm font-medium text-dg-green-700 hover:underline">
+                        Open folder ↗
+                      </a>
+                    )}
+                  </div>
+                  {!isEvidenceUrl(c.evidence_url) && (
+                    <p className="text-xs text-amber-700">No evidence link yet. Add one before saving the centre details below.</p>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
