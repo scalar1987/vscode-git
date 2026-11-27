@@ -1,0 +1,4 @@
+-- Migration 20261105135323 · advanced_cohorts_ggg_only_delete
+-- Exported from the Supabase migration history (applied in production).
+
+drop policy if exists "write cohorts" on advanced_cohorts; create policy "insert update cohorts" on advanced_cohorts for insert with check (exists (select 1 from profiles p where p.user_id = auth.uid() and (p.role = 'ggg' or (p.role = 'partner' and 'advanced' = any (p.section_access))))); create policy "update cohorts" on advanced_cohorts for update using (exists (select 1 from profiles p where p.user_id = auth.uid() and (p.role = 'ggg' or (p.role = 'partner' and 'advanced' = any (p.section_access))))) with check (exists (select 1 from profiles p where p.user_id = auth.uid() and (p.role = 'ggg' or (p.role = 'partner' and 'advanced' = any (p.section_access))))); create policy "delete cohorts ggg only" on advanced_cohorts for delete using (exists (select 1 from profiles p where p.user_id = auth.uid() and p.role = 'ggg'));
