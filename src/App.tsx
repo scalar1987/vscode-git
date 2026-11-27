@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage'
 import { SignUpPage } from './pages/SignUpPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { AdvancedProgrammePage } from './pages/AdvancedProgrammePage'
+import { BasicTotPage } from './pages/BasicTotPage'
 import { DataReviewPage } from './pages/DataReviewPage'
 import { GreenpreneurInputPage } from './pages/GreenpreneurInputPage'
 import { GreenpreneurProgressPage } from './pages/GreenpreneurProgressPage'
@@ -23,6 +24,8 @@ function App() {
         <Route path="centers" element={<CentersOverviewPage />} />
         <Route path="advanced-programme" element={<AdvancedProgrammePage />} />
         <Route path="advanced-programme/input" element={<AdvancedProgrammePage mode="input" />} />
+        <Route path="basic-tot" element={<BasicTotPage />} />
+        <Route path="basic-tot/input" element={<BasicTotPage mode="input" />} />
         <Route path="data-review" element={<DataReviewPage />} />
         <Route path="greenpreneur-progress" element={<GreenpreneurProgressPage />} />
         <Route path="greenpreneur-input" element={<GreenpreneurInputPage />} />

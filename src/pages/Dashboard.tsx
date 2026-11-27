@@ -340,6 +340,12 @@ export function Dashboard() {
             <div className="flex flex-wrap items-center gap-3">
               <ViewToggle value={flowView} onChange={setFlowView} />
               <Link
+                to="/basic-tot"
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
+              >
+                Basic ToT progress
+              </Link>
+              <Link
                 to="/advanced-programme"
                 className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium transition-colors"
               >

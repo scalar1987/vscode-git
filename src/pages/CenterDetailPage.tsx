@@ -1,8 +1,6 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { loadCenters, loadTotRecords, supabase } from '../lib/centersData';
 import { canEditSection, getProfile, getSession, isApproved, onAuthChange, type Profile } from '../lib/auth';
-import { isEvidenceUrl } from '../lib/evidence';
-import { ReviewChip, commentOf, loadReviews, stateOf, type ReviewInfo } from '../lib/reviews';
 import { useState, useEffect, Fragment } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -11,8 +9,6 @@ import {
   GraduationCap,
   Briefcase,
   MapPin,
-  Users,
-  Monitor,
   CheckCircle2,
   Clock,
   Phone,
@@ -52,250 +48,6 @@ const TYPE_ICONS: Record<string, React.ReactNode> = {
   'Mairie': <Briefcase className="w-8 h-8" />,
 };
 
-type TrainerModule = 'word' | 'excel' | 'ppt' | 'green';
-const TRAINER_MODULES: Array<{ key: TrainerModule; label: string }> = [
-  { key: 'word', label: 'Microsoft Word' },
-  { key: 'excel', label: 'Microsoft Excel' },
-  { key: 'ppt', label: 'Microsoft PowerPoint' },
-  { key: 'green', label: 'Green Practices' },
-];
-
-// One trainer's ToT: in-person ICT (Betterworld), in-person Green (Impact Lab), and online LMS (one flag per module)
-type TrainerTot = {
-  in_person_ict: boolean;
-  in_person_ict_date: string;
-  in_person_green: boolean;
-  in_person_green_date: string;
-  lms: Record<TrainerModule, boolean>;
-};
-type TrainerWithToT = { name: string; phone: string; email: string };
-
-// Online LMS is complete only when all four modules are complete
-const lmsComplete = (t: TrainerTot) => TRAINER_MODULES.every(m => t.lms[m.key]);
-
-function ToTInputForm({
-  centreId,
-  canSave,
-  coordinators,
-  records,
-  reviews,
-}: {
-  centreId: string;
-  canSave: boolean;
-  coordinators: TrainerWithToT[];
-  records: TotBasicRecord[];
-  reviews?: Map<string, ReviewInfo>;
-}) {
-  // Start from the saved flags (matched by position within the centre)
-  const [entries, setEntries] = useState<TrainerTot[]>(() =>
-    coordinators.map((_, i) => {
-      const r = records[i];
-      return {
-        in_person_ict: r?.in_person_ict === true,
-        in_person_ict_date: r?.in_person_ict_date ?? '',
-        in_person_green: r?.in_person_green === true,
-        in_person_green_date: r?.in_person_green_date ?? '',
-        lms: {
-          word: r?.lms_word === true,
-          excel: r?.lms_excel === true,
-          ppt: r?.lms_ppt === true,
-          green: r?.lms_green === true,
-        },
-      };
-    }),
-  );
-  const [copied, setCopied] = useState(false);
-  const [saveMsg, setSaveMsg] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-
-  const saveToDatabase = async () => {
-    if (!supabase) return setSaveMsg('Supabase is not configured');
-    setSaving(true);
-    setSaveMsg(null);
-    const { data: { user } } = await supabase.auth.getUser();
-    const rows = coordinators.map((c, i) => ({
-      centre_id: centreId,
-      position: i + 1,
-      name: c.name,
-      in_person_ict: entries[i].in_person_ict,
-      in_person_ict_date: entries[i].in_person_ict && entries[i].in_person_ict_date ? entries[i].in_person_ict_date : null,
-      in_person_green: entries[i].in_person_green,
-      in_person_green_date: entries[i].in_person_green && entries[i].in_person_green_date ? entries[i].in_person_green_date : null,
-      lms_word: entries[i].lms.word,
-      lms_excel: entries[i].lms.excel,
-      lms_ppt: entries[i].lms.ppt,
-      lms_green: entries[i].lms.green,
-      updated_at: new Date().toISOString(),
-      updated_by: user?.id ?? null,
-    }));
-    const { error } = await supabase.from('tot_trainees').upsert(rows);
-    setSaving(false);
-    setSaveMsg(error ? `Save failed: ${error.message}` : 'Saved to database');
-  };
-
-  const setInPerson = (index: number, track: 'ict' | 'green', value: boolean) => {
-    setEntries(prev => prev.map((e, i) => (i === index ? { ...e, [`in_person_${track}`]: value } : e)));
-    setCopied(false);
-  };
-  const setInPersonDate = (index: number, track: 'ict' | 'green', value: string) => {
-    setEntries(prev => prev.map((e, i) => (i === index ? { ...e, [`in_person_${track}_date`]: value } : e)));
-    setCopied(false);
-  };
-  const setModule = (index: number, key: TrainerModule, value: boolean) => {
-    setEntries(prev => prev.map((e, i) => (i === index ? { ...e, lms: { ...e.lms, [key]: value } } : e)));
-    setCopied(false);
-  };
-
-  const onlineDone = entries.filter(lmsComplete).length;
-  const ictDone = entries.filter(e => e.in_person_ict).length;
-  const greenDone = entries.filter(e => e.in_person_green).length;
-
-  const copyJson = async () => {
-    const payload = coordinators.map((c, i) => ({
-      name: c.name,
-      phone: c.phone,
-      email: c.email,
-      in_person_ict: entries[i].in_person_ict,
-      in_person_green: entries[i].in_person_green,
-      lms: entries[i].lms,
-      lms_complete: lmsComplete(entries[i]),
-    }));
-    try {
-      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-      setCopied(true);
-    } catch (error) {
-      console.error('Clipboard write failed:', error);
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">105 trainers ToT completion</h3>
-            <p className="text-sm text-gray-600">
-              Online LMS is complete when all four modules are done. In-person is tracked separately.
-            </p>
-          </div>
-          <div className="flex gap-3 text-sm">
-            <span className="px-3 py-1 rounded-full bg-dg-blue-50 text-dg-blue-700">
-              Online LMS {onlineDone}/{coordinators.length}
-            </span>
-            <span className="px-3 py-1 rounded-full bg-dg-green-50 text-dg-green-700">
-              In-person ICT {ictDone}/{coordinators.length}
-            </span>
-            <span className="px-3 py-1 rounded-full bg-dg-green-50 text-dg-green-700">
-              In-person Green {greenDone}/{coordinators.length}
-            </span>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {coordinators.map((trainer, index) => (
-            <div key={`${trainer.name}-${index}`} className="p-4 rounded-lg border border-gray-200">
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-semibold text-gray-900">#{index + 1} {trainer.name}</p>
-                  {reviews && (
-                    <>
-                      <ReviewChip
-                        label="ICT"
-                        notStarted={!(entries[index].in_person_ict || entries[index].lms.word || entries[index].lms.excel || entries[index].lms.ppt)}
-                        state={stateOf(reviews, 'tot_trainees', `${centreId}|${index + 1}`, 'ict')}
-                        comment={commentOf(reviews, 'tot_trainees', `${centreId}|${index + 1}`, 'ict')}
-                      />
-                      <ReviewChip
-                        label="Green"
-                        notStarted={!(entries[index].in_person_green || entries[index].lms.green)}
-                        state={stateOf(reviews, 'tot_trainees', `${centreId}|${index + 1}`, 'green')}
-                        comment={commentOf(reviews, 'tot_trainees', `${centreId}|${index + 1}`, 'green')}
-                      />
-                    </>
-                  )}
-                </div>
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    lmsComplete(entries[index]) ? 'bg-dg-blue-100 text-dg-blue-700' : 'bg-gray-100 text-gray-500'
-                  }`}
-                >
-                  Online LMS {lmsComplete(entries[index]) ? 'complete' : 'in progress'}
-                </span>
-              </div>
-
-              {(['ict', 'green'] as const).map(track => {
-                const done = entries[index][`in_person_${track}`];
-                return (
-                  <div key={track} className="flex flex-wrap items-center gap-4 text-sm text-gray-700 mb-3">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={done}
-                        disabled={!canSave}
-                        onChange={e => setInPerson(index, track, e.target.checked)}
-                        className="w-4 h-4 accent-dg-green-600"
-                      />
-                      <Users className="w-4 h-4 text-dg-green-600" />
-                      {track === 'ict' ? 'ICT in-person (Betterworld)' : 'Green in-person (Impact Lab)'}
-                    </label>
-                    {done && (
-                      <label className="flex items-center gap-2">
-                        Date
-                        <input
-                          type="date"
-                          disabled={!canSave}
-                          value={entries[index][`in_person_${track}_date`]}
-                          onChange={e => setInPersonDate(index, track, e.target.value)}
-                          className="px-2 py-1 text-sm border border-gray-300 rounded-md disabled:bg-gray-100"
-                        />
-                      </label>
-                    )}
-                  </div>
-                );
-              })}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 pl-1">
-                {TRAINER_MODULES.map(m => (
-                  <label key={m.key} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={entries[index].lms[m.key]}
-                      disabled={!canSave}
-                      onChange={e => setModule(index, m.key, e.target.checked)}
-                      className="w-4 h-4 accent-dg-blue-600"
-                    />
-                    <Monitor className="w-4 h-4 text-dg-blue-600" />
-                    LMS: {m.label}
-                  </label>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button
-            onClick={copyJson}
-            className="px-4 py-2 bg-dg-green-600 text-white rounded-lg hover:bg-dg-green-700 transition-colors font-medium"
-          >
-            Copy JSON
-          </button>
-          {canSave && (
-            <button
-              onClick={saveToDatabase}
-              disabled={saving}
-              className="px-4 py-2 bg-dg-blue-600 text-white rounded-lg hover:bg-dg-blue-700 disabled:opacity-60 transition-colors font-medium"
-            >
-              {saving ? 'Saving…' : 'Save to database'}
-            </button>
-          )}
-          {copied && <span className="text-sm text-dg-green-700">Copied to clipboard</span>}
-          {saveMsg && <span className="text-sm text-gray-700">{saveMsg}</span>}
-        </div>
-      </div>
-    </div>
-  );
-}
 type InfraStatus = 'Pending' | 'In Progress' | 'Completed';
 type InfraIssue = { date: string; description: string; resolved: boolean };
 type RoomState = { status: InfraStatus };
@@ -1232,96 +984,6 @@ function EmptyInputNotice({ message }: { message: string }) {
   );
 }
 
-// Basic ToT evidence: one link per centre and track. Each partner sees and edits only its own track (GGGI sees both).
-const TOT_EVIDENCE_TRACKS = [
-  { key: 'ict', label: 'ICT evidence link (Betterworld)', section: 'tot_ict' },
-  { key: 'green', label: 'Green evidence link (Impact Lab)', section: 'tot_green' },
-] as const;
-
-function TotEvidenceFields({ centreId, profile }: { centreId: string; profile: Profile | null }) {
-  const [links, setLinks] = useState<Record<string, string | null>>({});
-  const [draft, setDraft] = useState<Record<string, string>>({});
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-
-  const load = async () => {
-    if (!supabase) return;
-    const { data } = await supabase.from('centre_tot_evidence').select('track, evidence_url').eq('centre_id', centreId);
-    setLinks(Object.fromEntries((data ?? []).map((r: any) => [r.track, r.evidence_url ?? null])));
-  };
-
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [centreId]);
-
-  const save = async (track: string, value: string) => {
-    if (!supabase) return;
-    if (!isEvidenceUrl(value)) return setMsg('The evidence link must start with https://');
-    setBusy(true);
-    setMsg(null);
-    const { data: { user } } = await supabase.auth.getUser();
-    const { error } = await supabase.from('centre_tot_evidence').upsert(
-      { centre_id: centreId, track, evidence_url: value.trim(), updated_at: new Date().toISOString(), updated_by: user?.id ?? null },
-      { onConflict: 'centre_id,track' },
-    );
-    setBusy(false);
-    if (error) return setMsg(`Save failed: ${error.message}`);
-    setDraft(prev => {
-      const next = { ...prev };
-      delete next[track];
-      return next;
-    });
-    setMsg('Evidence link saved');
-    await load();
-  };
-
-  const visible = TOT_EVIDENCE_TRACKS.filter(t => profile?.role === 'ggg' || canEditSection(profile, centreId, t.section));
-  if (visible.length === 0) return null;
-
-  return (
-    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-4 mb-6">
-      <h3 className="text-sm font-semibold text-gray-900">Basic ToT evidence</h3>
-      {visible.map(t => {
-        const mine = profile?.role === 'ggg' || canEditSection(profile, centreId, t.section);
-        const value = draft[t.key] ?? links[t.key] ?? '';
-        return (
-          <div key={t.key} className="space-y-2">
-            <span className="text-sm text-gray-700">{t.label}</span>
-            <div className="flex flex-wrap items-center gap-3">
-              <input
-                type="url"
-                disabled={!mine}
-                value={value}
-                onChange={e => setDraft(prev => ({ ...prev, [t.key]: e.target.value }))}
-                placeholder="https://… evidence folder for this centre"
-                className="flex-1 min-w-[280px] px-3 py-2 text-sm text-gray-900 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-dg-green-500 disabled:bg-gray-50"
-              />
-              {mine && draft[t.key] !== undefined && (
-                <button
-                  type="button"
-                  onClick={() => save(t.key, draft[t.key])}
-                  disabled={busy}
-                  className="px-3 py-2 rounded-lg bg-dg-blue-600 text-white text-sm font-medium hover:bg-dg-blue-700 disabled:opacity-60"
-                >
-                  Save link
-                </button>
-              )}
-              {!draft[t.key] && isEvidenceUrl(links[t.key]) && (
-                <a href={links[t.key] ?? undefined} target="_blank" rel="noreferrer" className="text-sm font-medium text-dg-green-700 hover:underline">
-                  Open folder ↗
-                </a>
-              )}
-            </div>
-            {!isEvidenceUrl(links[t.key]) && <p className="text-xs text-amber-700">No evidence link yet.</p>}
-          </div>
-        );
-      })}
-      {msg && <p className="text-sm text-gray-700">{msg}</p>}
-    </div>
-  );
-}
-
 export function CenterDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -1331,7 +993,6 @@ export function CenterDetailPage() {
   const [inputSection, setInputSection] = useState<InputSection>('tot');
   // Basic ToT records per coordinator (index-matched to center_coordinators)
   const [totBasic, setTotBasic] = useState<TotBasicRecord[]>([]);
-  const [reviews, setReviews] = useState<Map<string, ReviewInfo>>(new Map());
   // Signed-in profile decides whether Data Input is shown for this centre
   const [profile, setProfile] = useState<Profile | null>(null);
 
@@ -1363,7 +1024,6 @@ export function CenterDetailPage() {
     loadTotRecords()
       .then(records => setTotBasic(records))
       .catch(() => setTotBasic([]));
-    loadReviews().then(setReviews).catch(() => setReviews(new Map()));
   }, []);
 
   useEffect(() => {
@@ -1708,19 +1368,19 @@ export function CenterDetailPage() {
 
           {/* Forms stay mounted so unsaved input survives switching sections */}
           <div className={effectiveSection === 'tot' ? '' : 'hidden'}>
-            <TotEvidenceFields centreId={center.id} profile={profile} />
-            {center.center_coordinators && center.center_coordinators.length > 0 ? (
-              <ToTInputForm
-                key={totBasic.length}
-                centreId={center.id}
-                canSave={canTot}
-                coordinators={center.center_coordinators as TrainerWithToT[]}
-                records={totBasic.filter(r => r.center_id === center.id)}
-                reviews={reviews}
-              />
-            ) : (
-              <EmptyInputNotice message="No trainers registered for this center" />
-            )}
+            {/* Basic ToT is entered for all centres on one page; this centre's ToT status is shown under Trainers */}
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900">Basic ToT</h3>
+              <p className="text-sm text-gray-600">
+                Basic ToT progress for all trainees is entered on the Basic ToT page. This centre's trainees open there already filtered.
+              </p>
+              <Link
+                to={`/basic-tot/input?centre=${center.id}`}
+                className="inline-block px-4 py-2 bg-dg-blue-600 text-white rounded-lg hover:bg-dg-blue-700 transition-colors text-sm font-medium"
+              >
+                Enter Basic ToT for this centre
+              </Link>
+            </div>
           </div>
           <div className={effectiveSection === 'training' ? '' : 'hidden'}>
             <BasicTrainingInputForm centreId={center.id} canSave={canTraining} training={center.training} />
